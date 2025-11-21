@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,30 +6,54 @@
 
 body {
   font-family: 'Inter', sans-serif;
-  background-color: #f8fafc; /* Daha modern bir arka plan grisi */
+  background-color: #f8fafc;
+  overflow-x: hidden; /* Yatay taşmayı engelle */
 }
 
-/* Kaydırma çubuğunu güzelleştirelim */
+/* Özel Kaydırma Çubuğu */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: transparent;
 }
 ::-webkit-scrollbar-thumb {
   background: #cbd5e1;
-  border-radius: 4px;
+  border-radius: 10px;
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
 
-/* Tarih seçici ikonu için modern dokunuş */
-input[type="date"]::-webkit-calendar-picker-indicator {
-    cursor: pointer;
-    opacity: 0.6;
-    transition: 0.2s;
+/* Animasyon Sınıfları */
+.page-enter {
+  animation: slideUpFade 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
-input[type="date"]::-webkit-calendar-picker-indicator:hover {
+
+@keyframes slideUpFade {
+  0% {
+    opacity: 0;
+    transform: translateY(15px) scale(0.98);
+  }
+  100% {
     opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Toast Animasyonu */
+.toast-enter {
+  animation: toastSlideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes toastSlideIn {
+  0% {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }

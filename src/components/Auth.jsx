@@ -1,7 +1,7 @@
 import React from 'react';
 import { ShieldAlert, User, Lock, Mail, GraduationCap } from 'lucide-react';
 
-// DÜZELTME: Bu bileşeni ana fonksiyonun DIŞINA aldık. Artık render sorunu yok!
+// InputField Bileşeni (Dışarıda)
 const InputField = ({ icon: Icon, type, placeholder, value, onChange, colSpan = "col-span-1" }) => (
   <div className={`relative ${colSpan}`}>
     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -20,6 +20,7 @@ const InputField = ({ icon: Icon, type, placeholder, value, onChange, colSpan = 
 export default function Auth({ authMode, setAuthMode, authInput, setAuthInput, authError, setAuthError, handleLogin, handleRegister }) {
   return (
     <div className="min-h-screen bg-[#f8fafc] flex items-center justify-center p-4">
+      {/* Arka Plan */}
       <div className="absolute top-0 left-0 w-full h-1/2 bg-indigo-600 rounded-b-[3rem] shadow-2xl z-0"></div>
       
       <div className="bg-white rounded-3xl shadow-2xl p-8 w-full max-w-md relative z-10 border border-slate-100">
@@ -32,13 +33,30 @@ export default function Auth({ authMode, setAuthMode, authInput, setAuthInput, a
          </div>
          
          <form onSubmit={authMode === 'login' ? handleLogin : handleRegister} className="space-y-5">
+           
+           {/* --- LOGIN FORMU --- */}
            {authMode === 'login' && (
               <>
-                <InputField icon={User} type="text" placeholder="E-posta veya Kullanıcı Adı" value={authInput.email} onChange={e => setAuthInput({...authInput, email: e.target.value})} colSpan="col-span-full"/>
-                <InputField icon={Lock} type="password" placeholder="Şifre" value={authInput.password} onChange={e => setAuthInput({...authInput, password: e.target.value})} colSpan="col-span-full"/>
+                <InputField 
+                    icon={User} 
+                    type="text" 
+                    placeholder="Kullanıcı Adı veya E-posta" 
+                    value={authInput.email} 
+                    onChange={e => setAuthInput({...authInput, email: e.target.value})} 
+                    colSpan="col-span-full"
+                />
+                <InputField 
+                    icon={Lock} 
+                    type="password" 
+                    placeholder="Şifre" 
+                    value={authInput.password} 
+                    onChange={e => setAuthInput({...authInput, password: e.target.value})} 
+                    colSpan="col-span-full"
+                />
               </>
            )}
            
+           {/* --- REGISTER FORMU --- */}
            {authMode === 'register' && (
              <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-3">
@@ -50,7 +68,6 @@ export default function Auth({ authMode, setAuthMode, authInput, setAuthInput, a
                      <InputField icon={Lock} type="password" placeholder="Şifre" value={authInput.password} onChange={e => setAuthInput({...authInput, password: e.target.value})} />
                      <InputField icon={Lock} type="password" placeholder="Tekrar" value={authInput.passwordConfirm} onChange={e => setAuthInput({...authInput, passwordConfirm: e.target.value})} />
                 </div>
-                
                 <div className="pt-3 border-t border-slate-100">
                     <p className="text-xs font-semibold text-slate-500 mb-2 uppercase tracking-wider">Yıl Sonu Ortalamaları (OBP)</p>
                     <div className="grid grid-cols-4 gap-2">

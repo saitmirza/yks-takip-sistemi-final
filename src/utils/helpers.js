@@ -1,12 +1,10 @@
-// OBP Katsayısı (Diploma Notu * 0.6 = Ek Puan)
+// OBP Katsayısı (Diploma * 0.6)
 const OBP_KAT_SAYISI = 0.6; 
 
-// --- OBP HESAPLAMA ---
+// --- 1. OBP HESAPLAMA ---
 export const calculateOBP = (s9, s10, s11, s12) => {
   const avg = (Number(s9) + Number(s10) + Number(s11) + Number(s12)) / 4;
-  // Diploma notu 50'den düşük olamaz, 100'den büyük olamaz
   const diplomaNote = Math.min(Math.max(avg, 50), 100); 
-  
   const placementBonus = diplomaNote * OBP_KAT_SAYISI;
   
   return {
@@ -16,7 +14,7 @@ export const calculateOBP = (s9, s10, s11, s12) => {
   };
 };
 
-// --- RESİM SIKIŞTIRMA (Profil ve Soru Duvarı İçin) ---
+// --- 2. RESİM SIKIŞTIRMA ---
 export const resizeAndCompressImage = (file, maxWidth = 100, maxHeight = 100, quality = 0.7) => {
     return new Promise((resolve) => {
         const reader = new FileReader();
@@ -51,66 +49,104 @@ export const resizeAndCompressImage = (file, maxWidth = 100, maxHeight = 100, qu
     });
 };
 
-// --- 2024 YKS SAYISAL (MF) HASSAS SIRALAMA ALGORİTMASI ---
-// Lineer İnterpolasyon (Orantısal Hesaplama) Yöntemi
+// --- 3. SAYISAL PUAN HESAPLAMA (2024/2025 KATSAYILARI) ---
+// Admin panelinde AYT Fen tek girildiği için ortalama katsayı kullanılır.
+// Simülatörde detaylı girildiği için hassas hesaplanır.
+export const calculateScoreSAY = (nets) => {
+    // TYT Katsayıları (Yaklaşık)
+    const c_tyt_mat = 1.32;
+    const c_tyt_turk = 1.32;
+    const c_tyt_fen = 1.36;
+    const c_tyt_sos = 1.36;
+
+    // AYT Katsayıları (Sayısal)
+    const c_ayt_mat = 3.00;
+    const c_ayt_fiz = 2.85;
+    const c_ayt_kim = 3.07;
+    const c_ayt_biyo = 3.07;
+    
+    // Eğer AYT Fen tek parça geldiyse (Admin panelinden) ortalama katsayı al (3.0)
+    const aytFenTotal = nets.aytFen || 0;
+    const aytFiz = nets.aytFiz || 0;
+    const aytKim = nets.aytKim || 0;
+    const aytBiyo = nets.aytBiyo || 0;
+
+    // Puan Hesapla
+    const scoreFromNet = 
+        (nets.tytMath * c_tyt_mat) +
+        (nets.tytTurk * c_tyt_turk) +
+        (nets.tytFen * c_tyt_fen) +
+        (nets.tytSos * c_tyt_sos) +
+        (nets.aytMath * c_ayt_mat) +
+        (aytFiz * c_ayt_fiz) +
+        (aytKim * c_ayt_kim) +
+        (aytBiyo * c_ayt_biyo) +
+        (aytFenTotal * 3.00); // Detay yoksa toplu fen puanı
+
+    let finalScore = 100 + scoreFromNet;
+    if (finalScore > 500) finalScore = 500; // Maksimum 500
+
+    return {
+        say: finalScore
+    };
+};
+
+// --- 4. GELİŞMİŞ SIRALAMA (İNTERPOLASYON YÖNTEMİ) ---
+// 2024 YKS Sayısal Yığılma Verileri (Referans Noktaları)
+// Sol: Puan, Sağ: Sıralama
+const RANK_DATA = [
+    { s: 560, r: 1 },
+    { s: 550, r: 50 },
+    { s: 540, r: 600 },
+    { s: 530, r: 1500 },
+    { s: 520, r: 3500 },
+    { s: 510, r: 6000 },
+    { s: 500, r: 10000 },
+    { s: 490, r: 15000 },
+    { s: 480, r: 21000 },
+    { s: 470, r: 28000 },
+    { s: 460, r: 36000 },
+    { s: 450, r: 45000 },
+    { s: 440, r: 55000 },
+    { s: 420, r: 78000 },
+    { s: 400, r: 105000 },
+    { s: 380, r: 130000 },
+    { s: 360, r: 160000 },
+    { s: 340, r: 195000 },
+    { s: 320, r: 235000 },
+    { s: 300, r: 280000 },
+    { s: 250, r: 450000 },
+    { s: 200, r: 850000 },
+    { s: 0,   r: 3000000 }
+];
+
 export const getEstimatedRank = async (score) => {
     const s = Number(score);
-    let rank = 0;
-
-    // TAM PUAN KONTROLÜ (500 Ham + 60 OBP = 560 Maksimum)
-    if (s >= 555) {
-        rank = 1; // Zirve
-    }
-    else if (s >= 540) {
-        // İlk 1.000 (Çok sıkışık)
-        // 555 puanda 1. ise, 540 puanda yaklaşık 1000.
-        rank = 1 + (555 - s) * 66; 
-    } 
-    else if (s >= 520) {
-        // 1.000 - 5.000 Bandı (Tıp Zirvesi)
-        rank = 1000 + (540 - s) * 200;
-    } 
-    else if (s >= 500) {
-        // 5.000 - 15.000 Bandı
-        rank = 5000 + (520 - s) * 500;
-    } 
-    else if (s >= 480) {
-        // 15.000 - 30.000 Bandı
-        rank = 15000 + (500 - s) * 750;
-    } 
-    else if (s >= 460) {
-        // 30.000 - 50.000 Bandı
-        rank = 30000 + (480 - s) * 1000;
-    } 
-    else if (s >= 440) {
-        // 50.000 - 80.000 Bandı
-        rank = 50000 + (460 - s) * 1500;
-    } 
-    else if (s >= 400) {
-        // 80.000 - 140.000 Bandı (Yığılma Artıyor)
-        rank = 80000 + (440 - s) * 1500;
-    } 
-    else if (s >= 350) {
-        // 140.000 - 250.000 Bandı
-        rank = 140000 + (400 - s) * 2200;
-    } 
-    else if (s >= 300) {
-        // 250.000 - 400.000 Bandı
-        rank = 250000 + (350 - s) * 3000;
-    } 
-    else {
-        // 400.000+ ve Baraj Altı
-        rank = 400000 + (300 - s) * 4000;
-    }
-
-    // Negatif veya 0 çıkarsa 1 yap (Garanti)
-    if (rank < 1) rank = 1;
-
-    // Sıralamayı yuvarla (Küsuratlı insan olmaz)
-    const exactRank = Math.floor(rank);
     
-    // Binlik ayırıcı ile formatla (örn: 12.454)
-    const formattedRank = new Intl.NumberFormat('tr-TR').format(exactRank);
+    // Puan hangi aralıkta?
+    let upper = RANK_DATA[0];
+    let lower = RANK_DATA[RANK_DATA.length - 1];
 
-    return `Sayısal: ${formattedRank}`;
+    for (let i = 0; i < RANK_DATA.length - 1; i++) {
+        if (s <= RANK_DATA[i].s && s > RANK_DATA[i+1].s) {
+            upper = RANK_DATA[i];
+            lower = RANK_DATA[i+1];
+            break;
+        }
+    }
+
+    if (s >= 560) return "Sayısal: 1"; // Zirve
+
+    // Matematiksel Orantı (Interpolasyon)
+    const scoreRange = upper.s - lower.s;
+    const rankRange = lower.r - upper.r;
+    const scoreDiff = upper.s - s;
+    
+    const exactRank = upper.r + (rankRange * (scoreDiff / scoreRange));
+    
+    // Yuvarla ve Formatla
+    const finalRank = Math.floor(exactRank);
+    const formatted = new Intl.NumberFormat('tr-TR').format(finalRank);
+
+    return `Sayısal: ${formatted}`;
 };

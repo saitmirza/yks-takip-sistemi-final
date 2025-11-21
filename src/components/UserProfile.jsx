@@ -1,55 +1,45 @@
 import React, { useState } from 'react';
-import { User, Lock, Camera, AlertCircle, Quote } from 'lucide-react';
+import { User, Camera, Quote, Check, Medal, Lock, Image as ImageIcon } from 'lucide-react';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase';
-import { APP_ID } from '../utils/constants';
+import { APP_ID, PROFILE_COVERS } from '../utils/constants'; // EKLENDİ
 import { resizeAndCompressImage } from '../utils/helpers';
+import { BADGE_DEFINITIONS, calculateUserBadges } from '../utils/badges.jsx';
 
-export default function UserProfile({ currentUser, setCurrentUser }) {
+export default function UserProfile({ currentUser, setCurrentUser, myScores, questions }) {
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
-      username: currentUser.username,
-      realName: currentUser.realName,
-      s12Avg: currentUser.s12Avg,
       avatar: currentUser.avatar || "🎓",
       base64Avatar: currentUser.base64Avatar || "",
-      statusMessage: currentUser.statusMessage || "", // Yeni
-      newPassword: ""
+      statusMessage: currentUser.statusMessage || "",
+      showcaseBadges: currentUser.showcaseBadges || [],
+      coverImage: currentUser.coverImage || PROFILE_COVERS[0] // Yeni: Kapak Fotoğrafı
   });
 
-  const avatarOptions = ["🎓", "📚", "✏️", "🧠", "🚀", "🦁", "🦉", "🦄", "⚽", "🎵", "🎨", "💻", "🔥", "⚡", "👽", "👾"];
+  const earnedBadgesList = calculateUserBadges(myScores || [], questions || [], currentUser.internalId);
+  const earnedIds = earnedBadgesList.map(b => b.id);
+  const avatarOptions = ["🎓", "📚", "✏️", "🧠", "🚀", "🦁", "🦉", "🦄", "⚽", "🎵", "🎨", "💻", "🔥", "⚡"];
 
   const handleSave = async (e) => {
       e.preventDefault();
       if (currentUser.isDemo) { alert("Demo hesapta değişiklik yapılamaz."); return; }
-      
       setIsLoading(true);
       try {
           const updateData = {
-              username: formData.username,
-              realName: formData.realName,
-              s12Avg: Number(formData.s12Avg),
               avatar: formData.avatar,
               base64Avatar: formData.base64Avatar,
-              statusMessage: formData.statusMessage
+              statusMessage: formData.statusMessage,
+              showcaseBadges: formData.showcaseBadges,
+              coverImage: formData.coverImage // Veritabanına kaydet
           };
-
-          if (formData.newPassword && formData.newPassword.length >= 6) {
-              updateData.password = formData.newPassword;
-          }
 
           await updateDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'user_accounts', currentUser.email), updateData);
           
           const updatedUser = { ...currentUser, ...updateData };
           setCurrentUser(updatedUser);
           localStorage.setItem('examApp_session', JSON.stringify(updatedUser));
-          
-          alert("Profil başarıyla güncellendi!");
-          setFormData(p => ({ ...p, newPassword: "" }));
-      } catch (error) {
-          console.error(error);
-          alert("Bir hata oluştu.");
-      }
+          alert("Profilin güncellendi!");
+      } catch (error) { console.error(error); alert("Hata oluştu."); }
       setIsLoading(false);
   };
 
@@ -61,100 +51,104 @@ export default function UserProfile({ currentUser, setCurrentUser }) {
       }
   };
 
+  const toggleBadge = (badgeId) => {
+      if (!earnedIds.includes(badgeId)) return;
+      setFormData(prev => {
+          const current = prev.showcaseBadges || [];
+          if (current.includes(badgeId)) return { ...prev, showcaseBadges: current.filter(id => id !== badgeId) };
+          else return (current.length >= 3) ? prev : { ...prev, showcaseBadges: [...current, badgeId] };
+      });
+  };
+
   return (
-    <div className="max-w-2xl mx-auto bg-white rounded-3xl shadow-sm border border-slate-100 p-8 mb-10">
-        <h2 className="text-2xl font-bold text-slate-800 mb-2 flex items-center gap-2"><User className="text-indigo-600"/> Profilini Düzenle</h2>
-        <p className="text-slate-500 text-sm mb-8">Arkadaşların seni burada düzenlediğin gibi görecek.</p>
-
-        {currentUser.isDemo && (
-            <div className="bg-yellow-50 text-yellow-800 p-4 rounded-xl mb-6 flex items-center gap-3 border border-yellow-200 text-sm font-medium">
-                <AlertCircle size={18}/> Demo hesapta yapılan değişiklikler kaydedilmez.
-            </div>
-        )}
-
-        <form onSubmit={handleSave} className="space-y-8">
-            {/* AVATAR SEÇİMİ */}
-            <div className="flex flex-col items-center gap-6 border-b border-slate-100 pb-8">
-                <div className="w-32 h-32 rounded-3xl bg-slate-50 border-4 border-white shadow-xl overflow-hidden flex items-center justify-center text-5xl relative group cursor-pointer">
-                    {formData.base64Avatar ? <img src={formData.base64Avatar} className="w-full h-full object-cover"/> : formData.avatar}
-                    
-                    {/* Overlay */}
-                    <label className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 text-white">
-                        <Camera size={28} className="mb-1"/>
-                        <span className="text-[10px] font-bold uppercase tracking-wide">Değiştir</span>
-                        <input type="file" className="hidden" accept="image/*" onChange={handleFileChange} disabled={currentUser.isDemo}/>
-                    </label>
-                </div>
+    <div className="max-w-4xl mx-auto space-y-6 mb-20">
+        <div className="bg-white rounded-3xl shadow-sm border border-slate-100 p-8">
+            <h2 className="text-2xl font-bold text-slate-800 mb-6 flex items-center gap-2"><User className="text-indigo-600"/> Profil Vitrini</h2>
+            
+            <form onSubmit={handleSave} className="space-y-8">
                 
-                {/* Emojiler */}
-                <div className="flex flex-wrap justify-center gap-3 px-4">
-                    {avatarOptions.map(emoji => (
-                        <button
-                            key={emoji}
-                            type="button"
-                            onClick={() => setFormData(p => ({ ...p, avatar: emoji, base64Avatar: "" }))}
-                            className={`w-10 h-10 rounded-xl flex items-center justify-center text-xl border transition-all hover:scale-110 hover:shadow-md ${formData.avatar === emoji && !formData.base64Avatar ? 'bg-indigo-100 border-indigo-500 shadow-indigo-100' : 'bg-white border-slate-200'}`}
-                        >
-                            {emoji}
-                        </button>
-                    ))}
-                </div>
-            </div>
-
-            {/* KİŞİSEL BİLGİLER */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Kullanıcı Adı</label>
-                    <input type="text" value={formData.username} onChange={e => setFormData({...formData, username: e.target.value})} className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-colors font-medium"/>
-                </div>
-                <div className="space-y-2">
-                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Gerçek Ad Soyad</label>
-                    <input type="text" value={formData.realName} onChange={e => setFormData({...formData, realName: e.target.value})} className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-colors font-medium"/>
-                </div>
-                <div className="space-y-2 col-span-full">
-                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2"><Quote size={14}/> Durum Mesajı (Bio)</label>
-                    <input type="text" placeholder="Örn: Hedef ODTÜ Bilgisayar 🚀" value={formData.statusMessage} onChange={e => setFormData({...formData, statusMessage: e.target.value})} className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-colors"/>
-                </div>
-                <div className="space-y-2 col-span-full">
-                     <label className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2"><Lock size={14}/> Yeni Şifre</label>
-                     <input type="password" placeholder="Değiştirmek istemiyorsanız boş bırakın" value={formData.newPassword} onChange={e => setFormData({...formData, newPassword: e.target.value})} className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-colors"/>
-                </div>
-            </div>
-
-            {/* OBP AYARLARI */}
-            <div className="p-5 bg-slate-50 rounded-2xl border border-slate-200">
-                <div className="flex justify-between items-center mb-4">
-                    <h3 className="font-bold text-slate-700 text-sm">Okul Ortalamaları (OBP)</h3>
-                </div>
-                <div className="grid grid-cols-4 gap-3 text-center">
-                    {[9,10,11].map((g) => (
-                        <div key={g}>
-                            <div className="text-[10px] text-slate-400 mb-1 font-bold uppercase">{g}. Sınıf</div>
-                            <div className="p-3 bg-slate-200 rounded-xl text-slate-500 font-bold text-sm cursor-not-allowed opacity-70">
-                                {currentUser[`s${g}Avg`]}
-                            </div>
+                {/* 1. KAPAK FOTOĞRAFI SEÇİMİ (YENİ) */}
+                <div className="space-y-3">
+                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
+                        <ImageIcon size={14}/> Kapak Fotoğrafı
+                    </label>
+                    
+                    {/* Önizleme */}
+                    <div className="h-32 rounded-2xl overflow-hidden relative border border-slate-200">
+                        <img src={formData.coverImage} className="w-full h-full object-cover" alt="Seçili Kapak" />
+                        <div className="absolute inset-0 bg-black/20 flex items-center justify-center text-white font-bold text-sm backdrop-blur-[1px]">
+                            {formData.statusMessage || "Durum Mesajın Burada Görünecek"}
                         </div>
-                    ))}
-                    <div>
-                        <div className="text-[10px] text-indigo-600 font-bold mb-1 uppercase">12. Sınıf</div>
-                        <input 
-                            type="number" 
-                            className="w-full p-3 bg-white border-2 border-indigo-100 rounded-xl text-indigo-700 font-bold text-center outline-none focus:border-indigo-500 transition-colors"
-                            value={formData.s12Avg}
-                            onChange={e => setFormData({...formData, s12Avg: e.target.value})}
-                            min="50" max="100"
-                        />
+                    </div>
+
+                    {/* Seçim Izgarası */}
+                    <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
+                        {PROFILE_COVERS.map((cover, i) => (
+                            <button
+                                key={i}
+                                type="button"
+                                onClick={() => setFormData(p => ({ ...p, coverImage: cover }))}
+                                className={`relative h-12 rounded-lg overflow-hidden transition-all hover:scale-105 ${formData.coverImage === cover ? 'ring-2 ring-offset-1 ring-indigo-500' : 'opacity-70 hover:opacity-100'}`}
+                            >
+                                <img src={cover} className="w-full h-full object-cover" alt={`Kapak ${i}`} />
+                                {formData.coverImage === cover && (
+                                    <div className="absolute inset-0 bg-indigo-500/40 flex items-center justify-center text-white">
+                                        <Check size={16} />
+                                    </div>
+                                )}
+                            </button>
+                        ))}
                     </div>
                 </div>
-            </div>
 
-            <button 
-                disabled={isLoading || currentUser.isDemo}
-                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-xl shadow-xl shadow-indigo-200 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
-            >
-                {isLoading ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet'}
-            </button>
-        </form>
+                {/* 2. AVATAR */}
+                <div className="flex flex-col items-center gap-6 pb-6 border-b border-slate-100 pt-4">
+                    <div className="w-24 h-24 rounded-3xl bg-slate-50 border-4 border-white shadow-xl overflow-hidden flex items-center justify-center text-4xl relative group cursor-pointer">
+                        {formData.base64Avatar ? <img src={formData.base64Avatar} className="w-full h-full object-cover"/> : formData.avatar}
+                        <label className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-all text-white">
+                            <Camera size={24} className="mb-1"/>
+                            <span className="text-[9px] font-bold uppercase">Değiştir</span>
+                            <input type="file" className="hidden" accept="image/*" onChange={handleFileChange} disabled={currentUser.isDemo}/>
+                        </label>
+                    </div>
+                    <div className="flex flex-wrap justify-center gap-3">
+                        {avatarOptions.map(emoji => (
+                            <button key={emoji} type="button" onClick={() => setFormData(p => ({ ...p, avatar: emoji, base64Avatar: "" }))} className={`w-10 h-10 rounded-xl flex items-center justify-center text-xl border transition-all hover:scale-110 ${formData.avatar === emoji && !formData.base64Avatar ? 'bg-indigo-100 border-indigo-500' : 'bg-white border-slate-200'}`}>{emoji}</button>
+                        ))}
+                    </div>
+                </div>
+
+                {/* 3. DURUM MESAJI */}
+                <div className="space-y-2">
+                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2"><Quote size={14}/> Durum Mesajı</label>
+                    <input type="text" placeholder="Örn: Hedef ODTÜ Bilgisayar 🚀" value={formData.statusMessage} onChange={e => setFormData({...formData, statusMessage: e.target.value})} className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"/>
+                </div>
+
+                {/* 4. VİTRİN ROZETLERİ */}
+                <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2"><Medal size={14}/> Vitrin Rozetleri (Max 3)</label>
+                        <span className="text-xs font-bold text-indigo-600">{formData.showcaseBadges?.length || 0}/3 Seçildi</span>
+                    </div>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                        {BADGE_DEFINITIONS.map(badge => {
+                            const isEarned = earnedIds.includes(badge.id);
+                            const isSelected = formData.showcaseBadges?.includes(badge.id);
+                            return (
+                                <button key={badge.id} type="button" onClick={() => toggleBadge(badge.id)} disabled={!isEarned} className={`p-3 rounded-xl border flex flex-col gap-2 transition-all text-left relative overflow-hidden h-full ${isEarned ? (isSelected ? 'bg-indigo-50 border-indigo-500 ring-1 ring-indigo-500' : 'bg-white border-slate-200 hover:border-indigo-300') : 'bg-slate-50 border-slate-100 opacity-50 cursor-not-allowed grayscale'}`}>
+                                    <div className="flex justify-between items-start w-full"><div className={`w-8 h-8 rounded-lg flex items-center justify-center text-white text-sm ${isEarned ? badge.color : 'bg-slate-400'}`}>{badge.icon}</div>{isSelected && <div className="text-indigo-600"><Check size={16}/></div>}{!isEarned && <div className="text-slate-400"><Lock size={16}/></div>}</div>
+                                    <div><div className="text-xs font-bold text-slate-700 truncate">{badge.title}</div><div className="text-[10px] text-slate-500 leading-tight mt-1">{badge.desc}</div></div>
+                                </button>
+                            )
+                        })}
+                    </div>
+                </div>
+
+                <button disabled={isLoading || currentUser.isDemo} className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-xl shadow-xl shadow-indigo-200 transition-all active:scale-[0.98] disabled:opacity-50">
+                    {isLoading ? 'Kaydediliyor...' : 'Profilimi Güncelle'}
+                </button>
+            </form>
+        </div>
     </div>
   );
 }

@@ -57,3 +57,25 @@ export const getMetricConfig = (metric) => {
       default: return { color: '#111827', label: 'Yerleştirme Puanı' };
     }
 };
+// ... (Diğer sabitler yukarıda kalacak)
+
+// --- PROFİL KAPAK FOTOĞRAFLARI KOLEKSİYONU ---
+export const PROFILE_COVERS = [
+    // 1. GRADYANLAR (Renk Geçişleri)
+    "https://images.unsplash.com/photo-1557683316-973673baf926?auto=format&fit=crop&w=800&q=80", // Mor-Mavi
+    "https://images.unsplash.com/photo-1557682250-33bd709cbe85?auto=format&fit=crop&w=800&q=80", // Pembe-Mor
+    "https://images.unsplash.com/photo-1508615039623-a25605d2b022?auto=format&fit=crop&w=800&q=80", // Ateş Kırmızısı
+    "https://images.unsplash.com/photo-1614850523459-c2f4c699c52e?auto=format&fit=crop&w=800&q=80", // Somon-Gri
+
+    // 2. DERS & MOTİVASYON (YENİLENDİ ✅)
+    "https://images.unsplash.com/photo-1472214103451-9374bd1c798e?auto=format&fit=crop&w=800&q=80", // Kütüphane Rafları
+    "https://images.unsplash.com/photo-1521587760476-6c12a4b040da?auto=format&fit=crop&w=800&q=80", // Gece Lambası ve Kitap
+    "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&w=800&q=80", // Açık Kitaplar
+    "https://images.unsplash.com/photo-1517842645767-c639042777db?auto=format&fit=crop&w=800&q=80", // Modern Çalışma Masası
+
+    // 3. SOYUT & DOĞA
+    "https://images.unsplash.com/photo-1550684848-fac1c5b4e853?auto=format&fit=crop&w=800&q=80", // Teknoloji Mavisi
+    "https://images.unsplash.com/photo-1579546929518-9e396f3cc809?auto=format&fit=crop&w=800&q=80", // Renkli Duman
+    "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=800&q=80", // Sisli Orman
+    "https://images.unsplash.com/photo-1536152470836-b943b246224c?auto=format&fit=crop&w=800&q=80", // Dijital Pikseller
+];
