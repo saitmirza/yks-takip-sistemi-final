@@ -2,35 +2,33 @@ import React, { useState, useEffect } from 'react';
 import { Clock } from 'lucide-react';
 
 export default function Countdown() {
-    // Başlangıçta boş değil, hesaplanıyor olarak başlasın
     const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0 });
 
     useEffect(() => {
-        // 21 Haziran 2025, 10:15:00 için Sabit Timestamp (Milisaniye cinsinden)
-        // Bu sayı evrenseldir, tarayıcıya göre değişmez.
-        const TARGET_TIMESTAMP = 1750490100000; 
+        // HEDEF TARİHİ GÜNCELLEDİK: 20 Haziran 2026 (Tahmini YKS 2026)
+        // Format: Yıl, Ay (0=Ocak...5=Haziran), Gün, Saat, Dakika
+        const examDate = new Date(2026, 5, 20, 10, 15, 0).getTime(); 
 
         const calculateTime = () => {
-            const now = Date.now();
-            const distance = TARGET_TIMESTAMP - now;
+            const now = new Date().getTime();
+            const distance = examDate - now;
 
+            // Eğer tarih geçmişse 0 göster, değilse hesapla
             if (distance < 0) {
-                // Süre dolduysa
                 setTimeLeft({ days: 0, hours: 0, minutes: 0 });
             } else {
-                // Hesaplama
-                const d = Math.floor(distance / (1000 * 60 * 60 * 24));
-                const h = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                const m = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-                
-                setTimeLeft({ days: d, hours: h, minutes: m });
+                setTimeLeft({
+                    days: Math.floor(distance / (1000 * 60 * 60 * 24)),
+                    hours: Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+                    minutes: Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60))
+                });
             }
         };
 
-        // İlk hesaplama
+        // İlk açılışta hesapla
         calculateTime();
 
-        // Saniye başı güncelleme
+        // Her saniye güncelle
         const timer = setInterval(calculateTime, 1000);
 
         return () => clearInterval(timer);
@@ -39,7 +37,7 @@ export default function Countdown() {
     return (
         <div className="bg-indigo-500/20 rounded-xl p-3 text-center border border-indigo-500/30 mx-4 mt-2 mb-4 backdrop-blur-sm">
             <div className="text-[10px] text-indigo-200 uppercase font-bold tracking-widest mb-1 flex justify-center items-center gap-1">
-                <Clock size={10}/> YKS 2025
+                <Clock size={10}/> YKS 2026
             </div>
             <div className="flex justify-center gap-2 text-white font-mono">
                 <div className="flex flex-col items-center">
