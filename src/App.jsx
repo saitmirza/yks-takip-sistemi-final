@@ -27,6 +27,7 @@ import Toast from './components/Toast';
 import SubjectTracker from './components/SubjectTracker';
 import StudyLogger from './components/StudyLogger';
 import StudyScheduler from './components/StudyScheduler'; // <--- BURADA!
+import NotificationManager from './components/NotificationManager';
 
 export default function ExamTrackerApp() {
   const [firebaseUser, setFirebaseUser] = useState(null);
@@ -146,6 +147,8 @@ export default function ExamTrackerApp() {
   return (
     <div className={`min-h-screen flex flex-col md:flex-row transition-colors duration-300 font-sans overflow-hidden ${isDark ? 'dark' : 'bg-[#f8fafc]'}`}>
       <DynamicStyles />
+    {/* BİLDİRİM YÖNETİCİSİ (YENİ) */}
+    <NotificationManager currentUser={currentUser} />
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
       {viewingUser && <ProfileCard user={viewingUser} onClose={() => setViewingUser(null)} stats={getUserStats(viewingUser.internalId)} userScores={getUserScores(viewingUser.internalId)} questions={questions} />}
       

@@ -3,6 +3,7 @@ import { Lock, AlertCircle, Key, UserCog, Palette, Check } from 'lucide-react';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { APP_ID, COLOR_THEMES } from '../utils/constants';
+import { Bell } from 'lucide-react';
 
 export default function AccountSettings({ currentUser, setCurrentUser }) {
   const [isLoading, setIsLoading] = useState(false);
@@ -60,6 +61,21 @@ export default function AccountSettings({ currentUser, setCurrentUser }) {
             
             {/* GÖRÜNÜM */}
             <div className="space-y-4">
+{/* Bildirim İzni */}
+<div className="flex items-center justify-between bg-slate-50 dark:bg-gray-700 p-4 rounded-xl border border-slate-200 dark:border-gray-600 cursor-pointer mb-4" onClick={() => Notification.requestPermission().then(p => alert(p === 'granted' ? "Bildirimler açıldı! 🎉" : "Bildirim izni reddedildi."))}>
+    <div className="flex items-center gap-3">
+        <div className="p-2 rounded-full bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-300">
+            <Bell size={20}/>
+        </div>
+        <div>
+            <div className="text-sm font-bold text-slate-700 dark:text-white">Bildirim İzni</div>
+            <div className="text-xs text-slate-400">Sınav ve sohbet bildirimlerini al</div>
+        </div>
+    </div>
+    <div className="text-xs font-bold text-indigo-600 dark:text-indigo-400">
+        {Notification.permission === 'granted' ? 'Açık' : 'Kapalı'}
+    </div>
+</div>
                 <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider border-b border-slate-700 pb-2">Görünüm</h3>
                 <div>
                     <label className="text-xs font-bold text-slate-400 mb-3 block flex items-center gap-2"><Palette size={14}/> Tema Rengi</label>
