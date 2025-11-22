@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Lock, Save, AlertCircle, Key, UserCog } from 'lucide-react';
+import { Lock, AlertCircle, Key, UserCog, Palette, Check } from 'lucide-react';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase';
-import { APP_ID } from '../utils/constants';
+import { APP_ID, COLOR_THEMES } from '../utils/constants';
 
 export default function AccountSettings({ currentUser, setCurrentUser }) {
   const [isLoading, setIsLoading] = useState(false);
@@ -10,7 +10,8 @@ export default function AccountSettings({ currentUser, setCurrentUser }) {
       username: currentUser.username,
       realName: currentUser.realName,
       s12Avg: currentUser.s12Avg,
-      newPassword: ""
+      newPassword: "",
+      themeColor: currentUser.themeColor || "indigo"
   });
 
   const handleSave = async (e) => {
@@ -23,6 +24,7 @@ export default function AccountSettings({ currentUser, setCurrentUser }) {
               username: formData.username,
               realName: formData.realName,
               s12Avg: Number(formData.s12Avg),
+              themeColor: formData.themeColor // Sadece renk teması güncelleniyor
           };
 
           if (formData.newPassword && formData.newPassword.length >= 6) {
@@ -35,7 +37,7 @@ export default function AccountSettings({ currentUser, setCurrentUser }) {
           setCurrentUser(updatedUser);
           localStorage.setItem('examApp_session', JSON.stringify(updatedUser));
           
-          alert("Hesap ayarları güncellendi!");
+          alert("Ayarlar kaydedildi! 🎨");
           setFormData(p => ({ ...p, newPassword: "" }));
       } catch (error) {
           console.error(error);
@@ -45,62 +47,76 @@ export default function AccountSettings({ currentUser, setCurrentUser }) {
   };
 
   return (
-    <div className="max-w-2xl mx-auto bg-white rounded-3xl shadow-sm border border-slate-100 p-8">
-        <h2 className="text-2xl font-bold text-slate-800 mb-6 flex items-center gap-2"><UserCog className="text-slate-600"/> Hesap Ayarları</h2>
+    <div className="max-w-2xl mx-auto bg-slate-800/50 backdrop-blur-md rounded-3xl shadow-lg border border-slate-700 p-8 mb-20">
+        <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2"><UserCog className="text-slate-300"/> Hesap ve Görünüm</h2>
 
         {currentUser.isDemo && (
-            <div className="bg-yellow-50 text-yellow-800 p-4 rounded-xl mb-6 flex items-center gap-3 border border-yellow-200 text-sm font-medium">
+            <div className="bg-yellow-900/30 text-yellow-200 p-4 rounded-xl mb-6 flex items-center gap-3 border border-yellow-700/50 text-sm font-medium">
                 <AlertCircle size={18}/> Demo hesapta değişiklik yapılamaz.
             </div>
         )}
 
-        <form onSubmit={handleSave} className="space-y-6">
-            <div className="space-y-2">
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Kullanıcı Adı</label>
-                <input type="text" value={formData.username} onChange={e => setFormData({...formData, username: e.target.value})} className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"/>
-            </div>
+        <form onSubmit={handleSave} className="space-y-8">
             
-            <div className="space-y-2">
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Gerçek Ad Soyad</label>
-                <input type="text" value={formData.realName} onChange={e => setFormData({...formData, realName: e.target.value})} className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"/>
-            </div>
-
-            <div className="p-5 bg-slate-50 rounded-2xl border border-slate-200">
-                <div className="flex justify-between items-center mb-4">
-                    <h3 className="font-bold text-slate-700 text-sm">Okul Ortalamaları (OBP)</h3>
-                </div>
-                <div className="grid grid-cols-4 gap-3 text-center">
-                    {[9,10,11].map((g) => (
-                        <div key={g}>
-                            <div className="text-[10px] text-slate-400 mb-1 font-bold uppercase">{g}. Sınıf</div>
-                            <div className="p-3 bg-slate-200 rounded-xl text-slate-500 font-bold text-sm cursor-not-allowed opacity-70">
-                                {currentUser[`s${g}Avg`]}
-                            </div>
-                        </div>
-                    ))}
-                    <div>
-                        <div className="text-[10px] text-indigo-600 font-bold mb-1 uppercase">12. Sınıf</div>
-                        <input 
-                            type="number" 
-                            className="w-full p-3 bg-white border-2 border-indigo-100 rounded-xl text-indigo-700 font-bold text-center outline-none focus:border-indigo-500 transition-colors"
-                            value={formData.s12Avg}
-                            onChange={e => setFormData({...formData, s12Avg: e.target.value})}
-                            min="50" max="100"
-                        />
+            {/* GÖRÜNÜM */}
+            <div className="space-y-4">
+                <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider border-b border-slate-700 pb-2">Görünüm</h3>
+                <div>
+                    <label className="text-xs font-bold text-slate-400 mb-3 block flex items-center gap-2"><Palette size={14}/> Tema Rengi</label>
+                    <div className="flex flex-wrap gap-3">
+                        {Object.entries(COLOR_THEMES).map(([key, theme]) => (
+                            <button
+                                key={key}
+                                type="button"
+                                onClick={() => setFormData({...formData, themeColor: key})}
+                                className={`w-10 h-10 rounded-full flex items-center justify-center transition-all hover:scale-110 shadow-sm border-2 ${formData.themeColor === key ? 'border-white scale-110' : 'border-transparent'}`}
+                                style={{ backgroundColor: theme.primary }}
+                                title={theme.label}
+                            >
+                                {formData.themeColor === key && <Check size={16} className="text-white"/>}
+                            </button>
+                        ))}
                     </div>
                 </div>
             </div>
 
-            <div className="space-y-2 pt-4 border-t border-slate-100">
-                 <label className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2"><Key size={14}/> Şifre Değiştir</label>
-                 <input type="password" placeholder="Değiştirmek istemiyorsanız boş bırakın" value={formData.newPassword} onChange={e => setFormData({...formData, newPassword: e.target.value})} className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"/>
+            {/* KİŞİSEL BİLGİLER */}
+            <div className="space-y-4">
+                <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider border-b border-slate-700 pb-2 mt-6">Kişisel Bilgiler</h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                        <label className="text-xs font-bold text-slate-400">Kullanıcı Adı</label>
+                        <input type="text" value={formData.username} onChange={e => setFormData({...formData, username: e.target.value})} className="w-full p-3 bg-slate-900 border border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-slate-500 transition-colors text-white"/>
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-xs font-bold text-slate-400">Gerçek Ad</label>
+                        <input type="text" value={formData.realName} onChange={e => setFormData({...formData, realName: e.target.value})} className="w-full p-3 bg-slate-900 border border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-slate-500 transition-colors text-white"/>
+                    </div>
+                </div>
+
+                <div className="p-4 bg-slate-700/50 rounded-xl border border-slate-600 flex justify-between items-center">
+                    <span className="text-sm font-bold text-slate-300">12. Sınıf OBP Ortalaması</span>
+                    <input 
+                        type="number" 
+                        className="w-24 p-2 bg-slate-900 border-2 border-slate-600 rounded-lg text-white font-bold text-center outline-none focus:border-slate-400"
+                        value={formData.s12Avg}
+                        onChange={e => setFormData({...formData, s12Avg: e.target.value})}
+                        min="50" max="100"
+                    />
+                </div>
+
+                <div className="space-y-2">
+                     <label className="text-xs font-bold text-slate-400 flex items-center gap-2"><Key size={14}/> Şifre Değiştir</label>
+                     <input type="password" placeholder="Değişmeyecekse boş bırakın" value={formData.newPassword} onChange={e => setFormData({...formData, newPassword: e.target.value})} className="w-full p-3 bg-slate-900 border border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-slate-500 transition-colors text-white"/>
+                </div>
             </div>
 
             <button 
                 disabled={isLoading || currentUser.isDemo}
-                className="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-4 rounded-xl shadow-lg transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-black hover:bg-slate-900 text-white font-bold py-4 rounded-xl shadow-lg transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed border border-slate-800"
             >
-                {isLoading ? 'Kaydediliyor...' : 'Ayarları Güncelle'}
+                {isLoading ? 'Kaydediliyor...' : 'Ayarları Kaydet'}
             </button>
         </form>
     </div>

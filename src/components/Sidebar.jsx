@@ -1,5 +1,5 @@
 import React from 'react';
-import { Trophy, ShieldCheck, Calendar as CalendarIcon, User, BarChart3, List, MessageCircle, Settings, Search, LineChart as LineChartIcon, LogOut, HelpCircle, Timer, Medal, Calculator, UserCog } from 'lucide-react';
+import { Trophy, ShieldCheck, Calendar as CalendarIcon, User, BarChart3, List, MessageCircle, Settings, Search, LineChart as LineChartIcon, LogOut, HelpCircle, Timer, Medal, Calculator, UserCog, Map, PenTool, Flame, CalendarDays } from 'lucide-react';
 import Countdown from './Countdown';
 
 export default function Sidebar({ currentUser, activeTab, setActiveTab, handleLogout }) {
@@ -18,13 +18,22 @@ export default function Sidebar({ currentUser, activeTab, setActiveTab, handleLo
       { id: 'calendar', icon: <CalendarIcon size={20}/>, label: 'Takvim', role: 'all' },
       { id: 'dashboard', icon: <User size={20}/>, label: 'Veri', role: 'admin' },
       { id: 'leaderboard', icon: <BarChart3 size={20}/>, label: 'Sıralama', role: 'all' },
+      
+      // AKADEMİK
+      { id: 'scheduler', icon: <CalendarDays size={20}/>, label: 'Programım', role: 'student' }, // <-- GERİ GELDİ!
+      { id: 'subjects', icon: <Map size={20}/>, label: 'Harita', role: 'student' },
+      { id: 'studylog', icon: <PenTool size={20}/>, label: 'Günlük', role: 'student' },
       { id: 'my_exams', icon: <List size={20}/>, label: 'Notlar', role: 'student' },
       { id: 'stats', icon: <LineChartIcon size={20}/>, label: 'Analiz', role: 'student' },
+      { id: 'achievements', icon: <Medal size={20}/>, label: 'Rozet', role: 'student' },
+      
+      // SOSYAL & ARAÇLAR
       { id: 'chat', icon: <MessageCircle size={20}/>, label: 'Sohbet', role: 'all' },
       { id: 'questions', icon: <HelpCircle size={20}/>, label: 'Sorular', role: 'all' },
       { id: 'pomodoro', icon: <Timer size={20}/>, label: 'Sayaç', role: 'student' },
-      { id: 'achievements', icon: <Medal size={20}/>, label: 'Rozet', role: 'student' },
       { id: 'simulator', icon: <Calculator size={20}/>, label: 'Hesap', role: 'student' },
+      
+      // YÖNETİM & PROFİL
       { id: 'admin_analysis', icon: <Search size={20}/>, label: 'Analiz', role: 'admin' },
       { id: 'profile', icon: <User size={20}/>, label: 'Profil', role: 'student' },
       { id: 'settings', icon: <UserCog size={20}/>, label: 'Ayarlar', role: 'student' },
@@ -49,11 +58,21 @@ export default function Sidebar({ currentUser, activeTab, setActiveTab, handleLo
                     <AvatarDisplay user={currentUser} />
                     <div className="overflow-hidden w-full">
                         <div className="font-bold truncate text-white">{currentUser.username}</div>
+                        
+                        {/* STREAK GÖSTERGESİ */}
+                        {!currentUser.isAdmin && (
+                            <div className="flex items-center gap-1 text-[10px] mt-1 text-orange-200 animate-pulse">
+                                <Flame size={12} className="text-orange-500 fill-orange-500"/>
+                                <span className="font-bold">{currentUser.streak || 0} Day Streak</span>
+                            </div>
+                        )}
                         {currentUser.isAdmin && <span className="text-[10px] bg-red-600 text-white px-1.5 py-0.5 rounded font-bold">YÖNETİCİ</span>}
                     </div>
                 </div>
             </div>
+            
             {!currentUser.isAdmin && <div className="px-2"><Countdown /></div>}
+
             <nav className="flex-1 px-3 pb-4 space-y-1 overflow-y-auto custom-scrollbar mt-2">
                 {filteredMenu.map(item => (
                     <button key={item.id} onClick={() => setActiveTab(item.id)} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 text-sm ${activeTab === item.id ? 'bg-white/10 shadow-inner text-white font-bold' : 'text-slate-300 hover:bg-white/5 hover:text-white'}`}>
@@ -61,12 +80,13 @@ export default function Sidebar({ currentUser, activeTab, setActiveTab, handleLo
                     </button>
                 ))}
             </nav>
+            
             <div className="p-4 border-t border-white/10">
                 <button onClick={handleLogout} className="flex items-center gap-2 text-red-400 hover:text-white hover:bg-red-600/80 text-sm transition-all w-full px-4 py-3 rounded-xl font-bold"><LogOut size={18}/> Çıkış Yap</button>
             </div>
         </div>
 
-        {/* MOBİL BOTTOM BAR (OPTİMİZE EDİLDİ) */}
+        {/* MOBİL BOTTOM BAR */}
         <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] z-50 px-1 py-1 safe-area-bottom">
             <div className="flex overflow-x-auto gap-2 no-scrollbar pb-1 px-2">
                 {filteredMenu.map(item => (

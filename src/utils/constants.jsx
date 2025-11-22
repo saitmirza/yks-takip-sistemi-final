@@ -79,3 +79,55 @@ export const PROFILE_COVERS = [
     "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=800&q=80", // Sisli Orman
     "https://images.unsplash.com/photo-1536152470836-b943b246224c?auto=format&fit=crop&w=800&q=80", // Dijital Pikseller
 ];
+// --- RENK TEMALARI (GÜNCELLENDİ: GRADYANLAR EKLENDİ) ---
+export const COLOR_THEMES = {
+    indigo: { 
+        label: "Varsayılan (İndigo)", 
+        primary: "#4f46e5", 
+        light: "#eef2ff", 
+        dark: "#312e81",
+        gradient: "linear-gradient(to bottom right, #0f172a, #1e1b4b, #312e81)" 
+    },
+    rose: { 
+        label: "Gül Kırmızısı",       
+        primary: "#e11d48", 
+        light: "#fff1f2", 
+        dark: "#881337",
+        gradient: "linear-gradient(to bottom right, #0f172a, #4c0519, #881337)"
+    },
+    blue: { 
+        label: "Okyanus Mavisi",      
+        primary: "#2563eb", 
+        light: "#eff6ff", 
+        dark: "#1e3a8a",
+        gradient: "linear-gradient(to bottom right, #0f172a, #172554, #1e3a8a)"
+    },
+    emerald: { 
+        label: "Zümrüt Yeşili",       
+        primary: "#059669", 
+        light: "#ecfdf5", 
+        dark: "#064e3b",
+        gradient: "linear-gradient(to bottom right, #0f172a, #022c22, #064e3b)"
+    },
+    violet: { 
+        label: "Asil Mor",            
+        primary: "#7c3aed", 
+        light: "#f5f3ff", 
+        dark: "#4c1d95",
+        gradient: "linear-gradient(to bottom right, #0f172a, #2e1065, #4c1d95)"
+    },
+    orange: { 
+        label: "Gün Batımı",          
+        primary: "#ea580c", 
+        light: "#fff7ed", 
+        dark: "#7c2d12",
+        gradient: "linear-gradient(to bottom right, #0f172a, #431407, #7c2d12)"
+    },
+    cyan: { 
+        label: "Siber Turkuaz",       
+        primary: "#0891b2", 
+        light: "#ecfeff", 
+        dark: "#164e63",
+        gradient: "linear-gradient(to bottom right, #0f172a, #083344, #155e75)"
+    },
+};
