@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { signInAnonymously, onAuthStateChanged } from 'firebase/auth';
 import { collection, doc, getDoc, onSnapshot, updateDoc, serverTimestamp, setDoc, query, where, getDocs, orderBy } from 'firebase/firestore';
+
+// --- FIREBASE VE AYARLAR ---
 import { auth, db } from './firebase';
 import { APP_ID, DEMO_INTERNAL_ID, ADMIN_USERNAME, ADMIN_PASSWORD, DEMO_USERNAME, DEMO_PASSWORD, DEMO_USER_DATA, COLOR_THEMES } from './utils/constants';
 import { calculateOBP, getEstimatedRank } from './utils/helpers';
 
-// BİLEŞENLER
+// --- BİLEŞENLER ---
 import Sidebar from './components/Sidebar';
 import Auth from './components/Auth';
 import AdminExcelView from './components/AdminExcelView';
@@ -24,9 +26,10 @@ import ProfileCard from './components/ProfileCard';
 import Toast from './components/Toast';
 import SubjectTracker from './components/SubjectTracker';
 import StudyLogger from './components/StudyLogger';
-import StudyScheduler from './components/StudyScheduler'; // EKLENDİ ✅
+import StudyScheduler from './components/StudyScheduler';
 
 export default function ExamTrackerApp() {
+  // --- STATES ---
   const [firebaseUser, setFirebaseUser] = useState(null);
   const [activeTab, setActiveTab] = useState("calendar");
   const [loading, setLoading] = useState(true);
@@ -39,21 +42,27 @@ export default function ExamTrackerApp() {
   const [myScores, setMyScores] = useState([]);
   const [rankings, setRankings] = useState({});
   const [questions, setQuestions] = useState([]); 
+  
   const [authMode, setAuthMode] = useState("login");
   const [authInput, setAuthInput] = useState({});
   const [authError, setAuthError] = useState("");
 
   const addToast = (message, type = 'success') => { setToast({ message, type }); };
 
+  // --- GİRİŞ İŞLEMLERİ ---
   const handleLogin = async (e) => {
-    e.preventDefault(); setAuthError("");
+    e.preventDefault();
+    setAuthError("");
     const inputVal = authInput.email?.trim(); 
     if (!inputVal || !authInput.password) { setAuthError("Lütfen bilgileri girin."); return; }
+
     if ((inputVal === DEMO_USERNAME || inputVal === DEMO_USER_DATA.email) && authInput.password === DEMO_PASSWORD) {
-        const s = { ...DEMO_USER_DATA, base64Avatar: "" }; setCurrentUser(s); localStorage.setItem('examApp_session', JSON.stringify(s)); setActiveTab('my_exams'); addToast("Demo giriş başarılı!", "info"); return;
+        const s = { ...DEMO_USER_DATA, base64Avatar: "" }; 
+        setCurrentUser(s); localStorage.setItem('examApp_session', JSON.stringify(s)); setActiveTab('my_exams'); addToast("Demo giriş başarılı!", "info"); return;
     }
     if ((inputVal === ADMIN_USERNAME || inputVal === "admin@yks.com") && authInput.password === ADMIN_PASSWORD) {
-      const s = { username: "Yönetici", email: ADMIN_USERNAME, internalId: "ADMIN_ID", isAdmin: true, avatar: "🛡️", realName: "Admin" }; setCurrentUser(s); localStorage.setItem('examApp_session', JSON.stringify(s)); setActiveTab('dashboard'); addToast("Admin girişi yapıldı.", "success"); return;
+      const s = { username: "Yönetici", email: ADMIN_USERNAME, internalId: "ADMIN_ID", isAdmin: true, avatar: "🛡️", realName: "Admin" };
+      setCurrentUser(s); localStorage.setItem('examApp_session', JSON.stringify(s)); setActiveTab('dashboard'); addToast("Admin girişi yapıldı.", "success"); return;
     }
     try {
       let userData = null;
@@ -68,7 +77,8 @@ export default function ExamTrackerApp() {
           if (!querySnapshot.empty) userData = querySnapshot.docs[0].data();
       }
       if(userData && userData.password === authInput.password) {
-        const s = { ...userData, isAdmin: false, isDemo: false }; setCurrentUser(s); localStorage.setItem('examApp_session', JSON.stringify(s)); setActiveTab('my_exams'); addToast(`Hoş geldin ${s.username}!`);
+        const s = { ...userData, isAdmin: false, isDemo: false };
+        setCurrentUser(s); localStorage.setItem('examApp_session', JSON.stringify(s)); setActiveTab('my_exams'); addToast(`Hoş geldin ${s.username}!`);
       } else { setAuthError("Hatalı bilgi."); addToast("Giriş başarısız.", "error"); }
     } catch (e) { console.error(e); setAuthError("Giriş hatası."); }
   };
@@ -76,6 +86,7 @@ export default function ExamTrackerApp() {
   const handleLogout = () => { setCurrentUser(null); localStorage.removeItem('examApp_session'); setActiveTab("calendar"); setAuthInput({}); addToast("Çıkış yapıldı.", "info"); };
   const handleRegister = async (e) => { e.preventDefault(); alert("Kayıt kapalı."); };
 
+  // --- DATA LISTENERS ---
   useEffect(() => { const initAuth = async () => { try { await signInAnonymously(auth); } catch (err) {} }; initAuth(); onAuthStateChanged(auth, (user) => { setFirebaseUser(user); setLoading(false); const savedSession = localStorage.getItem('examApp_session'); if (savedSession) setCurrentUser(JSON.parse(savedSession)); }); }, []);
   useEffect(() => { if (!currentUser || currentUser.isDemo || currentUser.isAdmin) return; const userRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'user_accounts', currentUser.email); updateDoc(userRef, { lastSeen: serverTimestamp() }); const interval = setInterval(() => { updateDoc(userRef, { lastSeen: serverTimestamp() }); }, 120000); return () => clearInterval(interval); }, [currentUser]);
   useEffect(() => { if (!firebaseUser) return; const unsubScores = onSnapshot(collection(db, 'artifacts', APP_ID, 'public', 'data', 'exam_scores_v3'), (snap) => { let data = snap.docs.map(d => ({ id: d.id, ...d.data() })); data = data.filter(s => s.internalUserId !== DEMO_INTERNAL_ID); data.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0)); setAllScores(data); }); const unsubUsers = onSnapshot(collection(db, 'artifacts', APP_ID, 'public', 'data', 'user_accounts'), (snap) => { setUsersList(snap.docs.map(d => d.data()).filter(u => u.internalId !== DEMO_INTERNAL_ID)); }); const qQuery = query(collection(db, 'artifacts', APP_ID, 'public', 'data', 'questions'), orderBy('timestamp', 'desc')); const unsubQuestions = onSnapshot(qQuery, (snap) => { setQuestions(snap.docs.map(d => ({ id: d.id, ...d.data() }))); }); return () => { unsubScores(); unsubUsers(); unsubQuestions(); }; }, [firebaseUser]);
@@ -85,9 +96,8 @@ export default function ExamTrackerApp() {
   const getUserScores = (uid) => allScores.filter(s => s.internalUserId === uid);
   const handleUserClick = (uid) => { const user = usersList.find(u => u.internalId === uid); if (user) setViewingUser(user); };
 
-  // --- DİNAMİK STİL MOTORU ---
+  // --- DİNAMİK STİL (DÜZELTİLDİ - GRADYAN GERİ GELDİ) ---
   const theme = COLOR_THEMES[currentUser?.themeColor] || COLOR_THEMES['indigo'];
-  const isDark = currentUser?.darkMode;
 
   const DynamicStyles = () => (
     <style>{`
@@ -105,56 +115,62 @@ export default function ExamTrackerApp() {
         .ring-indigo-500 { --tw-ring-color: var(--primary) !important; }
         .bg-gradient-to-b.from-zinc-900 { background: ${theme.gradient} !important; }
 
-        ${isDark ? `
-            /* KARANLIK MOD (GLASSMORPHISM) */
-            body { 
-                background: ${theme.gradient} !important;
-                background-attachment: fixed;
-                color: #e2e8f0 !important; 
-            }
+        /* --- ZORUNLU KARANLIK MOD --- */
+        
+        /* ANA ARKA PLAN (GRADYAN) */
+        body { 
+            background: ${theme.gradient} !important;
+            background-attachment: fixed;
+            color: #e2e8f0 !important; 
+        }
+        
+        /* BEYAZ KUTULAR -> KOYU YARI SAYDAM (GLASS) */
+        .bg-white, .bg-slate-50, .bg-gray-50, .bg-[#f8fafc], .bg-[#efeae2] { 
+            background-color: rgba(17, 24, 39, 0.85) !important; /* Koyu Lacivert & %85 Opak */
+            backdrop-filter: blur(12px);
+            border-color: rgba(255, 255, 255, 0.1) !important; 
+            color: #f3f4f6 !important; 
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5) !important;
+        }
 
-            /* Tüm Beyaz/Gri Kutulara Koyu Şeffaflık Ver */
-            .bg-white, .bg-slate-50, .bg-gray-50, .bg-[#f8fafc], .bg-[#efeae2] { 
-                background-color: rgba(17, 24, 39, 0.85) !important; /* Koyu Lacivert & Saydam */
-                backdrop-filter: blur(12px);
-                border-color: rgba(255, 255, 255, 0.1) !important; 
-                color: #f3f4f6 !important; 
-            }
+        /* YAZILAR BEYAZ */
+        .text-slate-800, .text-slate-700, .text-gray-800, .text-gray-700, .text-black { 
+            color: #f3f4f6 !important; 
+        }
+        .text-slate-600, .text-slate-500, .text-gray-600, .text-gray-500 { 
+            color: #9ca3af !important; 
+        }
 
-            /* Metinler (Siyah -> Beyaz) */
-            .text-slate-800, .text-slate-700, .text-gray-700, .text-black { 
-                color: #f3f4f6 !important; 
-            }
-            .text-slate-600, .text-slate-500, .text-gray-600 { 
-                color: #9ca3af !important; 
-            }
+        /* INPUTLAR */
+        input, select, textarea { 
+            background-color: rgba(0, 0, 0, 0.5) !important; 
+            color: white !important; 
+            border-color: rgba(255, 255, 255, 0.2) !important; 
+        }
+        
+        /* TABLOLAR */
+        thead, thead tr, .bg-slate-50\\/50, .bg-gray-100 { 
+            background-color: rgba(0,0,0,0.4) !important; 
+            color: #e5e7eb !important;
+        }
+        tbody tr:hover { 
+            background-color: rgba(255,255,255,0.05) !important; 
+        }
 
-            /* Giriş Kutuları */
-            input, select, textarea { 
-                background-color: rgba(0, 0, 0, 0.5) !important; 
-                color: white !important; 
-                border-color: rgba(255, 255, 255, 0.2) !important; 
-            }
-
-            /* Tablolar */
-            thead, thead tr { background-color: rgba(0,0,0,0.4) !important; }
-            tbody tr:hover { background-color: rgba(255,255,255,0.05) !important; }
-
-            /* Link Rengi */
-            .text-indigo-600 { color: #818cf8 !important; } 
-            
-            /* Sohbet Balonları (İstisna: Okunabilir olmalı) */
-            .bg-white.text-slate-800 { 
-                background-color: #1f2937 !important; /* Katı Gri */
-                color: white !important; 
-                border: 1px solid #374151 !important;
-            }
-            .bg-\\[\\#d9fdd3\\] { 
-                background-color: #064e3b !important; /* Katı Yeşil */
-                color: white !important; 
-                border: none !important;
-            }
-        ` : ''}
+        /* LİNKLER */
+        .text-indigo-600 { color: #818cf8 !important; } 
+        
+        /* SOHBET BALONLARI */
+        .bg-white.text-slate-800 { 
+            background-color: #1f2937 !important; 
+            color: white !important; 
+            border: 1px solid #374151 !important;
+        }
+        .bg-\\[\\#d9fdd3\\] { 
+            background-color: #064e3b !important; 
+            color: white !important; 
+            border: none !important;
+        }
     `}</style>
   );
 
@@ -163,7 +179,9 @@ export default function ExamTrackerApp() {
   if (!currentUser) return <><Auth authMode={authMode} setAuthMode={setAuthMode} authInput={authInput} setAuthInput={setAuthInput} authError={authError} setAuthError={setAuthError} handleLogin={handleLogin} handleRegister={handleRegister} />{toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}</>;
 
   return (
-    <div className={`min-h-screen flex flex-col md:flex-row transition-colors duration-300 font-sans overflow-hidden ${isDark ? 'dark' : 'bg-[#f8fafc]'}`}>
+    // DÜZELTME: bg-slate-900 KALDIRILDI!
+    // Sadece 'dark' sınıfı kaldı. Arka planı artık DynamicStyles (body) yönetiyor.
+    <div className={`min-h-screen flex flex-col md:flex-row transition-colors duration-300 font-sans overflow-hidden dark`}>
       
       <DynamicStyles />
 
@@ -179,15 +197,16 @@ export default function ExamTrackerApp() {
             {activeTab === 'my_exams' && !currentUser.isAdmin && <MyExams myScores={myScores} currentUser={currentUser} rankings={rankings} />}
             {activeTab === 'chat' && <Chat currentUser={currentUser} usersList={usersList} onUserClick={handleUserClick} />}
             {activeTab === 'calendar' && <Calendar currentUser={currentUser} />}
+            
             {activeTab === 'profile' && !currentUser.isAdmin && <UserProfile currentUser={currentUser} setCurrentUser={setCurrentUser} myScores={myScores} questions={questions} />}
             {activeTab === 'settings' && !currentUser.isAdmin && <AccountSettings currentUser={currentUser} setCurrentUser={setCurrentUser} />}
+            
             {activeTab === 'stats' && !currentUser.isAdmin && <Stats myScores={myScores} />}
             {activeTab === 'questions' && <QuestionWall currentUser={currentUser} initialQuestions={questions} />}
             {activeTab === 'pomodoro' && !currentUser.isAdmin && <Pomodoro currentUser={currentUser} />}
             {activeTab === 'achievements' && !currentUser.isAdmin && <Achievements myScores={myScores} currentUser={currentUser} questions={questions} />}
             {activeTab === 'simulator' && !currentUser.isAdmin && <Simulator currentUser={currentUser} />}
             
-            {/* EKLENDİ: ÇALIŞMA PROGRAMI */}
             {activeTab === 'scheduler' && !currentUser.isAdmin && <StudyScheduler currentUser={currentUser} />}
             
             {activeTab === 'studylog' && !currentUser.isAdmin && <StudyLogger currentUser={currentUser} />}
