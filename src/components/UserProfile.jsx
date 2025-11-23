@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { User, Camera, Quote, Check, Medal, Lock, Image as ImageIcon } from 'lucide-react';
+import { User, Camera, Quote, Check, Medal, Lock, Image as ImageIcon, Upload } from 'lucide-react';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { APP_ID, PROFILE_COVERS } from '../utils/constants';
@@ -43,6 +43,16 @@ export default function UserProfile({ currentUser, setCurrentUser, myScores, que
       if (file) { const resized = await resizeAndCompressImage(file); setFormData(p => ({ ...p, base64Avatar: resized, avatar: "" })); }
   };
 
+  // YENİ: KAPAK FOTOĞRAFI YÜKLEME
+  const handleCoverUpload = async (e) => {
+      const file = e.target.files[0];
+      if (file) {
+          // Kapak fotoğrafı için biraz daha büyük boyut ve kalite
+          const resized = await resizeAndCompressImage(file, 1200, 400, 0.8);
+          setFormData(p => ({ ...p, coverImage: resized }));
+      }
+  };
+
   const toggleBadge = (badgeId) => {
       if (!earnedIds.includes(badgeId)) return;
       setFormData(prev => {
@@ -57,12 +67,28 @@ export default function UserProfile({ currentUser, setCurrentUser, myScores, que
         <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-slate-100 dark:border-gray-700 p-8 transition-colors">
             <h2 className="text-2xl font-bold text-slate-800 dark:text-white mb-6 flex items-center gap-2"><User className="text-indigo-600 dark:text-indigo-400"/> Profil Vitrini</h2>
             <form onSubmit={handleSave} className="space-y-8">
+                
+                {/* 1. KAPAK FOTOĞRAFI */}
                 <div className="space-y-3">
-                    <label className="text-xs font-bold text-slate-500 dark:text-gray-400 uppercase tracking-wider flex items-center gap-2"><ImageIcon size={14}/> Kapak Fotoğrafı</label>
-                    <div className="h-32 rounded-2xl overflow-hidden relative border border-slate-200 dark:border-gray-600">
+                    <label className="text-xs font-bold text-slate-500 dark:text-gray-400 uppercase tracking-wider flex items-center gap-2">
+                        <ImageIcon size={14}/> Kapak Fotoğrafı
+                    </label>
+                    
+                    {/* Önizleme */}
+                    <div className="h-32 rounded-2xl overflow-hidden relative border border-slate-200 dark:border-gray-600 group">
                         <img src={formData.coverImage} className="w-full h-full object-cover" alt="Seçili Kapak" />
-                        <div className="absolute inset-0 bg-black/20 flex items-center justify-center text-white font-bold text-sm backdrop-blur-[1px]">{formData.statusMessage || "Durum Mesajın Burada Görünecek"}</div>
+                        <div className="absolute inset-0 bg-black/20 flex items-center justify-center text-white font-bold text-sm backdrop-blur-[1px]">
+                            {formData.statusMessage || "Durum Mesajın Burada Görünecek"}
+                        </div>
+                        
+                        {/* Yükleme Butonu (Overlay) */}
+                        <label className="absolute bottom-2 right-2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-lg cursor-pointer transition-all flex items-center gap-2 text-xs font-bold backdrop-blur-sm">
+                            <Upload size={14}/> Özel Kapak Yükle
+                            <input type="file" className="hidden" accept="image/*" onChange={handleCoverUpload} disabled={currentUser.isDemo}/>
+                        </label>
                     </div>
+
+                    {/* Hazır Seçim Izgarası */}
                     <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
                         {PROFILE_COVERS.map((cover, i) => (
                             <button key={i} type="button" onClick={() => setFormData(p => ({ ...p, coverImage: cover }))} className={`relative h-12 rounded-lg overflow-hidden transition-all hover:scale-105 ${formData.coverImage === cover ? 'ring-2 ring-offset-1 ring-indigo-500 dark:ring-offset-gray-800' : 'opacity-70 hover:opacity-100'}`}>
@@ -73,6 +99,9 @@ export default function UserProfile({ currentUser, setCurrentUser, myScores, que
                     </div>
                 </div>
 
+                {/* ... (AVATAR, DURUM MESAJI, ROZETLER - AYNI KALSIN) ... */}
+                {/* KODUN GERİ KALANI ÖNCEKİ İLE AYNI, YER KAPLAMASIN DİYE YAZMADIM AMA SEN TAMAMINI KOPYALADIYSAN SORUN YOK */}
+                
                 <div className="flex flex-col items-center gap-6 pb-6 border-b border-slate-100 dark:border-gray-700 pt-4">
                     <div className="w-24 h-24 rounded-3xl bg-slate-50 dark:bg-gray-700 border-4 border-white dark:border-gray-600 shadow-xl overflow-hidden flex items-center justify-center text-4xl relative group cursor-pointer">
                         {formData.base64Avatar ? <img src={formData.base64Avatar} className="w-full h-full object-cover"/> : formData.avatar}
