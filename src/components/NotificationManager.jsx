@@ -1,37 +1,45 @@
-import React, { useEffect, useState } from 'react';
-import { collection, query, orderBy, limit, onSnapshot, where } from 'firebase/firestore';
+import React, { useEffect, useRef, useState } from 'react';
+import { collection, query, orderBy, limit, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase';
 import { APP_ID } from '../utils/constants';
 
 export default function NotificationManager({ currentUser }) {
-    const [lastMessageId, setLastMessageId] = useState(null);
-    const [lastScoreId, setLastScoreId] = useState(null);
     const [permission, setPermission] = useState(Notification.permission);
+    
+    // KRİTİK DÜZELTME: Siteye giriş anını kaydediyoruz.
+    // Bu zamandan ÖNCE atılmış hiçbir mesaj için bildirim göndermeyeceğiz.
+    const startTime = useRef(Date.now());
 
-    // 1. İZİN İSTE
+    // İzin İste
     const requestPermission = async () => {
         if (!("Notification" in window)) return;
-        const result = await Notification.requestPermission();
-        setPermission(result);
-    };
-
-    // BİLDİRİM GÖNDERME FONKSİYONU
-    const sendNotification = (title, body, icon = "/pwa-192x192.png") => {
-        if (permission === "granted" && document.visibilityState === "hidden") {
-            // Sadece kullanıcı sayfada değilse (başka sekmedeyse veya mobilde ana ekrandaysa) gönder
-            const notif = new Notification(title, {
-                body: body,
-                icon: icon,
-                vibrate: [200, 100, 200]
-            });
-            notif.onclick = () => window.focus();
+        if (permission === "default") {
+            const result = await Notification.requestPermission();
+            setPermission(result);
         }
     };
 
-    // 2. SOHBET DİNLEYİCİSİ
+    useEffect(() => {
+        requestPermission();
+    }, []);
+
+    // Bildirim Gönderici
+    const sendNotification = (title, body) => {
+        // Sadece izin varsa ve sayfa gizliyse (veya her durumda istersen bu kontrolü kaldır) gönder
+        if (permission === "granted" && document.visibilityState === "hidden") {
+            new Notification(title, {
+                body: body,
+                icon: "/pwa-192x192.png", // İkonun public klasöründe olduğundan emin ol
+                vibrate: [200, 100, 200]
+            });
+        }
+    };
+
+    // --- SOHBET DİNLEYİCİSİ ---
     useEffect(() => {
         if (!currentUser) return;
 
+        // Son 1 mesajı dinle
         const q = query(
             collection(db, 'artifacts', APP_ID, 'public', 'data', 'chat_messages'),
             orderBy('timestamp', 'desc'),
@@ -39,78 +47,56 @@ export default function NotificationManager({ currentUser }) {
         );
 
         const unsubscribe = onSnapshot(q, (snapshot) => {
-            if (!snapshot.empty) {
-                const msg = snapshot.docs[0].data();
-                const msgId = snapshot.docs[0].id;
+            snapshot.docChanges().forEach((change) => {
+                // Sadece yeni eklenenler
+                if (change.type === "added") {
+                    const msg = change.doc.data();
+                    
+                    // Timestamp kontrolü (Firebase Timestamp -> Milisaniye)
+                    const msgTime = msg.timestamp ? msg.timestamp.seconds * 1000 : 0;
 
-                // İlk yüklemede bildirim atma, sadece yeni mesajlarda at
-                // Ve mesajı ben atmadıysam bildirim ver
-                if (lastMessageId && lastMessageId !== msgId && msg.senderId !== currentUser.internalId) {
-                    sendNotification(
-                        `Yeni Mesaj: ${msg.senderName}`, 
-                        msg.text
-                    );
+                    // KRİTİK KONTROL:
+                    // 1. Mesaj ben siteye girdikten SONRA mı atıldı? (Eskileri engelle)
+                    // 2. Mesajı ben mi attım? (Kendi mesajıma bildirim gelmesin)
+                    if (msgTime > startTime.current && msg.senderId !== currentUser.internalId) {
+                        sendNotification(`💬 ${msg.senderName}`, msg.text);
+                    }
                 }
-                setLastMessageId(msgId);
-            }
+            });
         });
 
         return () => unsubscribe();
-    }, [currentUser, lastMessageId, permission]);
+    }, [currentUser, permission]);
 
-    // 3. SINAV SONUÇ DİNLEYİCİSİ
+    // --- SINAV SONUÇ DİNLEYİCİSİ ---
     useEffect(() => {
-        if (!currentUser || currentUser.isAdmin) return; // Admin kendine bildirim atmasın
+        if (!currentUser || currentUser.isAdmin) return;
 
-        // Sadece BANA ait son eklenen skoru dinle
-        // Not: Firestore'da karmaşık query yerine tüm skorları dinleyip filtrelemek daha kolay olabilir bu yapıda
-        // Ama performans için sadece son eklenenleri dinleyelim.
-        
         const q = query(
             collection(db, 'artifacts', APP_ID, 'public', 'data', 'exam_scores_v3'),
             orderBy('timestamp', 'desc'),
-            limit(5) // Son 5 işlemden birinde benim adım var mı?
+            limit(1)
         );
 
         const unsubscribe = onSnapshot(q, (snapshot) => {
             snapshot.docChanges().forEach((change) => {
                 if (change.type === "added") {
                     const score = change.doc.data();
-                    // Eğer bu skor bana aitse ve yeni eklendiyse (sayfa yüklendikten sonra)
-                    if (score.internalUserId === currentUser.internalId && lastScoreId && change.doc.id !== lastScoreId) {
-                         sendNotification(
-                            "📢 Sınav Sonucu Açıklandı!", 
-                            `${score.examName} sonucun sisteme girildi. Hemen kontrol et!`
+                    const scoreTime = score.timestamp ? score.timestamp.seconds * 1000 : 0;
+
+                    // Yine zaman kontrolü: Ben siteye girdikten sonra mı eklendi?
+                    if (scoreTime > startTime.current && score.internalUserId === currentUser.internalId) {
+                        sendNotification(
+                            "📢 Sınav Sonucu!", 
+                            `${score.examName} sonucun açıklandı. Hemen kontrol et!`
                         );
                     }
-                    setLastScoreId(change.doc.id);
                 }
             });
         });
 
         return () => unsubscribe();
-    }, [currentUser, lastScoreId, permission]);
+    }, [currentUser, permission]);
 
-    // 4. "ÇALIŞMAYA DÖN" HATIRLATICISI (İnactivity)
-    useEffect(() => {
-        const interval = setInterval(() => {
-            // Eğer kullanıcı sayfada değilse (arka plandaysa) ve 1 saattir ses çıkmadıysa
-            if (document.visibilityState === "hidden" && permission === "granted") {
-                 // Burası biraz agresif olabilir, o yüzden sadece çok uzun süre (örn 3 saat) sonra bir kere tetiklenebilir.
-                 // Şimdilik basit tutalım:
-                 // sendNotification("Mola çok uzadı!", "Rakiplerin çalışıyor, sen neredesin? 👀");
-            }
-        }, 1000 * 60 * 60 * 3); // 3 Saatte bir kontrol
-
-        return () => clearInterval(interval);
-    }, [permission]);
-
-    // İlk açılışta izin iste (Eğer daha önce sorulmadıysa)
-    useEffect(() => {
-        if (Notification.permission === "default") {
-            requestPermission();
-        }
-    }, []);
-
-    return null; // Bu bileşen ekranda görünmez, sadece mantık çalıştırır.
+    return null; // Görünmez bileşen
 }

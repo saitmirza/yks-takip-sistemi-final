@@ -1,5 +1,5 @@
 import React from 'react';
-import { Trophy, ShieldCheck, Calendar as CalendarIcon, User, BarChart3, List, MessageCircle, Settings, Search, LineChart as LineChartIcon, LogOut, HelpCircle, Timer, Medal, Calculator, UserCog, Map, PenTool, Flame, CalendarDays } from 'lucide-react';
+import { Trophy, ShieldCheck, Calendar as CalendarIcon, User, BarChart3, List, MessageCircle, Settings, Search, LineChart as LineChartIcon, LogOut, HelpCircle, Timer, Medal, Calculator, UserCog, Map, PenTool, Flame, CalendarDays, MessageSquarePlus} from 'lucide-react';
 import Countdown from './Countdown';
 
 export default function Sidebar({ currentUser, activeTab, setActiveTab, handleLogout }) {
@@ -29,6 +29,7 @@ export default function Sidebar({ currentUser, activeTab, setActiveTab, handleLo
       { id: 'achievements', icon: <Medal size={20}/>, label: 'Rozet', role: 'student' },
       { id: 'simulator', icon: <Calculator size={20}/>, label: 'Hesap', role: 'student' },
       { id: 'admin_analysis', icon: <Search size={20}/>, label: 'Analiz', role: 'admin' },
+      { id: 'feedback', icon: <MessageSquarePlus size={20}/>, label: 'Destek', role: 'student' },
       { id: 'profile', icon: <User size={20}/>, label: 'Profil', role: 'student' },
       { id: 'settings', icon: <UserCog size={20}/>, label: 'Ayarlar', role: 'student' },
   ];
