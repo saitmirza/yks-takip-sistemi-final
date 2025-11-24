@@ -30,6 +30,7 @@ import StudyLogger from './components/StudyLogger';
 import StudyScheduler from './components/StudyScheduler';
 import NotificationManager from './components/NotificationManager';
 import FeedbackPanel from './components/FeedbackPanel';
+import VideoLessons from './components/VideoLessons';
 
 export default function ExamTrackerApp() {
   // --- STATES ---
@@ -233,6 +234,7 @@ export default function ExamTrackerApp() {
             {activeTab === 'scheduler' && !currentUser.isAdmin && <StudyScheduler currentUser={currentUser} />}
             {activeTab === 'subjects' && !currentUser.isAdmin && <SubjectTracker currentUser={currentUser} />}
 	    {activeTab === 'feedback' && !currentUser.isAdmin && <FeedbackPanel currentUser={currentUser} />}
+	    {activeTab === 'videos' && !currentUser.isAdmin && <VideoLessons />}
         </div>
       </div>
     </div>

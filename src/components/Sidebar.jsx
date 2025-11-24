@@ -1,5 +1,5 @@
 import React from 'react';
-import { Trophy, ShieldCheck, Calendar as CalendarIcon, User, BarChart3, List, MessageCircle, Settings, Search, LineChart as LineChartIcon, LogOut, HelpCircle, Timer, Medal, Calculator, UserCog, Map, PenTool, Flame, CalendarDays, MessageSquarePlus} from 'lucide-react';
+import { Trophy, ShieldCheck, Calendar as CalendarIcon, User, BarChart3, List, MessageCircle, Settings, Search, LineChart as LineChartIcon, LogOut, HelpCircle, Timer, Medal, Calculator, UserCog, Map, PenTool, Flame, CalendarDays, MessageSquarePlus, PlayCircle} from 'lucide-react';
 import Countdown from './Countdown';
 
 export default function Sidebar({ currentUser, activeTab, setActiveTab, handleLogout }) {
@@ -20,6 +20,7 @@ export default function Sidebar({ currentUser, activeTab, setActiveTab, handleLo
       { id: 'leaderboard', icon: <BarChart3 size={20}/>, label: 'Sıralama', role: 'all' },
       { id: 'scheduler', icon: <CalendarDays size={20}/>, label: 'Programım', role: 'student' },
       { id: 'subjects', icon: <Map size={20}/>, label: 'Harita', role: 'student' },
+      { id: 'videos', icon: <PlayCircle size={20}/>, label: 'Video Dersler', role: 'student' },
       { id: 'studylog', icon: <PenTool size={20}/>, label: 'Günlük', role: 'student' },
       { id: 'my_exams', icon: <List size={20}/>, label: 'Notlar', role: 'student' },
       { id: 'stats', icon: <LineChartIcon size={20}/>, label: 'Analiz', role: 'student' },
