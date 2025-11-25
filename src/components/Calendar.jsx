@@ -31,10 +31,9 @@ export default function Calendar({ currentUser }) {
   return (
     <div className="max-w-6xl mx-auto flex flex-col lg:flex-row gap-6 h-[calc(100vh-6rem)]">
         {/* TAKVİM GRID */}
-        {/* DÜZELTME: Aydınlık modda beyaz, karanlık modda koyu gri */}
-        <div className="flex-1 bg-white dark:bg-gray-800 rounded-3xl shadow-xl border border-slate-200 dark:border-gray-700 p-6 flex flex-col transition-colors duration-300">
+        <div className="flex-1 bg-white dark:bg-gray-900/60 dark:backdrop-blur-md rounded-3xl shadow-xl border border-slate-200 dark:border-gray-700 p-6 flex flex-col transition-colors">
             <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-slate-800 dark:text-white flex items-center gap-2"><CalIcon className="text-indigo-600"/> {MONTHS[currentDate.getMonth()]} {currentDate.getFullYear()}</h2>
+                <h2 className="text-2xl font-bold text-slate-800 dark:text-white flex items-center gap-2"><CalIcon className="text-indigo-600 dark:text-indigo-400"/> {MONTHS[currentDate.getMonth()]} {currentDate.getFullYear()}</h2>
                 <div className="flex gap-2">
                     <button onClick={() => changeMonth(-1)} className="p-2 hover:bg-slate-100 dark:hover:bg-gray-700 rounded-full text-slate-600 dark:text-gray-300"><ChevronLeft/></button>
                     <button onClick={() => changeMonth(1)} className="p-2 hover:bg-slate-100 dark:hover:bg-gray-700 rounded-full text-slate-600 dark:text-gray-300"><ChevronRight/></button>
@@ -52,7 +51,7 @@ export default function Calendar({ currentUser }) {
                         <div key={day} onClick={() => setSelectedDate(day)} 
                             className={`relative border rounded-2xl p-2 cursor-pointer transition-all hover:shadow-md flex flex-col 
                             ${isSelected ? 'ring-2 ring-indigo-500 border-indigo-500' : 'border-slate-100 dark:border-gray-700'} 
-                            ${isToday ? 'bg-indigo-50/50 dark:bg-indigo-900/30' : 'bg-white dark:bg-gray-800 hover:bg-slate-50 dark:hover:bg-gray-700'}`}>
+                            ${isToday ? 'bg-indigo-50/50 dark:bg-indigo-900/30' : 'bg-white dark:bg-gray-800/50 hover:bg-slate-50 dark:hover:bg-gray-700'}`}>
                             <span className={`text-sm font-bold ${isToday ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-700 dark:text-gray-300'}`}>{day}</span>
                             <div className="flex-1 flex flex-col justify-end gap-1 mt-1 overflow-hidden">{dayEvents.slice(0, 3).map((ev, idx) => <div key={idx} className={`h-1.5 w-full rounded-full ${getEventStyle(ev.type).bg.replace('50', '400')}`}></div>)}</div>
                         </div>
@@ -62,19 +61,18 @@ export default function Calendar({ currentUser }) {
         </div>
         {/* SAĞ PANEL */}
         <div className="w-full lg:w-80 flex flex-col gap-6">
-             <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-xl border border-slate-200 dark:border-gray-700 p-6 flex-1 overflow-y-auto transition-colors duration-300">
+             <div className="bg-white dark:bg-gray-900/60 dark:backdrop-blur-md rounded-3xl shadow-xl border border-slate-200 dark:border-gray-700 p-6 flex-1 overflow-y-auto transition-colors">
                 <h3 className="font-bold text-slate-800 dark:text-white text-lg mb-4 border-b border-slate-100 dark:border-gray-700 pb-2">{selectedDate ? `${selectedDate} ${MONTHS[currentDate.getMonth()]}` : "Bir gün seçin"}</h3>
                 {selectedDate ? (
                     <div className="space-y-3">{getEventsForDay(selectedDate).length > 0 ? getEventsForDay(selectedDate).map(ev => (
                         <div key={ev.id} className={`p-3 rounded-2xl border flex items-start gap-3 ${getEventStyle(ev.type).bg} ${getEventStyle(ev.type).border}`}>
                             <div className={`mt-1 ${getEventStyle(ev.type).text}`}>{getEventStyle(ev.type).icon}</div>
-                            <div className="flex-1 min-w-0"><div className={`font-bold text-sm truncate ${getEventStyle(ev.type).text}`}>{ev.title}</div><div className="text-xs opacity-70">{ev.time}</div></div>
+                            <div className="flex-1 min-w-0"><div className={`font-bold text-sm truncate ${getEventStyle(ev.type).text}`}>{ev.title}</div><div className="text-xs opacity-70 dark:text-gray-600">{ev.time}</div></div>
                             {currentUser.isAdmin && <button onClick={() => handleDeleteEvent(ev.id)} className="text-slate-400 hover:text-red-500"><Trash2 size={16}/></button>}
                         </div>
                     )) : <div className="text-slate-400 text-sm text-center py-4">Etkinlik yok.</div>}</div>
                 ) : <div className="text-slate-400 text-sm text-center py-4">Detayları görmek için takvimden bir güne tıklayın.</div>}
              </div>
-             {/* EKLEME KUTUSU */}
              {currentUser.isAdmin && selectedDate && (
                  <div className="bg-indigo-600 text-white rounded-3xl shadow-lg p-6">
                      <h3 className="font-bold mb-4 flex items-center gap-2"><Plus size={20}/> Etkinlik Ekle</h3>

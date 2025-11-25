@@ -1,15 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { signInAnonymously, onAuthStateChanged } from 'firebase/auth';
 import { collection, doc, getDoc, onSnapshot, updateDoc, serverTimestamp, setDoc, query, where, getDocs, orderBy } from 'firebase/firestore';
-
-// --- FIREBASE VE AYARLAR ---
 import { auth, db } from './firebase';
 import { APP_ID, DEMO_INTERNAL_ID, ADMIN_USERNAME, ADMIN_PASSWORD, DEMO_USERNAME, DEMO_PASSWORD, DEMO_USER_DATA, COLOR_THEMES } from './utils/constants';
 import { calculateOBP, getEstimatedRank } from './utils/helpers';
 
-// --- BİLEŞENLER ---
+// BİLEŞENLER
 import Sidebar from './components/Sidebar';
 import Auth from './components/Auth';
+import AdminDashboard from './components/AdminDashboard';
 import AdminExcelView from './components/AdminExcelView';
 import Leaderboard from './components/Leaderboard';
 import MyExams from './components/MyExams';
@@ -28,14 +27,10 @@ import SubjectTracker from './components/SubjectTracker';
 import StudyLogger from './components/StudyLogger';
 import StudyScheduler from './components/StudyScheduler';
 import NotificationManager from './components/NotificationManager';
-import VideoLessons from './components/VideoLessons'; // GERİ GELDİ ✅
-import AdminDashboard from './components/AdminDashboard'; 
+import VideoLessons from './components/VideoLessons';
 import FeedbackPanel from './components/FeedbackPanel';
-import ResourceLibrary from './components/VideoLessons.jsx';
-import StudyRoom from './components/StudyRoom';
 
 export default function ExamTrackerApp() {
-  // ... (State'ler ve Fonksiyonlar aynı kalıyor) ...
   const [firebaseUser, setFirebaseUser] = useState(null);
   const [activeTab, setActiveTab] = useState("calendar");
   const [loading, setLoading] = useState(true);
@@ -48,19 +43,16 @@ export default function ExamTrackerApp() {
   const [myScores, setMyScores] = useState([]);
   const [rankings, setRankings] = useState({});
   const [questions, setQuestions] = useState([]); 
-  
   const [authMode, setAuthMode] = useState("login");
   const [authInput, setAuthInput] = useState({});
   const [authError, setAuthError] = useState("");
 
   const addToast = (message, type = 'success') => { setToast({ message, type }); };
 
-  // ... (Login, Logout, Register, UseEffects aynı) ...
   const handleLogin = async (e) => {
     e.preventDefault(); setAuthError("");
     const inputVal = authInput.email?.trim(); 
     if (!inputVal || !authInput.password) { setAuthError("Lütfen bilgileri girin."); return; }
-
     if ((inputVal === DEMO_USERNAME || inputVal === DEMO_USER_DATA.email) && authInput.password === DEMO_PASSWORD) {
         const s = { ...DEMO_USER_DATA, base64Avatar: "" }; setCurrentUser(s); localStorage.setItem('examApp_session', JSON.stringify(s)); setActiveTab('my_exams'); addToast("Demo giriş başarılı!", "info"); return;
     }
@@ -70,14 +62,11 @@ export default function ExamTrackerApp() {
     try {
       let userData = null;
       if (inputVal.includes('@')) {
-          const emailKey = inputVal.toLowerCase();
-          const userRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'user_accounts', emailKey);
-          const snap = await getDoc(userRef);
-          if (snap.exists()) userData = snap.data();
+          const emailKey = inputVal.toLowerCase(); const userRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'user_accounts', emailKey);
+          const snap = await getDoc(userRef); if (snap.exists()) userData = snap.data();
       } else {
           const q = query(collection(db, 'artifacts', APP_ID, 'public', 'data', 'user_accounts'), where("username", "==", inputVal));
-          const querySnapshot = await getDocs(q);
-          if (!querySnapshot.empty) userData = querySnapshot.docs[0].data();
+          const querySnapshot = await getDocs(q); if (!querySnapshot.empty) userData = querySnapshot.docs[0].data();
       }
       if(userData && userData.password === authInput.password) {
         const s = { ...userData, isAdmin: false, isDemo: false }; setCurrentUser(s); localStorage.setItem('examApp_session', JSON.stringify(s)); setActiveTab('my_exams'); addToast(`Hoş geldin ${s.username}!`);
@@ -96,37 +85,45 @@ export default function ExamTrackerApp() {
   const getUserScores = (uid) => allScores.filter(s => s.internalUserId === uid);
   const handleUserClick = (uid) => { const user = usersList.find(u => u.internalId === uid); if (user) setViewingUser(user); };
 
-  // --- STİL MOTORU ---
   const theme = COLOR_THEMES[currentUser?.themeColor] || COLOR_THEMES['indigo'];
 
   const DynamicStyles = () => (
     <style>{`
-        :root { --primary: ${theme.primary}; --primary-light: ${theme.light}; --primary-dark: ${theme.dark}; }
+        :root {
+            --primary: ${theme.primary};
+            --primary-light: ${theme.light};
+            --primary-dark: ${theme.dark};
+        }
         .bg-indigo-600, .hover\\:bg-indigo-700:hover { background-color: var(--primary) !important; }
         .text-indigo-600 { color: var(--primary) !important; }
         .text-indigo-700 { color: var(--primary-dark) !important; }
         .bg-indigo-50 { background-color: var(--primary-light) !important; }
         .border-indigo-600 { border-color: var(--primary) !important; }
         .ring-indigo-500 { --tw-ring-color: var(--primary) !important; }
-        .bg-gradient-to-b.from-zinc-900 { background: ${theme.gradient} !important; }
 
-        body { background: ${theme.gradient} !important; background-attachment: fixed; color: #e2e8f0 !important; }
-        .bg-white, .bg-slate-50, .bg-gray-50, .bg-[#f8fafc], .bg-[#efeae2] { background-color: rgba(17, 24, 39, 0.85) !important; backdrop-filter: blur(12px); border-color: rgba(255, 255, 255, 0.1) !important; color: #f3f4f6 !important; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5) !important; }
-        .text-slate-800, .text-slate-700, .text-gray-800, .text-gray-700, .text-black { color: #f3f4f6 !important; }
-        .text-slate-600, .text-slate-500, .text-gray-600, .text-gray-500 { color: #9ca3af !important; }
-        input, select, textarea { background-color: rgba(0, 0, 0, 0.5) !important; color: white !important; border-color: rgba(255, 255, 255, 0.2) !important; }
-        thead, thead tr, .bg-slate-50\\/50, .bg-gray-100 { background-color: rgba(0,0,0,0.4) !important; color: #e5e7eb !important; }
-        tbody tr:hover { background-color: rgba(255,255,255,0.05) !important; }
+        body { 
+            background: ${theme.gradient} !important;
+            background-attachment: fixed;
+            color: #e2e8f0 !important; 
+        }
+
+        /* Link Rengi */
         .text-indigo-600 { color: #818cf8 !important; } 
     `}</style>
   );
 
   if (loading) return <div className="flex h-screen items-center justify-center bg-slate-900 text-white font-sans"><div className="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div></div>;
 
-  if (!currentUser) return <div className="min-h-screen flex items-center justify-center p-4" style={{ background: theme.gradient }}><DynamicStyles /><Auth authMode={authMode} setAuthMode={setAuthMode} authInput={authInput} setAuthInput={setAuthInput} authError={authError} setAuthError={setAuthError} handleLogin={handleLogin} handleRegister={handleRegister} />{toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}</div>;
+  if (!currentUser) return (
+      <div className="min-h-screen flex items-center justify-center p-4" style={{ background: theme.gradient }}>
+          <DynamicStyles />
+          <Auth authMode={authMode} setAuthMode={setAuthMode} authInput={authInput} setAuthInput={setAuthInput} authError={authError} setAuthError={setAuthError} handleLogin={handleLogin} handleRegister={handleRegister} />
+          {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+      </div>
+  );
 
   return (
-    <div className="min-h-screen flex flex-col md:flex-row transition-colors duration-300 font-sans overflow-hidden dark" style={{ background: theme.gradient }}>
+    <div className="min-h-screen flex flex-col md:flex-row font-sans overflow-hidden dark" style={{ background: theme.gradient }}>
       <DynamicStyles />
       <NotificationManager currentUser={currentUser} />
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
@@ -148,15 +145,10 @@ export default function ExamTrackerApp() {
             {activeTab === 'pomodoro' && !currentUser.isAdmin && <Pomodoro currentUser={currentUser} />}
             {activeTab === 'achievements' && !currentUser.isAdmin && <Achievements myScores={myScores} currentUser={currentUser} questions={questions} />}
             {activeTab === 'simulator' && !currentUser.isAdmin && <Simulator currentUser={currentUser} />}
-            
-            {/* Video Dersler - GERİ GELDİ ✅ */}
             {activeTab === 'videos' && !currentUser.isAdmin && <VideoLessons />}
-            
             {activeTab === 'studylog' && !currentUser.isAdmin && <StudyLogger currentUser={currentUser} />}
             {activeTab === 'scheduler' && !currentUser.isAdmin && <StudyScheduler currentUser={currentUser} />}
             {activeTab === 'subjects' && !currentUser.isAdmin && <SubjectTracker currentUser={currentUser} />}
-            {activeTab === 'resources' && <ResourceLibrary currentUser={currentUser} />}
-            {activeTab === 'studyroom' && <StudyRoom />}
             {activeTab === 'feedback' && !currentUser.isAdmin && <FeedbackPanel currentUser={currentUser} />}
         </div>
       </div>
