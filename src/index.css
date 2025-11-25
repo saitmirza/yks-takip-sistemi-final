@@ -4,67 +4,47 @@
 @tailwind components;
 @tailwind utilities;
 
-/* TARAYICIYA "BU SİTE KARANLIKTIR" EMRİ */
+/* TARAYICIYA ZORUNLU KARANLIK MOD */
 :root {
   color-scheme: dark;
 }
 
-body {
-  font-family: 'Inter', sans-serif;
-  /* Varsayılan arka plan: Koyu Lacivert/Siyah */
-  background-color: #0f172a; 
-  /* Varsayılan yazı rengi: Açık Gri */
-  color: #e2e8f0; 
-  overflow-x: hidden;
+body, html {
+  background-color: #0f172a; /* Çok Koyu Lacivert */
+  color: #e2e8f0; /* Açık Gri Yazı */
   margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  -webkit-tap-highlight-color: transparent; /* Mobilde tıklama mavisini kaldır */
 }
 
-/* BEYAZ GÖRÜNEBİLECEK ALANLARI ZORLA KARART */
 #root {
-  background-color: #0f172a;
   min-height: 100vh;
+  background-color: #0f172a;
 }
 
-/* Özel Kaydırma Çubuğu */
+/* KAYDIRMA ÇUBUĞU */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 ::-webkit-scrollbar-track {
-  background: #0f172a; /* Koyu */
+  background: #0f172a;
 }
 ::-webkit-scrollbar-thumb {
-  background: #334155; /* Gri */
+  background: #334155;
   border-radius: 10px;
 }
-::-webkit-scrollbar-thumb:hover {
-  background: #475569;
-}
 
-/* Animasyonlar */
-.page-enter {
-  animation: slideUpFade 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-}
-@keyframes slideUpFade {
-  0% { opacity: 0; transform: translateY(15px) scale(0.98); }
-  100% { opacity: 1; transform: translateY(0) scale(1); }
-}
+/* ANİMASYONLAR */
+.page-enter { animation: slideUpFade 0.4s ease-out; }
+@keyframes slideUpFade { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-.toast-enter {
-  animation: toastSlideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-@keyframes toastSlideIn {
-  0% { opacity: 0; transform: translateX(100%); }
-  100% { opacity: 1; transform: translateX(0); }
-}
+.toast-enter { animation: toastSlideIn 0.3s ease-out; }
+@keyframes toastSlideIn { from { opacity: 0; transform: translateX(100%); } to { opacity: 1; transform: translateX(0); } }
 
-/* Tarih İkonunu Beyaz Yap (Karanlık zeminde görünsün diye) */
+/* INPUT İKONLARI */
 input[type="date"]::-webkit-calendar-picker-indicator {
-    cursor: pointer;
     filter: invert(1);
-    opacity: 0.6;
-    transition: 0.2s;
-}
-input[type="date"]::-webkit-calendar-picker-indicator:hover {
-    opacity: 1;
+    opacity: 0.7;
 }
