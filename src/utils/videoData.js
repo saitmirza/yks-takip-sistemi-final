@@ -1,153 +1,254 @@
 export const VIDEO_CURRICULUM = {
     TYT: {
         Matematik: [
-            // Hoca: Eyüp B. (2025 TYT Matematik VDD)
-            // Playlist: https://www.youtube.com/playlist?list=PLyiXTl2rW_wrvZYVh9-A5pHeVhF4xdeO4
-            { title: "Temel Kavramlar", channel: "Eyüp B.", url: "https://www.youtube.com/playlist?list=PLyiXTl2rW_wrvZYVh9-A5pHeVhF4xdeO4", index: 0 },
-            { title: "Tek - Çift Sayılar", channel: "Eyüp B.", url: "https://www.youtube.com/playlist?list=PLyiXTl2rW_wrvZYVh9-A5pHeVhF4xdeO4", index: 4 },
-            { title: "Ardışık Sayılar", channel: "Eyüp B.", url: "https://www.youtube.com/playlist?list=PLyiXTl2rW_wrvZYVh9-A5pHeVhF4xdeO4", index: 7 },
-            { title: "Sayı Basamakları", channel: "Eyüp B.", url: "https://www.youtube.com/playlist?list=PLyiXTl2rW_wrvZYVh9-A5pHeVhF4xdeO4", index: 10 },
-            { title: "Bölme - Bölünebilme", channel: "Eyüp B.", url: "https://www.youtube.com/playlist?list=PLyiXTl2rW_wrvZYVh9-A5pHeVhF4xdeO4", index: 14 },
-            { title: "EBOB - EKOK", channel: "Eyüp B.", url: "https://www.youtube.com/playlist?list=PLyiXTl2rW_wrvZYVh9-A5pHeVhF4xdeO4", index: 18 },
-            { title: "Rasyonel Sayılar", channel: "Eyüp B.", url: "https://www.youtube.com/playlist?list=PLyiXTl2rW_wrvZYVh9-A5pHeVhF4xdeO4", index: 23 },
-            { title: "Basit Eşitsizlikler", channel: "Eyüp B.", url: "https://www.youtube.com/playlist?list=PLyiXTl2rW_wrvZYVh9-A5pHeVhF4xdeO4", index: 27 },
-            { title: "Mutlak Değer", channel: "Eyüp B.", url: "https://www.youtube.com/playlist?list=PLyiXTl2rW_wrvZYVh9-A5pHeVhF4xdeO4", index: 31 },
-            { title: "Üslü Sayılar", channel: "Eyüp B.", url: "https://www.youtube.com/playlist?list=PLyiXTl2rW_wrvZYVh9-A5pHeVhF4xdeO4", index: 35 },
-            { title: "Köklü Sayılar", channel: "Eyüp B.", url: "https://www.youtube.com/playlist?list=PLyiXTl2rW_wrvZYVh9-A5pHeVhF4xdeO4", index: 39 },
-            { title: "Çarpanlara Ayırma", channel: "Eyüp B.", url: "https://www.youtube.com/playlist?list=PLyiXTl2rW_wrvZYVh9-A5pHeVhF4xdeO4", index: 44 },
-            { title: "Oran - Orantı", channel: "Eyüp B.", url: "https://www.youtube.com/playlist?list=PLyiXTl2rW_wrvZYVh9-A5pHeVhF4xdeO4", index: 48 },
-            { title: "Problemler", channel: "Eyüp B.", url: "https://www.youtube.com/playlist?list=PLyiXTl2rW_wrvZYVh9-A5pHeVhF4xdeO4", index: 52 },
-            { title: "Kümeler - Kartezyen", channel: "Eyüp B.", url: "https://www.youtube.com/playlist?list=PLyiXTl2rW_wrvZYVh9-A5pHeVhF4xdeO4", index: 70 },
-            { title: "Fonksiyonlar", channel: "Eyüp B.", url: "https://www.youtube.com/playlist?list=PLyiXTl2rW_wrvZYVh9-A5pHeVhF4xdeO4", index: 75 },
-            { title: "Polinomlar", channel: "Eyüp B.", url: "https://www.youtube.com/playlist?list=PLyiXTl2rW_wrvZYVh9-A5pHeVhF4xdeO4", index: 82 },
-            { title: "PKOB (Sayma Olasılık)", channel: "Eyüp B.", url: "https://www.youtube.com/playlist?list=PLyiXTl2rW_wrvZYVh9-A5pHeVhF4xdeO4", index: 86 },
-        ],
-        Geometri: [
-            // Hoca: Eyüp B. (2026 YKS Geometri)
-            // Playlist: https://www.youtube.com/playlist?list=PLto0Y-Oz3y1qXLBV72dlilfiL9HV0iVhZ
-            { title: "Doğruda Açı", channel: "Eyüp B.", url: "https://www.youtube.com/playlist?list=PLto0Y-Oz3y1qXLBV72dlilfiL9HV0iVhZ", index: 0 },
-            { title: "Üçgende Açı", channel: "Eyüp B.", url: "https://www.youtube.com/playlist?list=PLto0Y-Oz3y1qXLBV72dlilfiL9HV0iVhZ", index: 3 },
-            { title: "Dik Üçgen", channel: "Eyüp B.", url: "https://www.youtube.com/playlist?list=PLto0Y-Oz3y1qXLBV72dlilfiL9HV0iVhZ", index: 6 },
-            { title: "İkizkenar Üçgen", channel: "Eyüp B.", url: "https://www.youtube.com/playlist?list=PLto0Y-Oz3y1qXLBV72dlilfiL9HV0iVhZ", index: 10 },
-            { title: "Eşkenar Üçgen", channel: "Eyüp B.", url: "https://www.youtube.com/playlist?list=PLto0Y-Oz3y1qXLBV72dlilfiL9HV0iVhZ", index: 12 },
-            { title: "Açıortay", channel: "Eyüp B.", url: "https://www.youtube.com/playlist?list=PLto0Y-Oz3y1qXLBV72dlilfiL9HV0iVhZ", index: 14 },
-            { title: "Kenarortay", channel: "Eyüp B.", url: "https://www.youtube.com/playlist?list=PLto0Y-Oz3y1qXLBV72dlilfiL9HV0iVhZ", index: 16 },
-            { title: "Üçgende Benzerlik", channel: "Eyüp B.", url: "https://www.youtube.com/playlist?list=PLto0Y-Oz3y1qXLBV72dlilfiL9HV0iVhZ", index: 18 },
-            { title: "Üçgende Alan", channel: "Eyüp B.", url: "https://www.youtube.com/playlist?list=PLto0Y-Oz3y1qXLBV72dlilfiL9HV0iVhZ", index: 22 },
-            { title: "Çokgenler", channel: "Eyüp B.", url: "https://www.youtube.com/playlist?list=PLto0Y-Oz3y1qXLBV72dlilfiL9HV0iVhZ", index: 26 },
-            { title: "Dörtgenler", channel: "Eyüp B.", url: "https://www.youtube.com/playlist?list=PLto0Y-Oz3y1qXLBV72dlilfiL9HV0iVhZ", index: 28 },
-            { title: "Yamuk", channel: "Eyüp B.", url: "https://www.youtube.com/playlist?list=PLto0Y-Oz3y1qXLBV72dlilfiL9HV0iVhZ", index: 30 },
-            { title: "Paralelkenar", channel: "Eyüp B.", url: "https://www.youtube.com/playlist?list=PLto0Y-Oz3y1qXLBV72dlilfiL9HV0iVhZ", index: 32 },
-            { title: "Eşkenar Dörtgen", channel: "Eyüp B.", url: "https://www.youtube.com/playlist?list=PLto0Y-Oz3y1qXLBV72dlilfiL9HV0iVhZ", index: 34 },
-            { title: "Dikdörtgen", channel: "Eyüp B.", url: "https://www.youtube.com/playlist?list=PLto0Y-Oz3y1qXLBV72dlilfiL9HV0iVhZ", index: 36 },
-            { title: "Kare", channel: "Eyüp B.", url: "https://www.youtube.com/playlist?list=PLto0Y-Oz3y1qXLBV72dlilfiL9HV0iVhZ", index: 38 },
-            { title: "Çember ve Daire", channel: "Eyüp B.", url: "https://www.youtube.com/playlist?list=PLto0Y-Oz3y1qXLBV72dlilfiL9HV0iVhZ", index: 40 },
-            { title: "Katı Cisimler", channel: "Eyüp B.", url: "https://www.youtube.com/playlist?list=PLto0Y-Oz3y1qXLBV72dlilfiL9HV0iVhZ", index: 50 },
+            {
+                unitTitle: "TYT Matematik Kampı",
+                playlistUrl: "https://www.youtube.com/playlist?list=PL5kIOunpmSBPeeFXlNTSsXgq0euBdC3XJ",
+                videos: [
+                    { title: "Temel Kavramlar", index: 0 },
+                    { title: "Tek - Çift Sayılar", index: 4 },
+                    { title: "Sayı Basamakları", index: 10 },
+                    { title: "Bölme - Bölünebilme", index: 14 },
+                    { title: "EBOB - EKOK", index: 18 },
+                    { title: "Rasyonel Sayılar", index: 23 },
+                    { title: "Mutlak Değer", index: 31 },
+                    { title: "Üslü Sayılar", index: 35 },
+                    { title: "Köklü Sayılar", index: 39 },
+                    { title: "Çarpanlara Ayırma", index: 44 },
+                    { title: "Problemler", index: 52 },
+                    { title: "Fonksiyonlar", index: 75 },
+                    { title: "Polinomlar", index: 82 },
+                ]
+            }
         ],
         Fizik: [
-            // Hoca:  zcan Ayk n (50 Günde TYT Fizik Kampı 2025)
-            // Playlist: https://www.youtube.com/playlist?list=PLhhV4F6NB0-uEPdZncMf_qb0tSKyBM-Lf
-            { title: "Fizik Bilimine Giriş", channel: "Özcan Aykın", url: "https://www.youtube.com/playlist?list=PLhhV4F6NB0-uEPdZncMf_qb0tSKyBM-Lf", index: 2 },
-            { title: "Madde ve Özellikleri", channel: "Özcan Aykın", url: "https://www.youtube.com/playlist?list=PLhhV4F6NB0-uEPdZncMf_qb0tSKyBM-Lf", index: 5 },
-            { title: "Basınç", channel: "Özcan Aykın", url: "https://www.youtube.com/playlist?list=PLhhV4F6NB0-uEPdZncMf_qb0tSKyBM-Lf", index: 5 },
-            { title: "Kaldırma Kuvveti", channel: "Özcan Aykın", url: "https://www.youtube.com/playlist?list=PLhhV4F6NB0-uEPdZncMf_qb0tSKyBM-Lf", index: 8 },
-            { title: "Isı, Sıcaklık, Genleşme", channel: "Özcan Aykın", url: "https://www.youtube.com/playlist?list=PLhhV4F6NB0-uEPdZncMf_qb0tSKyBM-Lf", index: 11 },
-            { title: "Hareket", channel: "Özcan Aykın", url: "https://www.youtube.com/playlist?list=PLhhV4F6NB0-uEPdZncMf_qb0tSKyBM-Lf", index: 17 },
-            { title: "Dinamik", channel: "Özcan Aykın", url: "https://www.youtube.com/playlist?list=PLhhV4F6NB0-uEPdZncMf_qb0tSKyBM-Lf", index: 20 },
-            { title: "İş Güç Enerji", channel: "Özcan Aykın", url: "https://www.youtube.com/playlist?list=PLhhV4F6NB0-uEPdZncMf_qb0tSKyBM-Lf", index: 23 },
-            { title: "Elektrostatik", channel: "Özcan Aykın", url: "https://www.youtube.com/playlist?list=PLhhV4F6NB0-uEPdZncMf_qb0tSKyBM-Lf", index: 27 },
-            { title: "Elektrik Akımı", channel: "Özcan Aykın", url: "https://www.youtube.com/playlist?list=PLhhV4F6NB0-uEPdZncMf_qb0tSKyBM-Lf", index: 30 },
-            { title: "Optik", channel: "Özcan Aykın", url: "https://www.youtube.com/playlist?list=PLhhV4F6NB0-uEPdZncMf_qb0tSKyBM-Lf", index: 37 },
-            { title: "Dalgalar", channel: "Özcan Aykın", url: "https://www.youtube.com/playlist?list=PLhhV4F6NB0-uEPdZncMf_qb0tSKyBM-Lf", index: 48 },
+            {
+                unitTitle: "TYT Fizik Kampı",
+                playlistUrl: "https://www.youtube.com/playlist?list=PL87vBAl7Szvwq_wAtJgLdw7sVMFo9KIca",
+                videos: [
+                    { title: "Fizik Bilimine Giriş", index: 0 },
+                    { title: "Madde ve Özellikleri", index: 2 },
+                    { title: "Basınç ve Kaldırma", index: 5 },
+                    { title: "Isı, Sıcaklık, Genleşme", index: 11 },
+                    { title: "Hareket ve Kuvvet", index: 17 },
+                    { title: "İş Güç Enerji", index: 23 },
+                    { title: "Elektrostatik", index: 27 },
+                    { title: "Elektrik Akımı", index: 30 },
+                    { title: "Optik", index: 37 },
+                    { title: "Dalgalar", index: 48 },
+                ]
+            }
         ],
         Kimya: [
-            // Hoca: Benim Hocam (2025 TYT Kimya)
-            // Playlist: https://www.youtube.com/playlist?list=PL5kIOunpmSBNBWMQWLo0vjOZcNx5I_L7p
-            { title: "Kimya Bilimi", channel: "Benim Hocam", url: "https://www.youtube.com/playlist?list=PL5kIOunpmSBNBWMQWLo0vjOZcNx5I_L7p", index: 0 },
-            { title: "Atom ve Periyodik Sistem", channel: "Benim Hocam", url: "https://www.youtube.com/playlist?list=PL5kIOunpmSBNBWMQWLo0vjOZcNx5I_L7p", index: 4 },
-            { title: "Kimyasal Türler Arası", channel: "Benim Hocam", url: "https://www.youtube.com/playlist?list=PL5kIOunpmSBNBWMQWLo0vjOZcNx5I_L7p", index: 11 },
-            { title: "Maddenin Halleri", channel: "Benim Hocam", url: "https://www.youtube.com/playlist?list=PL5kIOunpmSBNBWMQWLo0vjOZcNx5I_L7p", index: 18 },
-            { title: "Doğa ve Kimya", channel: "Benim Hocam", url: "https://www.youtube.com/playlist?list=PL5kIOunpmSBNBWMQWLo0vjOZcNx5I_L7p", index: 24 },
-            { title: "Kimyanın Temel Kanunları", channel: "Benim Hocam", url: "https://www.youtube.com/playlist?list=PL5kIOunpmSBNBWMQWLo0vjOZcNx5I_L7p", index: 26 },
-            { title: "Karışımlar", channel: "Benim Hocam", url: "https://www.youtube.com/playlist?list=PL5kIOunpmSBNBWMQWLo0vjOZcNx5I_L7p", index: 32 },
-            { title: "Asitler, Bazlar ve Tuzlar", channel: "Benim Hocam", url: "https://www.youtube.com/playlist?list=PL5kIOunpmSBNBWMQWLo0vjOZcNx5I_L7p", index: 40 },
-            { title: "Kimya Her Yerde", channel: "Benim Hocam", url: "https://www.youtube.com/playlist?list=PL5kIOunpmSBNBWMQWLo0vjOZcNx5I_L7p", index: 47 },
+            {
+                unitTitle: "TYT Kimya Kampı",
+                playlistUrl: "https://www.youtube.com/playlist?list=PLyiXTl2rW_wrZGIFdO99RnVKVUjhrtPyK",
+                videos: [
+                    { title: "Kimya Bilimi", index: 0 },
+                    { title: "Atom ve Periyodik Sistem", index: 4 },
+                    { title: "Kimyasal Türler Arası", index: 11 },
+                    { title: "Maddenin Halleri", index: 18 },
+                    { title: "Doğa ve Kimya", index: 24 },
+                    { title: "Kimyanın Temel Kanunları", index: 26 },
+                    { title: "Karışımlar", index: 32 },
+                    { title: "Asitler Bazlar Tuzlar", index: 40 },
+                    { title: "Kimya Her Yerde", index: 47 },
+                ]
+            }
         ],
         Biyoloji: [
-            // Hoca: Dr. Biyoloji (2025 TYT Kampı)
-            // Playlist: https://www.youtube.com/playlist?list=PL87vBAl7SzvzqiYcuIxz7ptFykyE2qYS_
-            { title: "Canlıların Ortak Özellikleri", channel: "Dr. Biyoloji", url: "https://www.youtube.com/playlist?list=PL87vBAl7SzvzqiYcuIxz7ptFykyE2qYS_", index: 0 },
-            { title: "Temel Bileşenler", channel: "Dr. Biyoloji", url: "https://www.youtube.com/playlist?list=PL87vBAl7SzvzqiYcuIxz7ptFykyE2qYS_", index: 3 },
-            { title: "Hücre ve Organeller", channel: "Dr. Biyoloji", url: "https://www.youtube.com/playlist?list=PL87vBAl7SzvzqiYcuIxz7ptFykyE2qYS_", index: 9 },
-            { title: "Canlılar Dünyası", channel: "Dr. Biyoloji", url: "https://www.youtube.com/playlist?list=PL87vBAl7SzvzqiYcuIxz7ptFykyE2qYS_", index: 14 },
-            { title: "Hücre Bölünmeleri", channel: "Dr. Biyoloji", url: "https://www.youtube.com/playlist?list=PL87vBAl7SzvzqiYcuIxz7ptFykyE2qYS_", index: 21 },
-            { title: "Kalıtım", channel: "Dr. Biyoloji", url: "https://www.youtube.com/playlist?list=PL87vBAl7SzvzqiYcuIxz7ptFykyE2qYS_", index: 26 },
-            { title: "Ekosistem Ekolojisi", channel: "Dr. Biyoloji", url: "https://www.youtube.com/playlist?list=PL87vBAl7SzvzqiYcuIxz7ptFykyE2qYS_", index: 34 },
-        ],
+            {
+                unitTitle: "TYT Biyoloji Kampı",
+                playlistUrl: "https://www.youtube.com/playlist?list=PLhhV4F6NB0-tU__PwCFhnaK-Gg_I3JG_4",
+                videos: [
+                    { title: "Canlıların Ortak Özellikleri", index: 0 },
+                    { title: "Temel Bileşenler", index: 3 },
+                    { title: "Hücre ve Organeller", index: 9 },
+                    { title: "Canlılar Dünyası", index: 14 },
+                    { title: "Hücre Bölünmeleri", index: 21 },
+                    { title: "Kalıtım", index: 26 },
+                    { title: "Ekosistem Ekolojisi", index: 34 },
+                ]
+            }
+        ]
     },
     AYT: {
+        Kimya: [
+            // Link: https://www.youtube.com/playlist?list=PLyiXTl2rW_wrvZYVh9-A5pHeVhF4xdeO4
+            {
+                unitTitle: "Modern Atom Teorisi",
+                playlistUrl: "https://www.youtube.com/playlist?list=PL5kIOunpmSBPeeFXlNTSsXgq0euBdC3XJ",
+                videos: [
+                    { title: "Atomun Kuantum Modeli 1", index: 2 },
+                    { title: "Atomun Kuantum Modeli 2", index: 3 },
+                    { title: "Elektronların Orbitallere Dizilimi", index: 4 },
+                    { title: "İyonların Elektron Dağılımı ve Küresel Simetri", index: 5 },
+                    { title: "Değerlik Orbitalleri ve Periyodik Sistem", index: 6 },
+                    { title: "Periyodik Özellikler 1", index: 7 },
+                    { title: "Periyodik Özellikler 2", index: 8 },
+                    { title: "Elementleri Tanıyalım ve Yükseltgenme", index: 9 }
+                ]
+            },
+            {
+                unitTitle: "Gazlar",
+                playlistUrl: "https://www.youtube.com/playlist?list=PL5kIOunpmSBPeeFXlNTSsXgq0euBdC3XJ",
+                videos: [
+                    { title: "Gazların Genel Özellikleri 1", index: 12 },
+                    { title: "Gazların Genel Özellikleri 2", index: 13 },
+                    { title: "Gaz Yasaları 1", index: 14 },
+                    { title: "Gaz Yasaları 2", index: 15 },
+                    { title: "İdeal Gaz Yasası", index: 16 },
+                    { title: "Gazların Yoğunluğu ve Kinetik Teori", index: 17 },
+                    { title: "Gaz Karışımları 1", index: 18 },
+                    { title: "Gaz Karışımları 2", index: 19 },
+                    { title: "Buhar Basıncı ve Gazların Su Üstünde Toplanması", index: 20 }
+                ]
+            },
+            {
+                unitTitle: "Sıvı Çözeltiler",
+                playlistUrl: "https://www.youtube.com/playlist?list=PLyiXTl2rW_wrvZYVh9-A5pHeVhF4xdeO4",
+                videos: [
+                    { title: "Çözücü ve Çözünen Etkileşimler", index: 17 },
+                    { title: "Derişim Birimleri", index: 18 },
+                    { title: "Molar Derişim (Molarite)", index: 19 },
+                    { title: "Çözeltilerin Deriştirilmesi ve Seyreltilmesi", index: 20 },
+                    { title: "Tepkime Veren Çözeltilerin Karıştırılması", index: 21 },
+                    { title: "Koligatif Özellikler", index: 22 },
+                    { title: "Çözeltilerin Sınıflandırılması", index: 23 },
+                    { title: "Çözünürlük", index: 24 },
+                    { title: "Çözünürlüğe Etki Eden Faktörler", index: 25 }
+                ]
+            },
+            {
+                unitTitle: "Kimyasal Tepkimelerde Enerji",
+                playlistUrl: "https://www.youtube.com/playlist?list=PLyiXTl2rW_wrvZYVh9-A5pHeVhF4xdeO4",
+                videos: [
+                    { title: "Tepkimelerde Isı Değişimi", index: 26 },
+                    { title: "Standart Oluşum Entalpisi", index: 27 },
+                    { title: "Bağ Enerjileri", index: 28 }
+                ]
+            },
+            {
+                unitTitle: "Kimyasal Tepkimelerde Hız",
+                playlistUrl: "https://www.youtube.com/playlist?list=PLyiXTl2rW_wrvZYVh9-A5pHeVhF4xdeO4",
+                videos: [
+                    { title: "Tepkime Hızları", index: 29 },
+                    { title: "Tepkime Hızının Ölçülmesi", index: 30 },
+                    { title: "Hıza Etki Eden Faktörler", index: 31 }
+                ]
+            },
+            {
+                unitTitle: "Kimyasal Denge",
+                playlistUrl: "https://www.youtube.com/playlist?list=PLyiXTl2rW_wrvZYVh9-A5pHeVhF4xdeO4",
+                videos: [
+                    { title: "Denge 1", index: 32 },
+                    { title: "Denge 2", index: 33 },
+                    { title: "Dengeye Etki Eden Faktörler", index: 34 },
+                    { title: "Sulu Çözelti Dengeleri", index: 35 }
+                ]
+            },
+            {
+                unitTitle: "Asit-Baz Dengesi",
+                playlistUrl: "https://www.youtube.com/playlist?list=PLyiXTl2rW_wrvZYVh9-A5pHeVhF4xdeO4",
+                videos: [
+                    { title: "Asit Baz Tanımları", index: 36 },
+                    { title: "pH ve pOH Kavramı", index: 37 },
+                    { title: "Nötralleşme Tepkimeleri", index: 38 },
+                    { title: "Tampon Çözeltiler ve Titrasyon", index: 39 }
+                ]
+            },
+            {
+                unitTitle: "Çözünürlük Dengesi (KÇÇ)",
+                playlistUrl: "https://www.youtube.com/playlist?list=PLyiXTl2rW_wrvZYVh9-A5pHeVhF4xdeO4",
+                videos: [
+                    { title: "Çözünürlük Dengesi", index: 40 }
+                ]
+            },
+            {
+                unitTitle: "Elektrokimya",
+                playlistUrl: "https://www.youtube.com/playlist?list=PLyiXTl2rW_wrvZYVh9-A5pHeVhF4xdeO4",
+                videos: [
+                    { title: "Kimya ve Elektrik", index: 41 },
+                    { title: "Redoks Tepkimeleri", index: 42 },
+                    { title: "Aktiflik", index: 43 },
+                    { title: "Elektrokimyasal Hücreler 1", index: 44 },
+                    { title: "Elektrokimyasal Hücreler 2", index: 45 },
+                    { title: "Pil Gerilimine Etki", index: 46 },
+                    { title: "Derişim Pilleri", index: 47 },
+                    { title: "Elektroliz 1", index: 48 },
+                    { title: "Elektroliz 2", index: 49 }
+                ]
+            },
+            {
+                unitTitle: "Organik Kimya",
+                playlistUrl: "https://www.youtube.com/playlist?list=PLyiXTl2rW_wrvZYVh9-A5pHeVhF4xdeO4",
+                videos: [
+                    { title: "Karbon Kimyasına Giriş", index: 50 },
+                    { title: "Hibritleşme ve Geometri", index: 51 },
+                    { title: "Alkanlar 1", index: 52 },
+                    { title: "Alkanlar 2", index: 53 },
+                    { title: "Alkenler", index: 54 },
+                    { title: "Alkinler", index: 55 },
+                    { title: "Aromatik Bileşikler", index: 56 },
+                    { title: "Alkoller ve Eterler", index: 57 },
+                    { title: "Aldehitler ve Ketonlar", index: 58 },
+                    { title: "Karboksilik Asitler ve Esterler", index: 59 }
+                ]
+            }
+        ],
         Matematik: [
-            // Hoca: Eyüp B. (2025 AYT VDD)
-            // Playlist: https://www.youtube.com/playlist?list=PLyiXTl2rW_wrZGIFdO99RnVKVUjhrtPyK
-            { title: "Polinomlar", channel: "Eyüp B.", url: "https://www.youtube.com/playlist?list=PLyiXTl2rW_wrZGIFdO99RnVKVUjhrtPyK", index: 0 },
-            { title: "2. Dereceden Denklemler", channel: "Eyüp B.", url: "https://www.youtube.com/playlist?list=PLyiXTl2rW_wrZGIFdO99RnVKVUjhrtPyK", index: 6 },
-            { title: "Karmaşık Sayılar", channel: "Eyüp B.", url: "https://www.youtube.com/playlist?list=PLyiXTl2rW_wrZGIFdO99RnVKVUjhrtPyK", index: 10 },
-            { title: "Parabol", channel: "Eyüp B.", url: "https://www.youtube.com/playlist?list=PLyiXTl2rW_wrZGIFdO99RnVKVUjhrtPyK", index: 13 },
-            { title: "Eşitsizlikler", channel: "Eyüp B.", url: "https://www.youtube.com/playlist?list=PLyiXTl2rW_wrZGIFdO99RnVKVUjhrtPyK", index: 18 },
-            { title: "Fonksiyonlar (Öteleme)", channel: "Eyüp B.", url: "https://www.youtube.com/playlist?list=PLyiXTl2rW_wrZGIFdO99RnVKVUjhrtPyK", index: 23 },
-            { title: "Logaritma", channel: "Eyüp B.", url: "https://www.youtube.com/playlist?list=PLyiXTl2rW_wrZGIFdO99RnVKVUjhrtPyK", index: 28 },
-            { title: "Diziler", channel: "Eyüp B.", url: "https://www.youtube.com/playlist?list=PLyiXTl2rW_wrZGIFdO99RnVKVUjhrtPyK", index: 35 },
-            { title: "Trigonometri", channel: "Eyüp B.", url: "https://www.youtube.com/playlist?list=PLyiXTl2rW_wrZGIFdO99RnVKVUjhrtPyK", index: 42 },
-            { title: "Limit", channel: "Eyüp B.", url: "https://www.youtube.com/playlist?list=PLyiXTl2rW_wrZGIFdO99RnVKVUjhrtPyK", index: 65 },
-            { title: "Türev", channel: "Eyüp B.", url: "https://www.youtube.com/playlist?list=PLyiXTl2rW_wrZGIFdO99RnVKVUjhrtPyK", index: 75 },
-            { title: "İntegral", channel: "Eyüp B.", url: "https://www.youtube.com/playlist?list=PLyiXTl2rW_wrZGIFdO99RnVKVUjhrtPyK", index: 105 },
+            {
+                unitTitle: "AYT Matematik Kampı",
+                playlistUrl: "https://www.youtube.com/playlist?list=PL5kIOunpmSBNBWMQWLo0vjOZcNx5I_L7p",
+                videos: [
+                    { title: "Polinomlar", index: 0 },
+                    { title: "2. Dereceden Denklemler", index: 6 },
+                    { title: "Karmaşık Sayılar", index: 10 },
+                    { title: "Parabol", index: 13 },
+                    { title: "Eşitsizlikler", index: 18 },
+                    { title: "Fonksiyonlar", index: 23 },
+                    { title: "Logaritma", index: 28 },
+                    { title: "Diziler", index: 35 },
+                    { title: "Trigonometri", index: 42 },
+                    { title: "Limit", index: 65 },
+                    { title: "Türev", index: 75 },
+                    { title: "İntegral", index: 105 },
+                ]
+            }
         ],
         Fizik: [
-            // Hoca:  zcan Ayk n (AYT Kampı 2025 - Checkmate)
-            // Playlist: https://www.youtube.com/playlist?list=PLhhV4F6NB0-tU__PwCFhnaK-Gg_I3JG_4
-            { title: "Vektörler", channel: " zcan Ayk n", url: "https://www.youtube.com/playlist?list=PLhhV4F6NB0-tU__PwCFhnaK-Gg_I3JG_4", index: 2 },
-            { title: "Bağıl Hareket", channel: " zcan Ayk n", url: "https://www.youtube.com/playlist?list=PLhhV4F6NB0-tU__PwCFhnaK-Gg_I3JG_4", index: 2 },
-            { title: "Newton Hareket", channel: " zcan Ayk n", url: "https://www.youtube.com/playlist?list=PLhhV4F6NB0-tU__PwCFhnaK-Gg_I3JG_4", index: 5 },
-            { title: "Bir Boyutta Sabit İvme", channel: " zcan Ayk n", url: "https://www.youtube.com/playlist?list=PLhhV4F6NB0-tU__PwCFhnaK-Gg_I3JG_4", index: 9 },
-            { title: "Atışlar", channel: " zcan Ayk n", url: "https://www.youtube.com/playlist?list=PLhhV4F6NB0-tU__PwCFhnaK-Gg_I3JG_4", index: 12 },
-            { title: "İtme ve Momentum", channel: " zcan Ayk n", url: "https://www.youtube.com/playlist?list=PLhhV4F6NB0-tU__PwCFhnaK-Gg_I3JG_4", index: 16 },
-            { title: "Tork ve Denge", channel: " zcan Ayk n", url: "https://www.youtube.com/playlist?list=PLhhV4F6NB0-tU__PwCFhnaK-Gg_I3JG_4", index: 20 },
-            { title: "Elektriksel Kuvvet", channel: " zcan Ayk n", url: "https://www.youtube.com/playlist?list=PLhhV4F6NB0-tU__PwCFhnaK-Gg_I3JG_4", index: 25 },
-            { title: "Manyetizma", channel: " zcan Ayk n", url: "https://www.youtube.com/playlist?list=PLhhV4F6NB0-tU__PwCFhnaK-Gg_I3JG_4", index: 29 },
-            { title: "Çembersel Hareket", channel: " zcan Ayk n", url: "https://www.youtube.com/playlist?list=PLhhV4F6NB0-tU__PwCFhnaK-Gg_I3JG_4", index: 35 },
-            { title: "Basit Harmonik Hareket", channel: " zcan Ayk n", url: "https://www.youtube.com/playlist?list=PLhhV4F6NB0-tU__PwCFhnaK-Gg_I3JG_4", index: 40 },
-            { title: "Modern Fizik", channel: " zcan Ayk n", url: "https://www.youtube.com/playlist?list=PLhhV4F6NB0-tU__PwCFhnaK-Gg_I3JG_4", index: 45 },
-        ],
-        Kimya: [
-            // Hoca: Benim Hocam (2025 AYT Kimya)
-            // Playlist: https://www.youtube.com/playlist?list=PL5kIOunpmSBPeeFXlNTSsXgq0euBdC3XJ
-            { title: "Modern Atom Teorisi", channel: "Benim Hocam", url: "https://www.youtube.com/playlist?list=PL5kIOunpmSBPeeFXlNTSsXgq0euBdC3XJ", index: 0 },
-            { title: "Gazlar", channel: "Benim Hocam", url: "https://www.youtube.com/playlist?list=PL5kIOunpmSBPeeFXlNTSsXgq0euBdC3XJ", index: 6 },
-            { title: "Sıvı Çözeltiler", channel: "Benim Hocam", url: "https://www.youtube.com/playlist?list=PL5kIOunpmSBPeeFXlNTSsXgq0euBdC3XJ", index: 12 },
-            { title: "Kimyasal Enerji", channel: "Benim Hocam", url: "https://www.youtube.com/playlist?list=PL5kIOunpmSBPeeFXlNTSsXgq0euBdC3XJ", index: 18 },
-            { title: "Kimyasal Hız", channel: "Benim Hocam", url: "https://www.youtube.com/playlist?list=PL5kIOunpmSBPeeFXlNTSsXgq0euBdC3XJ", index: 22 },
-            { title: "Kimyasal Denge", channel: "Benim Hocam", url: "https://www.youtube.com/playlist?list=PL5kIOunpmSBPeeFXlNTSsXgq0euBdC3XJ", index: 26 },
-            { title: "Asit-Baz Dengesi", channel: "Benim Hocam", url: "https://www.youtube.com/playlist?list=PL5kIOunpmSBPeeFXlNTSsXgq0euBdC3XJ", index: 32 },
-            { title: "KÇÇ", channel: "Benim Hocam", url: "https://www.youtube.com/playlist?list=PL5kIOunpmSBPeeFXlNTSsXgq0euBdC3XJ", index: 38 },
-            { title: "Elektrokimya", channel: "Benim Hocam", url: "https://www.youtube.com/playlist?list=PL5kIOunpmSBPeeFXlNTSsXgq0euBdC3XJ", index: 42 },
-            { title: "Organik Kimya", channel: "Benim Hocam", url: "https://www.youtube.com/playlist?list=PL5kIOunpmSBPeeFXlNTSsXgq0euBdC3XJ", index: 50 },
+             {
+                unitTitle: "AYT Fizik Kampı",
+                playlistUrl: "https://www.youtube.com/playlist?list=PL87vBAl7SzvzqiYcuIxz7ptFykyE2qYS_",
+                videos: [
+                    { title: "Vektörler", index: 0 },
+                    { title: "Bağıl Hareket", index: 2 },
+                    { title: "Newton Hareket", index: 5 },
+                    { title: "Atışlar", index: 12 },
+                    { title: "İtme Momentum", index: 16 },
+                    { title: "Elektrik", index: 25 },
+                    { title: "Manyetizma", index: 29 },
+                    { title: "Harmonik Hareket", index: 40 },
+                    { title: "Modern Fizik", index: 45 },
+                ]
+            }
         ],
         Biyoloji: [
-            // Hoca: Dr. Biyoloji (2025 AYT Biyoloji)
-            // Playlist: https://www.youtube.com/playlist?list=PL87vBAl7Szvwq_wAtJgLdw7sVMFo9KIca
-            { title: "Sinir Sistemi", channel: "Dr. Biyoloji", url: "https://www.youtube.com/playlist?list=PL87vBAl7Szvwq_wAtJgLdw7sVMFo9KIca", index: 0 },
-            { title: "Endokrin Sistem", channel: "Dr. Biyoloji", url: "https://www.youtube.com/playlist?list=PL87vBAl7Szvwq_wAtJgLdw7sVMFo9KIca", index: 3 },
-            { title: "Duyu Organları", channel: "Dr. Biyoloji", url: "https://www.youtube.com/playlist?list=PL87vBAl7Szvwq_wAtJgLdw7sVMFo9KIca", index: 5 },
-            { title: "Destek ve Hareket", channel: "Dr. Biyoloji", url: "https://www.youtube.com/playlist?list=PL87vBAl7Szvwq_wAtJgLdw7sVMFo9KIca", index: 7 },
-            { title: "Sindirim Sistemi", channel: "Dr. Biyoloji", url: "https://www.youtube.com/playlist?list=PL87vBAl7Szvwq_wAtJgLdw7sVMFo9KIca", index: 10 },
-            { title: "Dolaşım Sistemi", channel: "Dr. Biyoloji", url: "https://www.youtube.com/playlist?list=PL87vBAl7Szvwq_wAtJgLdw7sVMFo9KIca", index: 12 },
-            { title: "Solunum Sistemi", channel: "Dr. Biyoloji", url: "https://www.youtube.com/playlist?list=PL87vBAl7Szvwq_wAtJgLdw7sVMFo9KIca", index: 15 },
-            { title: "Üriner Sistem", channel: "Dr. Biyoloji", url: "https://www.youtube.com/playlist?list=PL87vBAl7Szvwq_wAtJgLdw7sVMFo9KIca", index: 17 },
-            { title: "Üreme Sistemi", channel: "Dr. Biyoloji", url: "https://www.youtube.com/playlist?list=PL87vBAl7Szvwq_wAtJgLdw7sVMFo9KIca", index: 19 },
-            { title: "Genden Proteine", channel: "Dr. Biyoloji", url: "https://www.youtube.com/playlist?list=PL87vBAl7Szvwq_wAtJgLdw7sVMFo9KIca", index: 21 },
-            { title: "Canlılık ve Enerji", channel: "Dr. Biyoloji", url: "https://www.youtube.com/playlist?list=PL87vBAl7Szvwq_wAtJgLdw7sVMFo9KIca", index: 25 },
-            { title: "Bitki Biyolojisi", channel: "Dr. Biyoloji", url: "https://www.youtube.com/playlist?list=PL87vBAl7Szvwq_wAtJgLdw7sVMFo9KIca", index: 29 },
-            { title: "Canlılar ve Çevre", channel: "Dr. Biyoloji", url: "https://www.youtube.com/playlist?list=PL87vBAl7Szvwq_wAtJgLdw7sVMFo9KIca", index: 35 },
+             {
+                unitTitle: "AYT Biyoloji Kampı",
+                playlistUrl: "https://www.youtube.com/playlist?list=PLhhV4F6NB0-uEPdZncMf_qb0tSKyBM-Lf",
+                videos: [
+                    { title: "Sinir Sistemi", index: 0 },
+                    { title: "Endokrin Sistem", index: 3 },
+                    { title: "Duyu Organları", index: 5 },
+                    { title: "Sindirim Sistemi", index: 10 },
+                    { title: "Dolaşım Sistemi", index: 12 },
+                    { title: "Solunum Sistemi", index: 15 },
+                    { title: "Üriner Sistem", index: 17 },
+                    { title: "Genden Proteine", index: 21 },
+                    { title: "Bitki Biyolojisi", index: 29 },
+                ]
+            }
         ]
     }
 };
