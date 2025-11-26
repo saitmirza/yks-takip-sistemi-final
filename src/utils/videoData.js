@@ -106,93 +106,93 @@ export const VIDEO_CURRICULUM = {
             },
             {
                 unitTitle: "Sıvı Çözeltiler",
-                playlistUrl: "https://www.youtube.com/playlist?list=PLyiXTl2rW_wrvZYVh9-A5pHeVhF4xdeO4",
+                playlistUrl: "https://www.youtube.com/playlist?list=PL5kIOunpmSBPeeFXlNTSsXgq0euBdC3XJ",
                 videos: [
-                    { title: "Çözücü ve Çözünen Etkileşimler", index: 17 },
-                    { title: "Derişim Birimleri", index: 18 },
-                    { title: "Molar Derişim (Molarite)", index: 19 },
-                    { title: "Çözeltilerin Deriştirilmesi ve Seyreltilmesi", index: 20 },
-                    { title: "Tepkime Veren Çözeltilerin Karıştırılması", index: 21 },
-                    { title: "Koligatif Özellikler", index: 22 },
-                    { title: "Çözeltilerin Sınıflandırılması", index: 23 },
-                    { title: "Çözünürlük", index: 24 },
-                    { title: "Çözünürlüğe Etki Eden Faktörler", index: 25 }
+                    { title: "Çözücü ve Çözünen Etkileşimler", index: 23 },
+                    { title: "Derişim Birimleri", index: 24 },
+                    { title: "Molar Derişim (Molarite)", index: 25 },
+                    { title: "Çözeltilerin Deriştirilmesi ve Seyreltilmesi", index: 26 },
+                    { title: "Tepkime Veren Çözeltilerin Karıştırılması", index: 27 },
+                    { title: "Koligatif Özellikler", index: 28 },
+                    { title: "Çözeltilerin Sınıflandırılması", index: 29 },
+                    { title: "Çözünürlük", index: 30 },
+                    { title: "Çözünürlüğe Etki Eden Faktörler", index: 31 }
                 ]
             },
             {
                 unitTitle: "Kimyasal Tepkimelerde Enerji",
-                playlistUrl: "https://www.youtube.com/playlist?list=PLyiXTl2rW_wrvZYVh9-A5pHeVhF4xdeO4",
+                playlistUrl: "https://www.youtube.com/playlist?list=PL5kIOunpmSBPeeFXlNTSsXgq0euBdC3XJ",
                 videos: [
-                    { title: "Tepkimelerde Isı Değişimi", index: 26 },
-                    { title: "Standart Oluşum Entalpisi", index: 27 },
-                    { title: "Bağ Enerjileri", index: 28 }
+                    { title: "Tepkimelerde Isı Değişimi", index: 34 },
+                    { title: "Standart Oluşum Entalpisi", index: 35 },
+                    { title: "Bağ Enerjileri", index: 36 }
                 ]
             },
             {
                 unitTitle: "Kimyasal Tepkimelerde Hız",
-                playlistUrl: "https://www.youtube.com/playlist?list=PLyiXTl2rW_wrvZYVh9-A5pHeVhF4xdeO4",
+                playlistUrl: "https://www.youtube.com/playlist?list=PL5kIOunpmSBPeeFXlNTSsXgq0euBdC3XJ",
                 videos: [
-                    { title: "Tepkime Hızları", index: 29 },
-                    { title: "Tepkime Hızının Ölçülmesi", index: 30 },
-                    { title: "Hıza Etki Eden Faktörler", index: 31 }
+                    { title: "Tepkime Hızları", index: 39 },
+                    { title: "Tepkime Hızının Ölçülmesi", index: 40 },
+                    { title: "Hıza Etki Eden Faktörler", index: 41 }
                 ]
             },
             {
                 unitTitle: "Kimyasal Denge",
-                playlistUrl: "https://www.youtube.com/playlist?list=PLyiXTl2rW_wrvZYVh9-A5pHeVhF4xdeO4",
+                playlistUrl: "https://www.youtube.com/playlist?list=PL5kIOunpmSBPeeFXlNTSsXgq0euBdC3XJ",
                 videos: [
-                    { title: "Denge 1", index: 32 },
-                    { title: "Denge 2", index: 33 },
-                    { title: "Dengeye Etki Eden Faktörler", index: 34 },
-                    { title: "Sulu Çözelti Dengeleri", index: 35 }
+                    { title: "Denge 1", index: 44 },
+                    { title: "Denge 2", index: 45 },
+                    { title: "Dengeye Etki Eden Faktörler", index: 46 },
                 ]
             },
             {
                 unitTitle: "Asit-Baz Dengesi",
-                playlistUrl: "https://www.youtube.com/playlist?list=PLyiXTl2rW_wrvZYVh9-A5pHeVhF4xdeO4",
+                playlistUrl: "https://www.youtube.com/playlist?list=PL5kIOunpmSBPeeFXlNTSsXgq0euBdC3XJ",
                 videos: [
-                    { title: "Asit Baz Tanımları", index: 36 },
-                    { title: "pH ve pOH Kavramı", index: 37 },
-                    { title: "Nötralleşme Tepkimeleri", index: 38 },
-                    { title: "Tampon Çözeltiler ve Titrasyon", index: 39 }
+                    { title: "Sulu Çözelti Dengeleri", index: 49 },
+                    { title: "Asit Baz Tanımları", index: 50 },
+                    { title: "pH ve pOH Kavramı", index: 52 },
+                    { title: "Nötralleşme Tepkimeleri", index: 53 },
+                    { title: "Tampon Çözeltiler ve Titrasyon", index: 54 }
                 ]
             },
             {
                 unitTitle: "Çözünürlük Dengesi (KÇÇ)",
-                playlistUrl: "https://www.youtube.com/playlist?list=PLyiXTl2rW_wrvZYVh9-A5pHeVhF4xdeO4",
+                playlistUrl: "https://www.youtube.com/playlist?list=PL5kIOunpmSBPeeFXlNTSsXgq0euBdC3XJ",
                 videos: [
-                    { title: "Çözünürlük Dengesi", index: 40 }
+                    { title: "Çözünürlük Dengesi", index: 55 }
                 ]
             },
             {
                 unitTitle: "Elektrokimya",
-                playlistUrl: "https://www.youtube.com/playlist?list=PLyiXTl2rW_wrvZYVh9-A5pHeVhF4xdeO4",
+                playlistUrl: "https://www.youtube.com/playlist?list=PL5kIOunpmSBPeeFXlNTSsXgq0euBdC3XJ",
                 videos: [
-                    { title: "Kimya ve Elektrik", index: 41 },
-                    { title: "Redoks Tepkimeleri", index: 42 },
-                    { title: "Aktiflik", index: 43 },
-                    { title: "Elektrokimyasal Hücreler 1", index: 44 },
-                    { title: "Elektrokimyasal Hücreler 2", index: 45 },
-                    { title: "Pil Gerilimine Etki", index: 46 },
-                    { title: "Derişim Pilleri", index: 47 },
-                    { title: "Elektroliz 1", index: 48 },
-                    { title: "Elektroliz 2", index: 49 }
+                    { title: "Kimya ve Elektrik", index: 59 },
+                    { title: "Redoks Tepkimeleri", index: 60 },
+                    { title: "Aktiflik", index: 61 },
+                    { title: "Elektrokimyasal Hücreler 1", index: 62 },
+                    { title: "Elektrokimyasal Hücreler 2", index: 63 },
+                    { title: "Pil Gerilimine Etki", index: 64 },
+                    { title: "Derişim Pilleri", index: 65 },
+                    { title: "Elektroliz 1", index: 66 },
+                    { title: "Elektroliz 2", index: 67 }
                 ]
             },
             {
                 unitTitle: "Organik Kimya",
-                playlistUrl: "https://www.youtube.com/playlist?list=PLyiXTl2rW_wrvZYVh9-A5pHeVhF4xdeO4",
+                playlistUrl: "https://www.youtube.com/playlist?list=PL5kIOunpmSBPeeFXlNTSsXgq0euBdC3XJ",
                 videos: [
-                    { title: "Karbon Kimyasına Giriş", index: 50 },
-                    { title: "Hibritleşme ve Geometri", index: 51 },
-                    { title: "Alkanlar 1", index: 52 },
-                    { title: "Alkanlar 2", index: 53 },
-                    { title: "Alkenler", index: 54 },
-                    { title: "Alkinler", index: 55 },
-                    { title: "Aromatik Bileşikler", index: 56 },
-                    { title: "Alkoller ve Eterler", index: 57 },
-                    { title: "Aldehitler ve Ketonlar", index: 58 },
-                    { title: "Karboksilik Asitler ve Esterler", index: 59 }
+                    { title: "Karbon Kimyasına Giriş", index: 68 },
+                    { title: "Hibritleşme ve Geometri", index: 69 },
+                    { title: "Alkanlar 1", index: 70 },
+                    { title: "Alkanlar 2", index: 71 },
+                    { title: "Alkenler", index: 72 },
+                    { title: "Alkinler", index: 73 },
+                    { title: "Aromatik Bileşikler", index: 74 },
+                    { title: "Alkoller ve Eterler", index: 75 },
+                    { title: "Aldehitler ve Ketonlar", index: 76 },
+                    { title: "Karboksilik Asitler ve Esterler", index: 77 }
                 ]
             }
         ],
