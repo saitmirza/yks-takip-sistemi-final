@@ -41,20 +41,103 @@ export const VIDEO_CURRICULUM = {
         ],
         Kimya: [
             {
-                unitTitle: "TYT Kimya Kampı",
-                playlistUrl: "https://www.youtube.com/playlist?list=PLyiXTl2rW_wrZGIFdO99RnVKVUjhrtPyK",
+                unitTitle: "Kimya Bilimi",
+                playlistUrl: "https://www.youtube.com/playlist?list=PL5kIOunpmSBNBWMQWLo0vjOZcNx5I_L7p",
                 videos: [
-                    { title: "Kimya Bilimi", index: 0 },
-                    { title: "Atom ve Periyodik Sistem", index: 4 },
-                    { title: "Kimyasal Türler Arası", index: 11 },
-                    { title: "Maddenin Halleri", index: 18 },
-                    { title: "Doğa ve Kimya", index: 24 },
-                    { title: "Kimyanın Temel Kanunları", index: 26 },
-                    { title: "Karışımlar", index: 32 },
-                    { title: "Asitler Bazlar Tuzlar", index: 40 },
-                    { title: "Kimya Her Yerde", index: 47 },
+                    { title: "Simyadan Kimyaya", index: 3 },
+                    { title: "Kimyanın ve Kimyacıların Başlıca Çalışma Alanları", index: 4 },
+                    { title: "Kimyanın Sembolik Dili", index: 5 },
+                    { title: "Kimya Uygulamalarında İş Sağlığı ve Güvenliği", index: 6 },
+                    { title: "Kimyasalların İnsan Sağlığına ve Çevreye Etkileri", index: 7 }
                 ]
-            }
+            },
+{
+                unitTitle: "Atom ve Periyodik Cetvel",
+                playlistUrl: "https://www.youtube.com/playlist?list=PL5kIOunpmSBNBWMQWLo0vjOZcNx5I_L7p",
+                videos: [
+                    { title: "Atom Modelleri", index: 8 },
+                    { title: "Atomun Yapısı", index: 9 },
+                    { title: "Periyodik Sistem", index: 10 },
+                    { title: "Elementlerin Sınıflandırılması", index: 11 },
+                    { title: "Periyodik Özellikler 1", index: 12 },
+                    { title: "Periyodik Özellikler 2", index: 13 }
+                ]
+            },
+{
+                unitTitle: "Kimyasal Türler Arası Etkileşimler",
+                playlistUrl: "https://www.youtube.com/playlist?list=PL5kIOunpmSBNBWMQWLo0vjOZcNx5I_L7p",
+                videos: [
+                    { title: "Kimyasal Türler Arası Etkileşimler", index: 14 },
+                    { title: "Güçlü Etkileşimler (İyonik Bağ)", index: 15 },
+                    { title: "İyonik Bağlı Bileşiklerin Sistematik Adlandırılması", index: 16 },
+                    { title: "Kovalent Bağ", index: 17 },
+                    { title: "Kovalent Bağlı Bileşiklerin İsimlendirilmesi Ve Metalik Bağ", index: 18 },
+                    { title: "Zayıf Etkileşimler", index: 19 },
+                    { title: "Fiziksel ve Kimyasal Değişimler", index: 20 }
+                ]
+            },
+{
+                unitTitle: "Maddenin Halleri",
+                playlistUrl: "https://www.youtube.com/playlist?list=PL5kIOunpmSBNBWMQWLo0vjOZcNx5I_L7p",
+                videos: [
+                    { title: "Maddenin Halleri", index: 21 },
+                    { title: "Katılar", index: 22 },
+                    { title: "Sıvılar", index: 23 },
+                    { title: "Gazlar", index: 24 }
+                ]
+            },
+{
+                unitTitle: "Doğa ve Kimya",
+                playlistUrl: "https://www.youtube.com/playlist?list=PL5kIOunpmSBNBWMQWLo0vjOZcNx5I_L7p",
+                videos: [
+                    { title: "Doğa ve Kimya", index: 25 },
+                ]
+            },
+{
+                unitTitle: "Kimyanın Temel Kanunları",
+                playlistUrl: "https://www.youtube.com/playlist?list=PL5kIOunpmSBNBWMQWLo0vjOZcNx5I_L7p",
+                videos: [
+                    { title: "Kimyanın Temel Kanunları", index: 26 },
+                    { title: "Sabit Oranlar Kanunları", index: 27 },
+                    { title: "Katlı Oranlar Kanunları", index: 28 },
+                    { title: "Mol Kavramı 1", index: 29 },
+                    { title: "Mol Kavramı 2", index: 30 },
+                    { title: "Kimyasal Tepkime Türleri", index: 32 },
+                    { title: "Kimyasal Tepkimelerde Hesaplamalar 1", index: 33 },
+                    { title: "Kimyasal Tepkimelerde Hesaplamalar 2", index: 34 },
+                    { title: "Kimyasal Tepkimelerde Hesaplamalar 3", index: 35 }
+                ]
+            },
+{
+		unitTitle: "Karışımlar",
+                playlistUrl: "https://www.youtube.com/playlist?list=PL5kIOunpmSBNBWMQWLo0vjOZcNx5I_L7p",
+                videos: [
+                    { title: "Karışımların Sınıflandırılması 1", index: 37 },
+                    { title: "Karışımların Sınıflandırılması 2", index: 38 },
+                    { title: "Çözünme Süreci", index: 39 },
+                    { title: "Çözeltilerde Derişim", index: 40 },
+                    { title: "Koligatif Özellikler", index: 42 },
+                    { title: "Ayırma ve Saflaştırma Teknikleri", index: 43 },
+                ]
+            },
+{
+		unitTitle: "Asitler, Bazlar ve Tuzlar",
+                playlistUrl: "https://www.youtube.com/playlist?list=PL5kIOunpmSBNBWMQWLo0vjOZcNx5I_L7p",
+                videos: [
+                    { title: "Asitler ve Bazlar", index: 44 },
+                    { title: "Asitlerin ve Bazların Tepkimeleri 1", index: 45 },
+                    { title: "Asitlerin ve Bazların Tepkimeleri 2", index: 46 },
+                    { title: "Hayatımızdaki Asitler, Bazlar ve Tuzlar", index: 47 },
+                ]
+            },
+{
+                unitTitle: "Kimya Her Yerde",
+                playlistUrl: "https://www.youtube.com/playlist?list=PL5kIOunpmSBNBWMQWLo0vjOZcNx5I_L7p",
+                videos: [
+                    { title: "Kimya Her Yerde", index: 49 },
+                ]
+            },
+
         ],
         Biyoloji: [
             {
