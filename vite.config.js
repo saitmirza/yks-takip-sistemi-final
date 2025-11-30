@@ -10,8 +10,8 @@ export default defineConfig({
       registerType: 'autoUpdate', // Güncelleme gelince otomatik yenile
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
       manifest: {
-        name: 'YKS Ligi - Takip Sistemi',
-        short_name: 'YKS Ligi',
+        name: 'YKS Hub - Takip Sistemi',
+        short_name: 'YKS Hub',
         description: 'YKS deneme takibi ve analiz platformu',
         theme_color: '#4f46e5', // İndigo rengimiz
         background_color: '#ffffff',

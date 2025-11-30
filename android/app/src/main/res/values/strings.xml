@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">YKS Ligi</string>
-    <string name="title_activity_main">YKS Ligi</string>
+    <string name="app_name">YKS Hub</string>
+    <string name="title_activity_main">YKS Hub</string>
     <string name="package_name">com.yksligi.app</string>
     <string name="custom_url_scheme">com.yksligi.app</string>
 </resources>

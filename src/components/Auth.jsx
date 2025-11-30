@@ -27,7 +27,7 @@ export default function Auth({ authMode, setAuthMode, authInput, setAuthInput, a
            <div className="bg-indigo-600 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 text-white shadow-lg shadow-indigo-500/30">
                 <GraduationCap size={32} />
            </div>
-           <h1 className="text-3xl font-bold text-white tracking-tight mb-2">YKS Ligi</h1>
+           <h1 className="text-3xl font-bold text-white tracking-tight mb-2">YKS Hub</h1>
            <p className="text-slate-400 text-sm font-medium">Sınıf içi rekabet ve analiz platformu</p>
          </div>
          

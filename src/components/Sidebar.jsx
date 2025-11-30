@@ -53,7 +53,7 @@ export default function Sidebar({ currentUser, activeTab, setActiveTab, handleLo
         <div className="hidden md:flex md:w-64 flex-col flex-shrink-0 h-full min-h-screen fixed left-0 top-0 z-50 border-r border-white/10 bg-slate-900/80 backdrop-blur-xl">
             <div className="p-6 border-b border-white/10">
                 <h1 className="text-xl font-bold flex items-center gap-2 text-white">
-                    {currentUser.isAdmin ? <ShieldCheck className="text-red-500"/> : <Trophy className="text-yellow-400"/>} YKS Ligi
+                    {currentUser.isAdmin ? <ShieldCheck className="text-red-500"/> : <Trophy className="text-yellow-400"/>} YKS Hub
                 </h1>
                 <div className="text-xs opacity-80 mt-3 flex items-center gap-3 bg-white/5 p-2 rounded-xl border border-white/5">
                     <AvatarDisplay user={currentUser} />
@@ -122,7 +122,7 @@ export default function Sidebar({ currentUser, activeTab, setActiveTab, handleLo
         {/* --- MOBİL ÜST BAR --- */}
         <div className="md:hidden fixed top-0 left-0 right-0 z-40 px-4 py-3 flex justify-between items-center shadow-md h-16 bg-slate-900 border-b border-white/10">
              <h1 className="text-lg font-bold text-white flex items-center gap-2">
-                {currentUser.isAdmin ? <ShieldCheck size={20} className="text-red-500"/> : <Trophy size={20} className="text-yellow-500"/>} YKS Ligi
+                {currentUser.isAdmin ? <ShieldCheck size={20} className="text-red-500"/> : <Trophy size={20} className="text-yellow-500"/>} YKS Hub
              </h1>
              <div className="flex items-center gap-2" onClick={() => setActiveTab(currentUser.isAdmin ? 'dashboard' : 'profile')}>
                  <span className="text-xs font-bold text-slate-300 max-w-[100px] truncate">{currentUser.username}</span>
