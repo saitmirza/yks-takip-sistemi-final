@@ -1,5 +1,5 @@
 import React from 'react';
-import { Trophy, ShieldCheck, Calendar as CalendarIcon, User, BarChart3, List, MessageCircle, Settings, Search, LineChart as LineChartIcon, LogOut, HelpCircle, Timer, Medal, Calculator, UserCog, Map, PenTool, Flame, CalendarDays, PlayCircle, MessageSquarePlus, BookOpen, Monitor } from 'lucide-react';
+import { Trophy, ShieldCheck, Calendar as CalendarIcon, User, BarChart3, List, MessageCircle, Settings, Search, LineChart as LineChartIcon, LogOut, HelpCircle, Timer, Medal, Calculator, UserCog, Map, PenTool, Flame, CalendarDays, PlayCircle, MessageSquarePlus, BookOpen, Monitor, FileText, MessageSquare } from 'lucide-react';
 import Countdown from './Countdown';
 
 export default function Sidebar({ currentUser, activeTab, setActiveTab, handleLogout }) {
@@ -17,6 +17,7 @@ export default function Sidebar({ currentUser, activeTab, setActiveTab, handleLo
       { id: 'leaderboard', icon: <BarChart3 size={20}/>, label: 'Sıralama', role: 'all' },
       
       // AKADEMİK
+      { id: 'exam_request', icon: <FileText size={20}/>, label: 'Sınav Ekle', role: 'student' },
       { id: 'scheduler', icon: <CalendarDays size={20}/>, label: 'Programım', role: 'student' },
       { id: 'subjects', icon: <Map size={20}/>, label: 'Harita', role: 'student' },
       { id: 'studylog', icon: <PenTool size={20}/>, label: 'Günlük', role: 'student' },
@@ -30,9 +31,8 @@ export default function Sidebar({ currentUser, activeTab, setActiveTab, handleLo
       { id: 'questions', icon: <HelpCircle size={20}/>, label: 'Sorular', role: 'all' },
       { id: 'pomodoro', icon: <Timer size={20}/>, label: 'Sayaç', role: 'student' },
       { id: 'simulator', icon: <Calculator size={20}/>, label: 'Hesap', role: 'student' },
-      
+      { id: 'forum', icon: <MessageSquare size={20}/>, label: 'Sosyal', role: 'all' },      
       // YÖNETİM & PROFİL
-      { id: 'admin_analysis', icon: <Search size={20}/>, label: 'Analiz', role: 'admin' },
       { id: 'profile', icon: <User size={20}/>, label: 'Profil', role: 'student' },
       { id: 'settings', icon: <UserCog size={20}/>, label: 'Ayarlar', role: 'student' },
       { id: 'feedback', icon: <MessageSquarePlus size={20}/>, label: 'Destek', role: 'student' },

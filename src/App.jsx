@@ -29,6 +29,9 @@ import StudyScheduler from './components/StudyScheduler';
 import NotificationManager from './components/NotificationManager';
 import VideoLessons from './components/VideoLessons';
 import FeedbackPanel from './components/FeedbackPanel';
+import ClassSelectionModal from './components/ClassSelectionModal';
+import StudentExamRequest from './components/StudentExamRequest';
+import Forum from './components/Forum';
 
 export default function ExamTrackerApp() {
   const [firebaseUser, setFirebaseUser] = useState(null);
@@ -128,7 +131,7 @@ export default function ExamTrackerApp() {
       <NotificationManager currentUser={currentUser} />
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
       {viewingUser && <ProfileCard user={viewingUser} onClose={() => setViewingUser(null)} stats={getUserStats(viewingUser.internalId)} userScores={getUserScores(viewingUser.internalId)} questions={questions} />}
-      
+      <ClassSelectionModal currentUser={currentUser} setCurrentUser={setCurrentUser} />
       <Sidebar currentUser={currentUser} activeTab={activeTab} setActiveTab={setActiveTab} handleLogout={handleLogout} />
 
       <div className="flex-1 p-4 md:p-8 pt-20 pb-32 md:pt-8 md:pb-8 md:ml-64 min-h-screen relative scroll-smooth">
@@ -150,6 +153,8 @@ export default function ExamTrackerApp() {
             {activeTab === 'scheduler' && !currentUser.isAdmin && <StudyScheduler currentUser={currentUser} />}
             {activeTab === 'subjects' && !currentUser.isAdmin && <SubjectTracker currentUser={currentUser} />}
             {activeTab === 'feedback' && !currentUser.isAdmin && <FeedbackPanel currentUser={currentUser} />}
+	    {activeTab === 'exam_request' && !currentUser.isAdmin && <StudentExamRequest currentUser={currentUser} allScores={allScores} />}
+	    {activeTab === 'forum' && <Forum currentUser={currentUser} />} {/* <-- YENİ: Forum Rotası */}
         </div>
       </div>
     </div>

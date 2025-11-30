@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Trophy, Medal, BarChart3, Trash2 } from 'lucide-react';
+import { Trophy, Medal, BarChart3, Trash2, School, Users } from 'lucide-react';
 import { DEMO_INTERNAL_ID, APP_ID } from '../utils/constants';
 import { deleteDoc, doc } from 'firebase/firestore';
 import { db } from '../firebase';
@@ -7,6 +7,7 @@ import { db } from '../firebase';
 export default function Leaderboard({ allScores, usersList, currentUser, onUserClick }) {
   const [selectedFilter, setSelectedFilter] = useState("all");
   const [sortMetric, setSortMetric] = useState("placementScore");
+  const [scope, setScope] = useState("class"); // 'school' veya 'class'
 
   const uniqueExamNames = [...new Set(allScores.map(s => s.examName))].sort();
 
@@ -20,7 +21,22 @@ export default function Leaderboard({ allScores, usersList, currentUser, onUserC
 
   const getLeaderboardData = () => {
     let data = [...allScores];
+    
+    // 1. KULLANICI FİLTRESİ (Demo/Admin Gizle)
     if (!currentUser.isDemo) data = data.filter(s => s.internalUserId !== DEMO_INTERNAL_ID);
+
+    // 2. KAPSAM FİLTRESİ (Okul vs Sınıf)
+    if (scope === 'class' && !currentUser.isAdmin) {
+        // Sadece benim sınıfımdaki kullanıcıların ID'lerini bul
+        const classMatesIds = usersList
+            .filter(u => u.classSection === currentUser.classSection)
+            .map(u => u.internalId);
+        
+        // Skorları bu ID'lere göre filtrele
+        data = data.filter(s => classMatesIds.includes(s.internalUserId));
+    }
+
+    // 3. SINAV FİLTRESİ (Genel vs Özel Sınav)
     if (selectedFilter === "all") {
        const stats = {};
        data.forEach(score => {
@@ -58,15 +74,35 @@ export default function Leaderboard({ allScores, usersList, currentUser, onUserC
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
-       {/* Üst Filtre Alanı */}
+       
+       {/* Üst Bar: Başlık ve Kapsam Seçici */}
        <div className="flex flex-col md:flex-row justify-between items-end md:items-center gap-4 bg-white dark:bg-slate-900/60 dark:backdrop-blur-md dark:border-slate-700 p-6 rounded-3xl shadow-sm border border-slate-100 transition-colors">
           <div>
              <h2 className="text-2xl font-bold text-slate-800 dark:text-white flex items-center gap-2"><Trophy className="text-yellow-500" /> Liderlik Tablosu</h2>
-             <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Sınıfındaki rekabet durumunu gör.</p>
+             <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Rekabet durumunu analiz et.</p>
           </div>
-          <div className="flex gap-3">
+          
+          {/* KAPSAM SEÇİCİ (Class / School) */}
+          <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
+              <button 
+                onClick={() => setScope('class')} 
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all ${scope === 'class' ? 'bg-white dark:bg-slate-700 shadow text-indigo-600 dark:text-white' : 'text-slate-500 dark:text-gray-400 hover:text-slate-700'}`}
+              >
+                  <Users size={16}/> Sınıfım
+              </button>
+              <button 
+                onClick={() => setScope('school')} 
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all ${scope === 'school' ? 'bg-white dark:bg-slate-700 shadow text-indigo-600 dark:text-white' : 'text-slate-500 dark:text-gray-400 hover:text-slate-700'}`}
+              >
+                  <School size={16}/> Okul Geneli
+              </button>
+          </div>
+       </div>
+
+       {/* Filtreler */}
+       <div className="flex gap-3 justify-end">
              <select className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-sm rounded-xl p-3 outline-none focus:ring-2 focus:ring-indigo-500 font-medium" value={selectedFilter} onChange={(e) => setSelectedFilter(e.target.value)}>
-                <option value="all">🏆 Genel Başarı</option>
+                <option value="all">🏆 Genel Başarı Ortalaması</option>
                 <optgroup label="Denemeler">
                     {uniqueExamNames.map(n => <option key={n} value={n}>{n}</option>)}
                 </optgroup>
@@ -75,7 +111,6 @@ export default function Leaderboard({ allScores, usersList, currentUser, onUserC
                 <option value="placementScore">Yerleştirme Puanı</option>
                 <option value="finalScore">Ham Puan</option>
              </select>
-          </div>
        </div>
 
        {/* Tablo */}

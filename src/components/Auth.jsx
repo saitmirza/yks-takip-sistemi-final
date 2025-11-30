@@ -50,6 +50,13 @@ export default function Auth({ authMode, setAuthMode, authInput, setAuthInput, a
                      <InputField icon={Lock} type="password" placeholder="Şifre" value={authInput.password} onChange={e => setAuthInput({...authInput, password: e.target.value})} />
                      <InputField icon={Lock} type="password" placeholder="Tekrar" value={authInput.passwordConfirm} onChange={e => setAuthInput({...authInput, passwordConfirm: e.target.value})} />
                 </div>
+<div className="col-span-full">
+    <label className="text-xs font-bold text-slate-500 dark:text-gray-400 block mb-1 ml-1">Sınıfın</label>
+    <select className="w-full p-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl outline-none text-slate-700 dark:text-white" value={authInput.classSection} onChange={e => setAuthInput({...authInput, classSection: e.target.value})}>
+        <option value="">Seçiniz...</option>
+        <option>12-A</option><option>12-B</option><option>12-C</option><option>12-D</option><option>12-E</option><option>12-F</option><option>Mezun</option>
+    </select>
+</div>
                 <div className="pt-3 border-t border-slate-700">
                     <p className="text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">Yıl Sonu Ortalamaları (OBP)</p>
                     <div className="grid grid-cols-4 gap-2">
