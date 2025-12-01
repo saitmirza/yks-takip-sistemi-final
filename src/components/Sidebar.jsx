@@ -1,5 +1,5 @@
 import React from 'react';
-import { Trophy, ShieldCheck, Calendar as CalendarIcon, User, BarChart3, List, MessageCircle, Settings, Search, LineChart as LineChartIcon, LogOut, HelpCircle, Timer, Medal, Calculator, UserCog, Map, PenTool, Flame, CalendarDays, PlayCircle, MessageSquarePlus, BookOpen, Monitor, FileText, MessageSquare } from 'lucide-react';
+import { Trophy, ShieldCheck, Calendar as CalendarIcon, User, BarChart3, List, MessageCircle, Settings, Search, LineChart as LineChartIcon, LogOut, HelpCircle, Timer, Medal, Calculator, UserCog, Map, PenTool, Flame, CalendarDays, PlayCircle, MessageSquarePlus, BookOpen, Monitor, FileText, MessageSquare, Target } from 'lucide-react';
 import Countdown from './Countdown';
 
 export default function Sidebar({ currentUser, activeTab, setActiveTab, handleLogout }) {
@@ -24,6 +24,7 @@ export default function Sidebar({ currentUser, activeTab, setActiveTab, handleLo
       { id: 'my_exams', icon: <List size={20}/>, label: 'Notlar', role: 'student' },
       { id: 'videos', icon: <PlayCircle size={20}/>, label: 'Dersler', role: 'student' },
       { id: 'stats', icon: <LineChartIcon size={20}/>, label: 'Analiz', role: 'student' },
+      { id: 'dreams', icon: <Target size={20}/>, label: 'Hedeflerim', role: 'student' },
       { id: 'achievements', icon: <Medal size={20}/>, label: 'Rozet', role: 'student' },
       
       // SOSYAL & ARAÇLAR
