@@ -1,3 +1,5 @@
+
+
 import React, { useState, useEffect } from 'react';
 import { signInAnonymously, onAuthStateChanged } from 'firebase/auth';
 import { collection, doc, getDoc, onSnapshot, updateDoc, serverTimestamp, setDoc, query, where, getDocs, orderBy } from 'firebase/firestore';
@@ -9,7 +11,6 @@ import { calculateOBP, getEstimatedRank } from './utils/helpers';
 import Sidebar from './components/Sidebar';
 import Auth from './components/Auth';
 import AdminDashboard from './components/AdminDashboard';
-import AdminExcelView from './components/AdminExcelView';
 import Leaderboard from './components/Leaderboard';
 import MyExams from './components/MyExams';
 import Chat from './components/Chat';
@@ -31,8 +32,8 @@ import VideoLessons from './components/VideoLessons';
 import FeedbackPanel from './components/FeedbackPanel';
 import ClassSelectionModal from './components/ClassSelectionModal';
 import StudentExamRequest from './components/StudentExamRequest';
-import Forum from './components/Forum';
-import DreamSchool from './components/DreamSchool';
+import Forum from './components/Forum'; 
+import DreamSchool from './components/DreamSchool'; 
 import SmartCoach from './components/SmartCoach';
 
 export default function ExamTrackerApp() {
@@ -54,16 +55,23 @@ export default function ExamTrackerApp() {
 
   const addToast = (message, type = 'success') => { setToast({ message, type }); };
 
+  // --- GİRİŞ YAPMA (LOGIN) ---
   const handleLogin = async (e) => {
     e.preventDefault(); setAuthError("");
     const inputVal = authInput.email?.trim(); 
     if (!inputVal || !authInput.password) { setAuthError("Lütfen bilgileri girin."); return; }
+    
+    // 1. DEMO GİRİŞİ
     if ((inputVal === DEMO_USERNAME || inputVal === DEMO_USER_DATA.email) && authInput.password === DEMO_PASSWORD) {
         const s = { ...DEMO_USER_DATA, base64Avatar: "" }; setCurrentUser(s); localStorage.setItem('examApp_session', JSON.stringify(s)); setActiveTab('my_exams'); addToast("Demo giriş başarılı!", "info"); return;
     }
+    
+    // 2. ADMİN GİRİŞİ
     if ((inputVal === ADMIN_USERNAME || inputVal === "admin@yks.com") && authInput.password === ADMIN_PASSWORD) {
-      const s = { username: "Yönetici", email: ADMIN_USERNAME, internalId: "ADMIN_ID", isAdmin: true, avatar: "🛡️", realName: "Admin" }; setCurrentUser(s); localStorage.setItem('examApp_session', JSON.stringify(s)); setActiveTab('dashboard'); addToast("Admin girişi yapıldı.", "success"); return;
+      const s = { username: "Yönetici", email: ADMIN_USERNAME, internalId: "ADMIN_ID", isAdmin: true, avatar: "🛡️", realName: "Admin", classSection: "Yönetim" }; setCurrentUser(s); localStorage.setItem('examApp_session', JSON.stringify(s)); setActiveTab('dashboard'); addToast("Admin girişi yapıldı.", "success"); return;
     }
+    
+    // 3. NORMAL KULLANICI GİRİŞİ
     try {
       let userData = null;
       if (inputVal.includes('@')) {
@@ -73,19 +81,118 @@ export default function ExamTrackerApp() {
           const q = query(collection(db, 'artifacts', APP_ID, 'public', 'data', 'user_accounts'), where("username", "==", inputVal));
           const querySnapshot = await getDocs(q); if (!querySnapshot.empty) userData = querySnapshot.docs[0].data();
       }
-      if(userData && userData.password === authInput.password) {
-        const s = { ...userData, isAdmin: false, isDemo: false }; setCurrentUser(s); localStorage.setItem('examApp_session', JSON.stringify(s)); setActiveTab('my_exams'); addToast(`Hoş geldin ${s.username}!`);
-      } else { setAuthError("Hatalı bilgi."); addToast("Giriş başarısız.", "error"); }
+      
+      if(userData) {
+          if (userData.isBanned) { setAuthError("Bu hesap yasaklanmıştır."); return; }
+          if (userData.password === authInput.password) {
+            const s = { ...userData, isAdmin: false, isDemo: false }; 
+            setCurrentUser(s); 
+            localStorage.setItem('examApp_session', JSON.stringify(s)); 
+            setActiveTab('my_exams'); 
+            addToast(`Hoş geldin ${s.username}!`);
+          } else { setAuthError("Hatalı şifre."); addToast("Giriş başarısız.", "error"); }
+      } else { setAuthError("Kullanıcı bulunamadı."); }
     } catch (e) { console.error(e); setAuthError("Giriş hatası."); }
   };
 
-  const handleLogout = () => { setCurrentUser(null); localStorage.removeItem('examApp_session'); setActiveTab("calendar"); setAuthInput({}); addToast("Çıkış yapıldı.", "info"); };
-  const handleRegister = async (e) => { e.preventDefault(); alert("Kayıt kapalı."); };
+  // --- KAYIT OLMA (REGISTER) - AKTİF ---
+  const handleRegister = async (e) => {
+    e.preventDefault();
+    setAuthError("");
 
+    // 1. Boş Alan Kontrolü
+    if (!authInput.email || !authInput.password || !authInput.username || !authInput.realName) {
+        setAuthError("Lütfen tüm zorunlu alanları doldurun.");
+        return;
+    }
+
+    // 2. Şifre Eşleşmesi
+    if (authInput.password !== authInput.passwordConfirm) {
+        setAuthError("Şifreler eşleşmiyor.");
+        return;
+    }
+
+    try {
+        setLoading(true);
+
+        // 3. E-posta Kontrolü
+        const emailKey = authInput.email.toLowerCase().trim();
+        const userRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'user_accounts', emailKey);
+        const userSnap = await getDoc(userRef);
+
+        if (userSnap.exists()) {
+            setAuthError("Bu e-posta adresi zaten kullanımda.");
+            setLoading(false);
+            return;
+        }
+
+        // 4. Kullanıcı Adı Kontrolü
+        const q = query(collection(db, 'artifacts', APP_ID, 'public', 'data', 'user_accounts'), where("username", "==", authInput.username));
+        const usernameSnap = await getDocs(q);
+
+        if (!usernameSnap.empty) {
+            setAuthError("Bu kullanıcı adı başkası tarafından alınmış.");
+            setLoading(false);
+            return;
+        }
+
+        // 5. Yeni Kullanıcı Verisini Hazırla
+        const internalId = "U_" + Date.now() + Math.random().toString(36).substr(2, 9);
+        
+        const newUser = {
+            username: authInput.username,
+            realName: authInput.realName,
+            email: emailKey,
+            password: authInput.password, 
+            classSection: authInput.classSection || "Mezun",
+            internalId: internalId,
+            isAdmin: false,
+            isDemo: false,
+            createdAt: serverTimestamp(),
+            lastSeen: serverTimestamp(),
+            avatar: "🎓", 
+            base64Avatar: "",
+            themeColor: "indigo",
+            s9Avg: Number(authInput.s9Avg) || 0,
+            s10Avg: Number(authInput.s10Avg) || 0,
+            s11Avg: Number(authInput.s11Avg) || 0,
+            s12Avg: Number(authInput.s12Avg) || 0,
+            streak: 0,
+            totalSolved: 0,
+            totalStudyMinutes: 0
+        };
+
+        // 6. Veritabanına Kaydet
+        await setDoc(userRef, newUser);
+
+        // 7. Otomatik Giriş Yap
+        setCurrentUser(newUser);
+        localStorage.setItem('examApp_session', JSON.stringify(newUser));
+        setActiveTab('my_exams');
+        addToast(`Aramıza hoş geldin, ${newUser.realName}! 🎉`);
+
+    } catch (error) {
+        console.error("Kayıt Hatası:", error);
+        setAuthError("Kayıt sırasında bir hata oluştu: " + error.message);
+    } finally {
+        setLoading(false);
+    }
+  };
+
+  const handleLogout = () => { setCurrentUser(null); localStorage.removeItem('examApp_session'); setActiveTab("calendar"); setAuthInput({}); addToast("Çıkış yapıldı.", "info"); };
+
+  // --- EFFECTLER ---
   useEffect(() => { const initAuth = async () => { try { await signInAnonymously(auth); } catch (err) {} }; initAuth(); onAuthStateChanged(auth, (user) => { setFirebaseUser(user); setLoading(false); const savedSession = localStorage.getItem('examApp_session'); if (savedSession) setCurrentUser(JSON.parse(savedSession)); }); }, []);
+  
+  // Last Seen Güncelleyici
   useEffect(() => { if (!currentUser || currentUser.isDemo || currentUser.isAdmin) return; const userRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'user_accounts', currentUser.email); updateDoc(userRef, { lastSeen: serverTimestamp() }); const interval = setInterval(() => { updateDoc(userRef, { lastSeen: serverTimestamp() }); }, 120000); return () => clearInterval(interval); }, [currentUser]);
+  
+  // Veri Dinleyicileri
   useEffect(() => { if (!firebaseUser) return; const unsubScores = onSnapshot(collection(db, 'artifacts', APP_ID, 'public', 'data', 'exam_scores_v3'), (snap) => { let data = snap.docs.map(d => ({ id: d.id, ...d.data() })); data = data.filter(s => s.internalUserId !== DEMO_INTERNAL_ID); data.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0)); setAllScores(data); }); const unsubUsers = onSnapshot(collection(db, 'artifacts', APP_ID, 'public', 'data', 'user_accounts'), (snap) => { setUsersList(snap.docs.map(d => d.data()).filter(u => u.internalId !== DEMO_INTERNAL_ID)); }); const qQuery = query(collection(db, 'artifacts', APP_ID, 'public', 'data', 'questions'), orderBy('timestamp', 'desc')); const unsubQuestions = onSnapshot(qQuery, (snap) => { setQuestions(snap.docs.map(d => ({ id: d.id, ...d.data() }))); }); return () => { unsubScores(); unsubUsers(); unsubQuestions(); }; }, [firebaseUser]);
+  
+  // Sıralama Hesaplama
   useEffect(() => { if (!currentUser || allScores.length === 0) return; let mine = allScores.filter(s => s.internalUserId === currentUser.internalId); if (!currentUser.isAdmin && !currentUser.isDemo) { const { placementBonus } = calculateOBP(currentUser.s9Avg, currentUser.s10Avg, currentUser.s11Avg, currentUser.s12Avg); mine = mine.map(s => ({ ...s, placementScore: Number((s.finalScore + Number(placementBonus)).toFixed(2)) })); } setMyScores(mine); const fetchRanks = async () => { const newRanks = {}; for (const s of mine) { const rank = await getEstimatedRank(s.placementScore); newRanks[s.id] = rank; } setRankings(newRanks); }; fetchRanks(); }, [allScores, currentUser]);
+  
   const getUserStats = (uid) => { const userScores = allScores.filter(s => s.internalUserId === uid); if (userScores.length === 0) return null; const examCount = userScores.length; const lastExamDate = new Date(userScores[0].timestamp?.seconds * 1000).toLocaleDateString('tr-TR'); const bestScore = Math.max(...userScores.map(s => s.finalScore)); return { examCount, lastExamDate, bestRank: `${bestScore} Puan` }; };
   const getUserScores = (uid) => allScores.filter(s => s.internalUserId === uid);
   const handleUserClick = (uid) => { const user = usersList.find(u => u.internalId === uid); if (user) setViewingUser(user); };
@@ -94,25 +201,14 @@ export default function ExamTrackerApp() {
 
   const DynamicStyles = () => (
     <style>{`
-        :root {
-            --primary: ${theme.primary};
-            --primary-light: ${theme.light};
-            --primary-dark: ${theme.dark};
-        }
+        :root { --primary: ${theme.primary}; --primary-light: ${theme.light}; --primary-dark: ${theme.dark}; }
         .bg-indigo-600, .hover\\:bg-indigo-700:hover { background-color: var(--primary) !important; }
         .text-indigo-600 { color: var(--primary) !important; }
         .text-indigo-700 { color: var(--primary-dark) !important; }
         .bg-indigo-50 { background-color: var(--primary-light) !important; }
         .border-indigo-600 { border-color: var(--primary) !important; }
         .ring-indigo-500 { --tw-ring-color: var(--primary) !important; }
-
-        body { 
-            background: ${theme.gradient} !important;
-            background-attachment: fixed;
-            color: #e2e8f0 !important; 
-        }
-
-        /* Link Rengi */
+        body { background: ${theme.gradient} !important; background-attachment: fixed; color: #e2e8f0 !important; }
         .text-indigo-600 { color: #818cf8 !important; } 
     `}</style>
   );
@@ -155,10 +251,10 @@ export default function ExamTrackerApp() {
             {activeTab === 'scheduler' && !currentUser.isAdmin && <StudyScheduler currentUser={currentUser} />}
             {activeTab === 'subjects' && !currentUser.isAdmin && <SubjectTracker currentUser={currentUser} />}
             {activeTab === 'feedback' && !currentUser.isAdmin && <FeedbackPanel currentUser={currentUser} />}
-	    {activeTab === 'exam_request' && !currentUser.isAdmin && <StudentExamRequest currentUser={currentUser} allScores={allScores} />}
-	    {activeTab === 'forum' && <Forum currentUser={currentUser} />} {/* <-- YENİ: Forum Rotası */}
-      {activeTab === 'dreams' && !currentUser.isAdmin && <DreamSchool currentUser={currentUser} myScores={myScores} />} {/* <-- YENİ ROTASI */}
-      {activeTab === 'coach' && !currentUser.isAdmin && <SmartCoach currentUser={currentUser} myScores={myScores} />}
+            {activeTab === 'exam_request' && !currentUser.isAdmin && <StudentExamRequest currentUser={currentUser} allScores={allScores} />}
+            {activeTab === 'forum' && <Forum currentUser={currentUser} />}
+            {activeTab === 'dreams' && !currentUser.isAdmin && <DreamSchool currentUser={currentUser} myScores={myScores} />}
+            {activeTab === 'coach' && !currentUser.isAdmin && <SmartCoach currentUser={currentUser} myScores={myScores} />}
         </div>
       </div>
     </div>
