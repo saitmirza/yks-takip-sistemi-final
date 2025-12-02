@@ -33,6 +33,7 @@ import ClassSelectionModal from './components/ClassSelectionModal';
 import StudentExamRequest from './components/StudentExamRequest';
 import Forum from './components/Forum';
 import DreamSchool from './components/DreamSchool';
+import SmartCoach from './components/SmartCoach';
 
 export default function ExamTrackerApp() {
   const [firebaseUser, setFirebaseUser] = useState(null);
@@ -157,6 +158,7 @@ export default function ExamTrackerApp() {
 	    {activeTab === 'exam_request' && !currentUser.isAdmin && <StudentExamRequest currentUser={currentUser} allScores={allScores} />}
 	    {activeTab === 'forum' && <Forum currentUser={currentUser} />} {/* <-- YENİ: Forum Rotası */}
       {activeTab === 'dreams' && !currentUser.isAdmin && <DreamSchool currentUser={currentUser} myScores={myScores} />} {/* <-- YENİ ROTASI */}
+      {activeTab === 'coach' && !currentUser.isAdmin && <SmartCoach currentUser={currentUser} myScores={myScores} />}
         </div>
       </div>
     </div>

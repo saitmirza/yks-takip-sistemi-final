@@ -1,5 +1,5 @@
 import React from 'react';
-import { Trophy, ShieldCheck, Calendar as CalendarIcon, User, BarChart3, List, MessageCircle, Settings, Search, LineChart as LineChartIcon, LogOut, HelpCircle, Timer, Medal, Calculator, UserCog, Map, PenTool, Flame, CalendarDays, PlayCircle, MessageSquarePlus, BookOpen, Monitor, FileText, MessageSquare, Target } from 'lucide-react';
+import { Trophy, ShieldCheck, Calendar as CalendarIcon, User, BarChart3, List, MessageCircle, Settings, Search, LineChart as LineChartIcon, LogOut, HelpCircle, Timer, Medal, Calculator, UserCog, Map, PenTool, Flame, CalendarDays, PlayCircle, MessageSquarePlus, BookOpen, Monitor, FileText, MessageSquare, Target, Brain } from 'lucide-react';
 import Countdown from './Countdown';
 
 export default function Sidebar({ currentUser, activeTab, setActiveTab, handleLogout }) {
@@ -19,6 +19,7 @@ export default function Sidebar({ currentUser, activeTab, setActiveTab, handleLo
       // AKADEMİK
       { id: 'exam_request', icon: <FileText size={20}/>, label: 'Sınav Ekle', role: 'student' },
       { id: 'scheduler', icon: <CalendarDays size={20}/>, label: 'Programım', role: 'student' },
+      { id: 'coach', icon: <Brain size={20}/>, label: 'Akıllı Koç', role: 'student' },
       { id: 'subjects', icon: <Map size={20}/>, label: 'Harita', role: 'student' },
       { id: 'studylog', icon: <PenTool size={20}/>, label: 'Günlük', role: 'student' },
       { id: 'my_exams', icon: <List size={20}/>, label: 'Notlar', role: 'student' },
