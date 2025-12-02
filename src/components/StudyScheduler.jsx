@@ -19,8 +19,9 @@ export default function StudyScheduler({ currentUser }) {
     const [userRequest, setUserRequest] = useState("");
     const [isGenerating, setIsGenerating] = useState(false);
     
-    // LOGLAMA ONAY STATE'İ
-    const [pendingLogTask, setPendingLogTask] = useState(null);
+    // LOGLAMA İÇİN STATE'LER
+    const [logModal, setLogModal] = useState(null); // { day, task }
+    const [solvedCount, setSolvedCount] = useState("");
 
     // PROGRAMI ÇEK
     useEffect(() => {
@@ -54,47 +55,67 @@ export default function StudyScheduler({ currentUser }) {
         setNewTask({ type: 'TYT', subject: 'Matematik', topic: '', taskType: 'konu' });
     };
 
-    // --- GÖREV TAMAMLAMA VE LOGLAMA ---
-    const toggleComplete = async (day, task) => {
-        // 1. Durumu güncelle (UI)
-        const updatedDay = schedule[day].map(t => t.id === task.id ? { ...t, isCompleted: !t.isCompleted } : t);
-        const newSchedule = { ...schedule, [day]: updatedDay };
-        saveSchedule(newSchedule);
+    // --- GÖREV TAMAMLAMA MANTIĞI ---
+    const handleTaskClick = (day, task) => {
+        // Eğer görev zaten tamamlanmışsa -> Geri al
+        if (task.isCompleted) {
+            toggleComplete(day, task.id, false);
+            return;
+        }
 
-        // 2. Eğer görev "Soru Çözümü" ise ve yeni tamamlandıysa -> LOGLAMAYI SOR
-        if (!task.isCompleted && task.taskType === 'soru') {
-            setPendingLogTask(task);
+        // Eğer görev "Soru" ise ve tamamlanmamışsa -> Modal Aç
+        if (task.taskType === 'soru') {
+            setSolvedCount(task.count || ""); 
+            setLogModal({ day, task });
+        } else {
+            // Konu çalışmasıysa direkt tamamla
+            toggleComplete(day, task.id, true);
         }
     };
 
-    // LOGLAMA ONAYLANDIĞINDA
+    const toggleComplete = (day, taskId, status) => {
+        const updatedDay = schedule[day].map(t => t.id === taskId ? { ...t, isCompleted: status } : t);
+        const newSchedule = { ...schedule, [day]: updatedDay };
+        saveSchedule(newSchedule);
+    };
+
+    // LOGLAMA VE BİTİRME
     const confirmLog = async () => {
-        if (!pendingLogTask) return;
+        if (!logModal || !solvedCount) return alert("Soru sayısı giriniz.");
+        
+        const { day, task } = logModal;
+        
         try {
+            // 1. Günlüğe Ekle
             await addDoc(collection(db, 'artifacts', APP_ID, 'public', 'data', 'study_logs'), {
                 userId: currentUser.internalId, 
                 username: currentUser.username, 
                 avatar: currentUser.base64Avatar || currentUser.avatar,
                 classSection: currentUser.classSection || "Belirsiz",
                 logType: 'question',
-                examType: pendingLogTask.type, 
-                subject: pendingLogTask.subject,
-                topic: pendingLogTask.topic,
-                countValue: pendingLogTask.count || 20, // Varsayılan veya AI'dan gelen sayı
+                examType: task.type || "TYT", 
+                subject: task.subject,
+                topic: task.topic,
+                countValue: Number(solvedCount), 
                 duration: 0, 
                 timestamp: serverTimestamp(),
-                source: "scheduler" // Kaynak belirtelim
+                source: "scheduler"
             });
-            alert("Görev günlüğe işlendi! ✅");
+
+            // 2. Görevi Tamamlandı Yap
+            toggleComplete(day, task.id, true);
+            alert(`Harika! ${solvedCount} soru günlüğe eklendi. ✅`);
+            setLogModal(null);
+            setSolvedCount("");
+
         } catch (e) { console.error(e); }
-        setPendingLogTask(null);
     };
 
     // --- AI PROGRAM OLUŞTURMA ---
     const handleAIGenerate = async () => {
         setIsGenerating(true);
         
-        // 1. Son Analiz Raporunu Çek (Varsa)
+        // 1. Son Analiz Raporunu Çek
         let recentAnalysis = null;
         try {
             const q = query(collection(db, 'artifacts', APP_ID, 'public', 'data', 'coach_archives'), where("userId", "==", currentUser.internalId), orderBy('timestamp', 'desc'), limit(1));
@@ -102,20 +123,18 @@ export default function StudyScheduler({ currentUser }) {
             if (!snap.empty) recentAnalysis = snap.docs[0].data().data;
         } catch (e) { console.log("Analiz çekilemedi", e); }
 
-        // 2. Eksikleri Çek (MyScores'dan)
-        // (Basitleştirmek için currentUser'daki preferences'ı ve manuel girilen hataları kullanabiliriz, 
-        // burada demo amaçlı profil objesi oluşturuyorum)
+        // 2. Profil Verisini Hazırla
+        // (Gerçek projede MyExams'dan eksikleri çekebiliriz, burada basitleştiriyoruz)
         const profile = {
             focusArea: currentUser.coachPreferences?.focusArea || "Dengeli",
             dailyLimit: currentUser.coachPreferences?.dailyLimit || 3,
-            mistakes: [] // Gerçek veriyi MyExams'dan çekmek lazım ama şimdilik boş bırakalım veya prop olarak alalım.
+            mistakes: [] // Buraya currentUser.mistakes eklenebilir eğer kaydediliyorsa
         };
 
         // 3. AI Servisini Çağır
         const aiSchedule = await generateWeeklySchedule(profile, userRequest, recentAnalysis);
 
         if (aiSchedule) {
-            // ID'leri ekleyerek state formatına çevir
             const formattedSchedule = {};
             Object.keys(aiSchedule).forEach(day => {
                 formattedSchedule[day] = aiSchedule[day].map((t, i) => ({
@@ -153,19 +172,16 @@ export default function StudyScheduler({ currentUser }) {
                 </div>
                 
                 <div className="flex items-center gap-3">
-                    {/* SIFIRLA BUTONU */}
                     <button onClick={() => { if(confirm("Tüm program silinecek?")) saveSchedule(initialSchedule); }} className="p-3 bg-red-50 dark:bg-red-900/20 text-red-500 rounded-xl hover:bg-red-100 transition-colors" title="Programı Sıfırla">
                         <RefreshCw size={20}/>
                     </button>
-
-                    {/* AI BUTONU */}
                     <button onClick={() => setShowAIModal(true)} className="flex items-center gap-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-5 py-3 rounded-xl font-bold shadow-lg shadow-indigo-200 dark:shadow-none hover:scale-105 transition-transform">
                         <Wand2 size={18}/> <span>AI ile Oluştur</span>
                     </button>
                 </div>
             </div>
 
-            {/* İLERLEME BARI (Mobilde Üstte) */}
+            {/* İLERLEME BARI */}
             <div className="mb-6 bg-slate-50 dark:bg-gray-800 p-4 rounded-2xl border border-slate-200 dark:border-gray-700">
                 <div className="flex justify-between text-xs font-bold mb-2 text-slate-600 dark:text-gray-300">
                     <span>Haftalık İlerleme</span>
@@ -188,7 +204,7 @@ export default function StudyScheduler({ currentUser }) {
                         <div className="flex-1 p-3 space-y-2 overflow-y-auto max-h-[400px] custom-scrollbar">
                             {schedule[day]?.map(task => (
                                 <div key={task.id} className={`p-3 rounded-xl border flex items-start gap-3 group transition-all ${task.isCompleted ? 'bg-green-50 dark:bg-green-900/10 border-green-200 dark:border-green-900/30 opacity-70' : 'bg-white dark:bg-gray-700/50 border-slate-100 dark:border-gray-600 hover:border-indigo-200 dark:hover:border-indigo-500'}`}>
-                                    <button onClick={() => toggleComplete(day, task)} className={`mt-0.5 transition-colors ${task.isCompleted ? 'text-green-600 dark:text-green-400' : 'text-slate-300 dark:text-gray-500 hover:text-indigo-500'}`}>
+                                    <button onClick={() => handleTaskClick(day, task)} className={`mt-0.5 transition-colors ${task.isCompleted ? 'text-green-600 dark:text-green-400' : 'text-slate-300 dark:text-gray-500 hover:text-indigo-500'}`}>
                                         {task.isCompleted ? <CheckCircle2 size={20}/> : <Circle size={20}/>}
                                     </button>
                                     <div className="flex-1 min-w-0">
@@ -268,17 +284,25 @@ export default function StudyScheduler({ currentUser }) {
                 </div>
             )}
 
-            {/* --- LOGLAMA ONAY MODALI --- */}
-            {pendingLogTask && (
+            {/* --- LOG MODALI --- */}
+            {logModal && (
                 <div className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in zoom-in-95">
-                    <div className="bg-white dark:bg-gray-800 rounded-3xl w-full max-w-sm p-6 text-center border dark:border-gray-700">
-                        <div className="w-16 h-16 bg-green-100 dark:bg-green-900/50 rounded-full flex items-center justify-center mx-auto mb-4 text-green-600 dark:text-green-400"><CheckCircle2 size={32}/></div>
-                        <h3 className="text-lg font-bold text-slate-800 dark:text-white">Tebrikler!</h3>
-                        <p className="text-sm text-slate-500 dark:text-gray-400 mt-2 mb-6">"{pendingLogTask.topic}" görevini tamamladın. Bunu çalışma günlüğüne de ekleyelim mi?</p>
+                    <div className="bg-white dark:bg-gray-800 rounded-3xl w-full max-w-sm p-6 border dark:border-gray-700 text-center">
+                        <h3 className="font-bold text-lg text-slate-800 dark:text-white mb-2">Kaç Soru Çözdün?</h3>
+                        <p className="text-xs text-slate-500 dark:text-gray-400 mb-4">{logModal.task.subject} - {logModal.task.topic}</p>
+                        
+                        <input 
+                            type="number" 
+                            autoFocus
+                            className="w-full p-4 text-center text-2xl font-bold bg-slate-50 dark:bg-gray-900 border border-slate-200 dark:border-gray-600 rounded-2xl outline-none mb-6 focus:border-indigo-500 dark:text-white"
+                            placeholder={logModal.task.count || "0"}
+                            value={solvedCount}
+                            onChange={e => setSolvedCount(e.target.value)}
+                        />
                         
                         <div className="flex gap-3">
-                            <button onClick={() => setPendingLogTask(null)} className="flex-1 py-3 text-slate-500 font-bold bg-slate-100 dark:bg-gray-700 rounded-xl hover:bg-slate-200">Hayır</button>
-                            <button onClick={confirmLog} className="flex-1 py-3 bg-green-600 text-white font-bold rounded-xl hover:bg-green-700 shadow-lg">Evet, Ekle</button>
+                            <button onClick={() => setLogModal(null)} className="flex-1 py-3 text-slate-500 font-bold bg-slate-100 dark:bg-gray-700 rounded-xl">İptal</button>
+                            <button onClick={confirmLog} className="flex-1 py-3 bg-green-600 text-white font-bold rounded-xl shadow-lg hover:bg-green-700">Kaydet</button>
                         </div>
                     </div>
                 </div>
