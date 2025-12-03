@@ -51,7 +51,7 @@ export const VIDEO_CURRICULUM = {
                     { title: "Kimyasalların İnsan Sağlığına ve Çevreye Etkileri", index: 7 }
                 ]
             },
-{
+            {
                 unitTitle: "Atom ve Periyodik Cetvel",
                 playlistUrl: "https://www.youtube.com/playlist?list=PL5kIOunpmSBNBWMQWLo0vjOZcNx5I_L7p",
                 videos: [
@@ -63,7 +63,7 @@ export const VIDEO_CURRICULUM = {
                     { title: "Periyodik Özellikler 2", index: 13 }
                 ]
             },
-{
+            {
                 unitTitle: "Kimyasal Türler Arası Etkileşimler",
                 playlistUrl: "https://www.youtube.com/playlist?list=PL5kIOunpmSBNBWMQWLo0vjOZcNx5I_L7p",
                 videos: [
@@ -76,7 +76,7 @@ export const VIDEO_CURRICULUM = {
                     { title: "Fiziksel ve Kimyasal Değişimler", index: 20 }
                 ]
             },
-{
+            {
                 unitTitle: "Maddenin Halleri",
                 playlistUrl: "https://www.youtube.com/playlist?list=PL5kIOunpmSBNBWMQWLo0vjOZcNx5I_L7p",
                 videos: [
@@ -86,14 +86,14 @@ export const VIDEO_CURRICULUM = {
                     { title: "Gazlar", index: 24 }
                 ]
             },
-{
+            {
                 unitTitle: "Doğa ve Kimya",
                 playlistUrl: "https://www.youtube.com/playlist?list=PL5kIOunpmSBNBWMQWLo0vjOZcNx5I_L7p",
                 videos: [
                     { title: "Doğa ve Kimya", index: 25 },
                 ]
             },
-{
+            {
                 unitTitle: "Kimyanın Temel Kanunları",
                 playlistUrl: "https://www.youtube.com/playlist?list=PL5kIOunpmSBNBWMQWLo0vjOZcNx5I_L7p",
                 videos: [
@@ -108,8 +108,8 @@ export const VIDEO_CURRICULUM = {
                     { title: "Kimyasal Tepkimelerde Hesaplamalar 3", index: 35 }
                 ]
             },
-{
-		unitTitle: "Karışımlar",
+            {
+                unitTitle: "Karışımlar",
                 playlistUrl: "https://www.youtube.com/playlist?list=PL5kIOunpmSBNBWMQWLo0vjOZcNx5I_L7p",
                 videos: [
                     { title: "Karışımların Sınıflandırılması 1", index: 37 },
@@ -120,8 +120,8 @@ export const VIDEO_CURRICULUM = {
                     { title: "Ayırma ve Saflaştırma Teknikleri", index: 43 },
                 ]
             },
-{
-		unitTitle: "Asitler, Bazlar ve Tuzlar",
+            {
+                unitTitle: "Asitler, Bazlar ve Tuzlar",
                 playlistUrl: "https://www.youtube.com/playlist?list=PL5kIOunpmSBNBWMQWLo0vjOZcNx5I_L7p",
                 videos: [
                     { title: "Asitler ve Bazlar", index: 44 },
@@ -130,13 +130,13 @@ export const VIDEO_CURRICULUM = {
                     { title: "Hayatımızdaki Asitler, Bazlar ve Tuzlar", index: 47 },
                 ]
             },
-{
+            {
                 unitTitle: "Kimya Her Yerde",
                 playlistUrl: "https://www.youtube.com/playlist?list=PL5kIOunpmSBNBWMQWLo0vjOZcNx5I_L7p",
                 videos: [
                     { title: "Kimya Her Yerde", index: 49 },
                 ]
-            },
+            }
 
         ],
         Biyoloji: [
@@ -301,18 +301,269 @@ export const VIDEO_CURRICULUM = {
         ],
         Fizik: [
              {
-                unitTitle: "AYT Fizik Kampı",
-                playlistUrl: "https://www.youtube.com/playlist?list=PL87vBAl7SzvzqiYcuIxz7ptFykyE2qYS_",
+                unitTitle: "Vektörler",
+                playlistUrl: "https://www.youtube.com/playlist?list=PLhhV4F6NB0-tU__PwCFhnaK-Gg_I3JG_4",
                 videos: [
-                    { title: "Vektörler", index: 0 },
-                    { title: "Bağıl Hareket", index: 2 },
-                    { title: "Newton Hareket", index: 5 },
-                    { title: "Atışlar", index: 12 },
-                    { title: "İtme Momentum", index: 16 },
-                    { title: "Elektrik", index: 25 },
-                    { title: "Manyetizma", index: 29 },
-                    { title: "Harmonik Hareket", index: 40 },
-                    { title: "Modern Fizik", index: 45 },
+                    { title: "Vektörler - 1", index: 2 },
+                    { title: "Vektörler - 2", index: 3 },
+                    { title: "Vektörler - 3", index: 4 }
+                ]
+            },
+            {
+                unitTitle: "Bağıl Hareket",
+                playlistUrl: "https://www.youtube.com/playlist?list=PLhhV4F6NB0-tU__PwCFhnaK-Gg_I3JG_4",
+                videos: [
+                    { title: "Bağıl Hareket - 1", index: 6 },
+                    { title: "Bağıl Hareket - 2", index: 7 },
+                    { title: "Bağıl Hareket - 3", index: 8 }
+                ]
+            },
+            {
+                unitTitle: "Newton'ın Hareket Yasaları",
+                playlistUrl: "https://www.youtube.com/playlist?list=PLhhV4F6NB0-tU__PwCFhnaK-Gg_I3JG_4",
+                videos: [
+                    { title: "Newton'ın Hareket Yasaları - 1", index: 10 },
+                    { title: "Newton'ın Hareket Yasaları - 2", index: 11 },
+                    { title: "Net Kuvvet Etkisinde Cisimler", index: 12 },
+                    { title: "Üst Üste Cisimler ve Makaralı Sistemler", index: 13 },
+                    { title: "Eğik Düzlemde İvmeli Hareket", index: 14 },
+                    { title: "Eylemsizlik ve Asansör Soruları", index: 15 }
+                ]
+            },
+            {
+                unitTitle: "Bir Boyutta Sabit İvmeli Hareket",
+                playlistUrl: "https://www.youtube.com/playlist?list=PLhhV4F6NB0-tU__PwCFhnaK-Gg_I3JG_4",
+                videos: [
+                    { title: "Bir Boyutta Sabit İvmeli Hareket - 1", index: 20 },
+                    { title: "Bir Boyutta Sabit İvmeli Hareket - 2", index: 21 }
+                ]
+            },
+            {
+                unitTitle: "Atışlar",
+                playlistUrl: "https://www.youtube.com/playlist?list=PLhhV4F6NB0-tU__PwCFhnaK-Gg_I3JG_4",
+                videos: [
+                    { title: "Serbest Düşme", index: 26 },
+                    { title: "Limit Hız", index: 27 },
+                    { title: "Yukarıdan Aşağıya Düşey Atış Hareketi", index: 28 },
+                    { title: "Aşağıdan Yukarıya Düşey Atış Hareketi - 1", index: 29 },
+                    { title: "Aşağıdan Yukarıya Düşey Atış Hareketi - 2", index: 30 },
+                    { title: "Yatay Atış", index: 33 },
+                    { title: "Eğik Atış - 1", index: 34 },
+                    { title: "Eğik Atış - 2", index: 35 }
+                ]
+            },
+            {
+                unitTitle: "İş, Güç ve Enerji",
+                playlistUrl: "https://www.youtube.com/playlist?list=PLhhV4F6NB0-tU__PwCFhnaK-Gg_I3JG_4",
+                videos: [
+                    { title: "İş ve Enerji", index: 38 },
+                    { title: "Kinetik ve Yer Çekimi Potansiyel Enerji", index: 39 },
+                    { title: "Esneklik Potansiyel Enerjisi", index: 40 },
+                    { title: "Mekanik Enerjinin Korunumu - 1", index: 41 },
+                    { title: "Mekanik Enerjinin Korunumu - 2", index: 42 },
+                    { title: "Sürtünmeli Yüzeylerde Mekanik Enerji", index: 43 }
+                ]
+            },
+            {
+                unitTitle: "İtme ve Momentum",
+                playlistUrl: "https://www.youtube.com/playlist?list=PLhhV4F6NB0-tU__PwCFhnaK-Gg_I3JG_4",
+                videos: [
+                    { title: "İtme ve Çizgisel Momentum İlişkisi", index: 46 },
+                    { title: "Kuvvet - Zaman ve Çizgisel Momentum - Zaman Grafikleri", index: 47 },
+                    { title: "Çizgisel Momentumun Korunumu", index: 48 },
+                    { title: "Bir Boyutta Esnek Çarpışmalar", index: 49 },
+                    { title: "İki Boyutta Esnek Çarpışmalar", index: 50 },
+                    { title: "Bir Boyutta Esnek Olmayan Çarpışmalar", index: 51 },
+                    { title: "İki Boyutta Esnek Olmayan Çarpışmalar", index: 52 },
+                    { title: "Patlama ve Fırlatma Soruları", index: 53 }
+                ]
+            },
+            {
+                unitTitle: "Tork ve Denge",
+                playlistUrl: "https://www.youtube.com/playlist?list=PLhhV4F6NB0-tU__PwCFhnaK-Gg_I3JG_4",
+                videos: [
+                    { title: "Tork - 1", index: 56 },
+                    { title: "Denge - 1", index: 58 },
+                    { title: "Denge - 2", index: 59 },
+                    { title: "Denge - 3", index: 60 }
+                ]
+            },
+            {
+                unitTitle: "Kütle ve Ağırlık Merkezi",
+                playlistUrl: "https://www.youtube.com/playlist?list=PLhhV4F6NB0-tU__PwCFhnaK-Gg_I3JG_4",
+                videos: [
+                    { title: "Kütle ve Ağırlık Merkezi - 1", index: 63 },
+                    { title: "Kütle ve Ağırlık Merkezi - 2", index: 64 },
+                    { title: "Kütle ve Ağırlık Merkezi - 3", index: 65 }
+                ]
+            },
+            {
+                unitTitle: "Basit Makineler",
+                playlistUrl: "https://www.youtube.com/playlist?list=PLhhV4F6NB0-tU__PwCFhnaK-Gg_I3JG_4",
+                videos: [
+                    { title: "Kuvvet Kazancı ve Verim", index: 67 },
+                    { title: "Kaldıraçlar", index: 68 },
+                    { title: "Sabit ve Hareketli Makaralar", index: 69 },
+                    { title: "Palangalar", index: 70 },
+                    { title: "Eğik Düzlem ve Çıkrık", index: 71 },
+                    { title: "Dişli Çarklar ve Kasnaklar", index: 72 },
+                    { title: "Dönerek Ötelenen Kasnaklar ve Vida", index: 73 }
+                ]
+            },
+            {
+                unitTitle: "Düzgün Çembersel Hareket",
+                playlistUrl: "https://www.youtube.com/playlist?list=PLhhV4F6NB0-tU__PwCFhnaK-Gg_I3JG_4",
+                videos: [
+                    { title: "Temel Kavramlar", index: 75 },
+                    { title: "Merkezcil Kuvvet ve İvme - 1", index: 76 },
+                    { title: "Merkezcil Kuvvet ve İvme - 2", index: 77 },
+                    { title: "Yatay Düzlemde Düzgün Çembersel Hareket", index: 78 },
+                    { title: "Düşey Düzlemde Düzgün Çembersel Hareket", index: 79 },
+                    { title: "Konik Sarkaç ve Silindir İçinde Düzgün Çembersel Hareket", index: 80 },
+                    { title: "Yatay Viraj ve Eğimli Viraj", index: 81 }
+                ]
+            },
+            {
+                unitTitle: "Dönerek Öteleme ve Açısal Momentum",
+                playlistUrl: "https://www.youtube.com/playlist?list=PLhhV4F6NB0-tU__PwCFhnaK-Gg_I3JG_4",
+                videos: [
+                    { title: "Dönerek Öteleme Hareketi", index: 83 },
+                    { title: "Eylemsizlik Momenti", index: 84 },
+                    { title: "Dönme Kinetik Enerjisi", index: 85 },
+                    { title: "Açısal Momentum", index: 86 },
+                    { title: "Açısal İvme - Tork İlişkisi", index: 87 },
+                    { title: "Açısal Momentumun Korunumu", index: 88 }
+                ]
+            },
+            {
+                unitTitle: "Kütle Çekim ve Kepler",
+                playlistUrl: "https://www.youtube.com/playlist?list=PLhhV4F6NB0-tU__PwCFhnaK-Gg_I3JG_4",
+                videos: [
+                    { title: "Kütle Çekim Kuvveti", index: 90 },
+                    { title: "Kütle Çekim Potansiyel Enerjisi", index: 91 },
+                    { title: "Kepler Kanunları", index: 92 }
+                ]
+            },
+            {
+                unitTitle: "Basit Harmonik Hareket",
+                playlistUrl: "https://www.youtube.com/playlist?list=PLhhV4F6NB0-tU__PwCFhnaK-Gg_I3JG_4",
+                videos: [
+                    { title: "Basit Harmonik Hareket Nasıl Yapılır?", index: 94 },
+                    { title: "Basit Harmonik Hareket - Düzgün Çembersel Hareket İlişkisi", index: 95 },
+                    { title: "Kuvvet - Zaman Grafiği ve Kuvvet - Konum İlişkisi", index: 96 },
+                    { title: "İvme - Konum ve Hız - Konum İlişkisi", index: 97 },
+                    { title: "Yay Sarkacı", index: 98 },
+                    { title: "Basit Sarkaç", index: 99 }
+                ]
+            },
+            {
+                unitTitle: "Dalga Mekaniği",
+                playlistUrl: "https://www.youtube.com/playlist?list=PLhhV4F6NB0-tU__PwCFhnaK-Gg_I3JG_4",
+                videos: [
+                    { title: "Su Dalgalarında Kırınım", index: 101 },
+                    { title: "Su Dalgalarında Girişim", index: 102 },
+                    { title: "Çift Yarıkta Girişim", index: 103 },
+                    { title: "Girişim Desenine Etki Eden Faktörler", index: 104 },
+                    { title: "Tek Yarıkta Kırınım", index: 105 },
+                    { title: "Doppler Olayı", index: 106 }
+                ]
+            },
+            {
+                unitTitle: "Elektriksel Kuvvet ve Potansiyel",
+                playlistUrl: "https://www.youtube.com/playlist?list=PLhhV4F6NB0-tU__PwCFhnaK-Gg_I3JG_4",
+                videos: [
+                    { title: "Elektriksel Kuvvet (Coulomb Kuvveti)", index: 108 },
+                    { title: "Elektrik Alan - 1", index: 109 },
+                    { title: "Elektrik Alan - 2", index: 110 },
+                    { title: "Elektriksel Potansiyel Enerji", index: 112 },
+                    { title: "Elektriksel Potansiyel", index: 113 },
+                    { title: "Elektriksel Potansiyel Fark ve İş", index: 114 },
+                    { title: "Düzgün Elektrik Alan", index: 116 },
+                    { title: "Yüklü Taneciklerin Düzgün Elektrik Alandaki Hareketi", index: 117 }
+                ]
+            },
+            {
+                unitTitle: "Sığaçlar",
+                playlistUrl: "https://www.youtube.com/playlist?list=PLhhV4F6NB0-tU__PwCFhnaK-Gg_I3JG_4",
+                videos: [
+                    { title: "Sığa Kavramı", index: 118 },
+                    { title: "Sığaçlar", index: 119 }
+                ]
+            },
+            {
+                unitTitle: "Manyetizma ve Elektromanyetik İndüksiyon",
+                playlistUrl: "https://www.youtube.com/playlist?list=PLhhV4F6NB0-tU__PwCFhnaK-Gg_I3JG_4",
+                videos: [
+                    { title: "Üzerinden Akım Geçen Düz Telin Manyetik Alanı", index: 121 },
+                    { title: "Üzerinden Akım Geçen Halkanın Manyetik Alanı", index: 122 },
+                    { title: "Üzerinden Akım Geçen Akım Makarasının(Bobinin) Manyetik Alanı", index: 123 },
+                    { title: "Üzerinden Akım Geçen Tele Etki Eden Manyetik Kuvvet", index: 125 },
+                    { title: "Tel Çerçeveye Etki Eden Manyetik Tork | Basit Elektrik Motoru", index: 126 },
+                    { title: "Yüklü Parçacıkların Manyetik Alandaki Hareketi", index: 127 },
+                    { title: "Hareket Eden Telde Oluşan İndüksiyon Elektromotor Kuvveti", index: 129 },
+                    { title: "Manyetik Akı", index: 130 },
+                    { title: "Faraday ve Lenz Yasaları", index: 131 },
+                    { title: "Öz İndüksiyon Akımı", index: 132 },
+                    { title: "Lorentz Kuvveti ve Girdap Akımları", index: 133 }
+                ]
+            },
+            {
+                unitTitle: "Alternatif Akım ve Transformatörler",
+                playlistUrl: "https://www.youtube.com/playlist?list=PLhhV4F6NB0-tU__PwCFhnaK-Gg_I3JG_4",
+                videos: [
+                    { title: "Alternatif Akım Nasıl Oluşur?", index: 135 },
+                    { title: "Alternatif Akım - Doğru Akım Kıyaslaması", index: 136 },
+                    { title: "Alternatif Akım Devrelerinde Direnç ve Bobinin Davranışı", index: 137 },
+                    { title: "Alternatif Akım Devrelerinde Sığacın Davranışı", index: 138 },
+                    { title: "Empedans ve Rezonans Kavramları", index: 139 },
+                    { title: "Transformatörler", index: 140 }
+                ]
+            },
+            {
+                unitTitle: "Atom Fiziğine Giriş ve Radyoaktivite",
+                playlistUrl: "https://www.youtube.com/playlist?list=PLhhV4F6NB0-tU__PwCFhnaK-Gg_I3JG_4",
+                videos: [
+                    { title: "Elektromanyetik Dalgaların Oluşumu ve Ortak Özellikleri", index: 142 },
+                    { title: "Elektromanyetik Spektrum", index: 143 },
+                    { title: "Siyah Cisim Işıması", index: 144 },
+                    { title: "Kesikli Enerji ve Planck Hipotezi", index: 145 },
+                    { title: "Dalton ve Thomson Atom Modelleri, Milikan Yağ Damlası Deneyi", index: 147 },
+                    { title: "Rutherford Atom Modeli", index: 148 },
+                    { title: "Bohr Atom Modeli | Açısal Momentum, Yarıçap ve Enerji", index: 149 },
+                    { title: "Bohr Atom Modeli | Işıma", index: 150 },
+                    { title: "Bohr Atom Modeli | Atomun Uyarılma Yolları", index: 151 },
+                    { title: "Modern Atom Teorisi", index: 152 },
+                    { title: "Büyük Patlama ve Evrenin Oluşumu", index: 154 },
+                    { title: "Temel Parçacıklar | Atom Altı Parçacıklar ve Standart Model", index: 155 },
+                    { title: "Higgs Bozonu, Madde - Antimadde, Temel Kuvvetler", index: 156 },
+                    { title: "Neden Bazı Çekirdekler Kararsızdır? | Radyoaktivite", index: 158 },
+                    { title: "Alfa, Beta, Gama Işımaları | Radyoaktivite", index: 159 },
+                    { title: "Nükleer Fisyon ve Füzyon Tepkimeleri | Radyoaktivite", index: 160 }
+                ]
+            },
+            {
+                unitTitle: "Modern Fizik",
+                playlistUrl: "https://www.youtube.com/playlist?list=PLhhV4F6NB0-tU__PwCFhnaK-Gg_I3JG_4",
+                videos: [
+                    { title: "Michelson - Morley Deneyi", index: 162 },
+                    { title: "Göreli Zaman | Özel Görelilik", index: 163 },
+                    { title: "Göreli Uzunluk ve Kütle - Enerji Eşdeğerliği | Özel Görelilik", index: 164 }
+                ]
+            },
+            {
+                unitTitle: "Modern Fiziğin Teknolojideki Uygulamaları",
+                playlistUrl: "https://www.youtube.com/playlist?list=PLhhV4F6NB0-tU__PwCFhnaK-Gg_I3JG_4",
+                videos: [
+                    { title: "Hertz Deneyi ve Foton Kavramı | Fotoelektrik Olayı", index: 166 },
+                    { title: "Fotoelektrik Denklemi ve Maksimum Enerji - Frekans Grafiği", index: 167 },
+                    { title: "Fotoelektrik Akımı ve Doyma Gerilimi | Fotoelektrik Olayı", index: 168 },
+                    { title: "Kesme Gerilimi ve Günlük Hayat Uygulamaları | Fotoelektrik Olay", index: 169 },
+                    { title: "Compton Saçılması", index: 171 },
+                    { title: "De Broglie Dalga Boyu | Madde Dalgaları", index: 172 },
+                    { title: "Compton Saçılması ve De Broglie Dalga Boyu Soru Çözümü", index: 173 },
+                    { title: "Görüntüleme Teknolojileri", index: 174 },
+                    { title: "Yarı İletken Teknolojisi", index: 175 },
+                    { title: "Süper İletkenler", index: 176 }
                 ]
             }
         ],
