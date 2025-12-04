@@ -5,62 +5,76 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <meta name="theme-color" content="#4f46e5" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="web-app" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <link rel="manifest" href="/manifest.json" />
     <link rel="apple-touch-icon" href="/vite.svg" />
     <meta name="apple-mobile-web-app-title" content="YKS Hub" />
     <title>YKS Hub</title>
     <script>
-      // Başlangıç Debug Bilgisi
-      console.log('%c🚀 YKS Hub Başlıyor...', 'color: #4f46e5; font-size: 14px; font-weight: bold');
-      console.log('⏱️ Sayfa Yükleme Başlangıcı:', new Date().toLocaleTimeString('tr-TR'));
+      // Development logging
+      const isDev = import.meta.env.DEV || location.hostname === 'localhost';
       
-      // iOS Tespit
+      if (isDev) {
+        console.log('%c🚀 YKS Hub Starting...', 'color: #4f46e5; font-size: 14px; font-weight: bold');
+        console.log('⏱️ Load start:', new Date().toLocaleTimeString('tr-TR'));
+      }
+      
+      // iOS Detection
       const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
       const isAndroid = /Android/.test(navigator.userAgent);
       const ua = navigator.userAgent;
       
-      console.log('%cCihaz Bilgisi:', 'font-weight: bold; color: #7c3aed');
-      console.log('OS:', isIOS ? 'iOS' : isAndroid ? 'Android' : 'Diğer');
-      console.log('Safari:', ua.includes('Safari'));
-      console.log('Ekran:', `${window.innerWidth}x${window.innerHeight}`);
-      console.log('DPR:', window.devicePixelRatio);
+      if (isDev) {
+        console.log('%cDevice Info:', 'font-weight: bold; color: #7c3aed');
+        console.log('OS:', isIOS ? 'iOS' : isAndroid ? 'Android' : 'Other');
+        console.log('Safari:', ua.includes('Safari'));
+        console.log('Screen:', `${window.innerWidth}x${window.innerHeight}`);
+        console.log('DPR:', window.devicePixelRatio);
+      }
       
-      // LocalStorage/SessionStorage Uyarıları
-      console.log('%cDepolama Kontrolleri:', 'font-weight: bold; color: #7c3aed');
+      // Storage Check
+      if (isDev) {
+        console.log('%cStorage Check:', 'font-weight: bold; color: #7c3aed');
+      }
       try {
         localStorage.setItem('_test', '1');
         localStorage.removeItem('_test');
-        console.log('✅ LocalStorage:', 'Erişilebilir');
+        if (isDev) console.log('✅ LocalStorage:', 'OK');
+
       } catch (e) {
-        console.warn('⚠️ LocalStorage:', e.message, '- SessionStorage kullanılacak');
+        if (isDev) console.warn('⚠️ LocalStorage:', e.message);
       }
       
       try {
         sessionStorage.setItem('_test', '1');
         sessionStorage.removeItem('_test');
-        console.log('✅ SessionStorage:', 'Erişilebilir');
+        if (isDev) console.log('✅ SessionStorage:', 'OK');
       } catch (e) {
-        console.error('❌ SessionStorage:', e.message);
+        if (isDev) console.error('⚠️ SessionStorage:', e.message);
       }
       
       // Global Error Handler
       window.addEventListener('error', (event) => {
-        console.error('%c❌ HATA:', 'color: #ef4444; font-weight: bold', {
-          message: event.message,
-          filename: event.filename,
-          lineno: event.lineno,
-          colno: event.colno,
-          error: event.error
-        });
+        // Only log critical errors in production
+        if (isDev || event.error?.name === 'ChunkLoadError') {
+          console.error('Error:', {
+            message: event.message,
+            filename: event.filename,
+            lineno: event.lineno,
+            colno: event.colno,
+            error: event.error
+          });
+        }
       });
       
       window.addEventListener('unhandledrejection', (event) => {
-        console.error('%c❌ PROMISE HATASI:', 'color: #ef4444; font-weight: bold', {
-          reason: event.reason,
-          promise: event.promise
-        });
+        if (isDev) {
+          console.error('Unhandled rejection:', {
+            reason: event.reason,
+            promise: event.promise
+          });
+        }
       });
     </script>
   </head>
@@ -68,15 +82,16 @@
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
     <script>
-      // Sayfa Yükleme Tamamlandı
+      // Page load complete
       window.addEventListener('load', () => {
-        console.log('%c✅ Sayfa Tamamen Yüklendi!', 'color: #22c55e; font-size: 14px; font-weight: bold');
-        console.log('⏱️ Yükleme Tamamlama Zamanı:', new Date().toLocaleTimeString('tr-TR'));
-        console.log('Kullanıcı etkileşim yapabilir.');
+        if (isDev) {
+          console.log('%c✅ Page loaded!', 'color: #22c55e; font-size: 14px; font-weight: bold');
+          console.log('⏱️ Load time:', new Date().toLocaleTimeString('tr-TR'));
+        }
       });
       
-      // İlk Interactive Zamanı
-      if ('PerformanceObserver' in window) {
+      // Performance metrics
+      if ('PerformanceObserver' in window && isDev) {
         try {
           const observer = new PerformanceObserver((list) => {
             for (const entry of list.getEntries()) {

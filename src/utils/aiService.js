@@ -9,19 +9,13 @@ const API_KEY = import.meta.env.VITE_GOOGLE_AI_API_KEY;
 let genAI = null;
 
 if (!API_KEY) {
-  console.error(
-    "❌ API KEY bulunamadı!"
-  );
-  console.warn("ÇÖZÜM:");
-  console.warn("1. Local dev: .env.local dosyasına VITE_GOOGLE_AI_API_KEY=... ekle");
-  console.warn("2. Vercel: Dashboard → Settings → Environment Variables ekle");
-  console.warn("3. Firebase Hosting: firebase deploy --env production çalıştır");
+  // Silently handle missing API key - will show user-friendly message when feature used
+  console.warn("⚠️ Google AI API key not configured. AI features will be unavailable.");
 } else {
   try {
     genAI = new GoogleGenerativeAI(API_KEY);
-    console.log("✅ Google AI API initialized successfully");
   } catch (err) {
-    console.error("❌ Google AI initialization error:", err.message);
+    console.error("Google AI initialization error:", err.message);
   }
 }
 
@@ -59,7 +53,7 @@ const processQueue = async () => {
 const getModel = () => {
   if (!genAI) {
     throw new Error(
-      "API KEY not configured. Set VITE_GOOGLE_AI_API_KEY in environment variables."
+      "Google AI API not initialized. API key may not be configured."
     );
   }
   return genAI.getGenerativeModel({
@@ -87,14 +81,17 @@ const getModel = () => {
 
 // Güvenli error handling
 const handleAIError = (error, context) => {
-  console.error(`❌ AI Hatası (${context}):`, error);
+  // Don't spam console with errors
+  if (process.env.NODE_ENV === 'development') {
+    console.error(`AI Error (${context}):`, error);
+  }
 
-  // Önemli hataları ayırt et
-  if (error.message?.includes("API key")) {
+  // Handle specific error cases
+  if (error.message?.includes("API") || error.message?.includes("not initialized")) {
     return {
       error: true,
-      message: "API ayarı hatalı. Sistem yöneticisine başvur.",
-      code: "AUTH_ERROR",
+      message: "AI özelliği şu an kullanılamıyor. Lütfen daha sonra dene.",
+      code: "CONFIG_ERROR",
     };
   }
 
