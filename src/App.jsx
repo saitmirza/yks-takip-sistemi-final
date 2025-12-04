@@ -55,44 +55,103 @@ export default function ExamTrackerApp() {
 
   const addToast = (message, type = 'success') => { setToast({ message, type }); };
 
+  // localStorage helper - iPhone'da daha güvenli
+  const saveSession = (user) => {
+    try {
+      localStorage.setItem('examApp_session', JSON.stringify(user));
+    } catch (err) {
+      console.error("Failed to save session to localStorage:", err);
+      // Fallback: sessionStorage'a kaydet
+      try {
+        sessionStorage.setItem('examApp_session_backup', JSON.stringify(user));
+      } catch (e) {
+        console.error("Failed to save to sessionStorage:", e);
+      }
+    }
+  };
+
+  const getSession = () => {
+    try {
+      const saved = localStorage.getItem('examApp_session');
+      if (saved) return JSON.parse(saved);
+    } catch (err) {
+      console.error("Failed to get session from localStorage:", err);
+      try {
+        const backup = sessionStorage.getItem('examApp_session_backup');
+        if (backup) return JSON.parse(backup);
+      } catch (e) {
+        console.error("Failed to get from sessionStorage:", e);
+      }
+    }
+    return null;
+  };
+
   // --- GİRİŞ YAPMA (LOGIN) ---
   const handleLogin = async (e) => {
-    e.preventDefault(); setAuthError("");
+    e.preventDefault(); 
+    setAuthError("");
     const inputVal = authInput.email?.trim(); 
-    if (!inputVal || !authInput.password) { setAuthError("Lütfen bilgileri girin."); return; }
-    
-    // 1. DEMO GİRİŞİ
-    if ((inputVal === DEMO_USERNAME || inputVal === DEMO_USER_DATA.email) && authInput.password === DEMO_PASSWORD) {
-        const s = { ...DEMO_USER_DATA, base64Avatar: "" }; setCurrentUser(s); localStorage.setItem('examApp_session', JSON.stringify(s)); setActiveTab('my_exams'); addToast("Demo giriş başarılı!", "info"); return;
+    if (!inputVal || !authInput.password) { 
+      setAuthError("Lütfen bilgileri girin."); 
+      return; 
     }
     
-    // 2. ADMİN GİRİŞİ
-    if ((inputVal === ADMIN_USERNAME || inputVal === "admin@yks.com") && authInput.password === ADMIN_PASSWORD) {
-      const s = { username: "Yönetici", email: ADMIN_USERNAME, internalId: "ADMIN_ID", isAdmin: true, avatar: "🛡️", realName: "Admin", classSection: "Yönetim" }; setCurrentUser(s); localStorage.setItem('examApp_session', JSON.stringify(s)); setActiveTab('dashboard'); addToast("Admin girişi yapıldı.", "success"); return;
-    }
-    
-    // 3. NORMAL KULLANICI GİRİŞİ
     try {
+      // 1. DEMO GİRİŞİ
+      if ((inputVal === DEMO_USERNAME || inputVal === DEMO_USER_DATA.email) && authInput.password === DEMO_PASSWORD) {
+          const s = { ...DEMO_USER_DATA, base64Avatar: "" }; 
+          setCurrentUser(s); 
+          saveSession(s); 
+          setActiveTab('my_exams'); 
+          addToast("Demo giriş başarılı!", "info"); 
+          return;
+      }
+      
+      // 2. ADMİN GİRİŞİ
+      if ((inputVal === ADMIN_USERNAME || inputVal === "admin@yks.com") && authInput.password === ADMIN_PASSWORD) {
+        const s = { username: "Yönetici", email: ADMIN_USERNAME, internalId: "ADMIN_ID", isAdmin: true, avatar: "🛡️", realName: "Admin", classSection: "Yönetim" }; 
+        setCurrentUser(s); 
+        saveSession(s); 
+        setActiveTab('dashboard'); 
+        addToast("Admin girişi yapıldı.", "success"); 
+        return;
+      }
+      
+      // 3. NORMAL KULLANICI GİRİŞİ
       let userData = null;
       if (inputVal.includes('@')) {
-          const emailKey = inputVal.toLowerCase(); const userRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'user_accounts', emailKey);
-          const snap = await getDoc(userRef); if (snap.exists()) userData = snap.data();
+          const emailKey = inputVal.toLowerCase(); 
+          const userRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'user_accounts', emailKey);
+          const snap = await getDoc(userRef); 
+          if (snap.exists()) userData = snap.data();
       } else {
           const q = query(collection(db, 'artifacts', APP_ID, 'public', 'data', 'user_accounts'), where("username", "==", inputVal));
-          const querySnapshot = await getDocs(q); if (!querySnapshot.empty) userData = querySnapshot.docs[0].data();
+          const querySnapshot = await getDocs(q); 
+          if (!querySnapshot.empty) userData = querySnapshot.docs[0].data();
       }
       
       if(userData) {
-          if (userData.isBanned) { setAuthError("Bu hesap yasaklanmıştır."); return; }
+          if (userData.isBanned) { 
+            setAuthError("Bu hesap yasaklanmıştır."); 
+            return; 
+          }
           if (userData.password === authInput.password) {
             const s = { ...userData, isAdmin: false, isDemo: false }; 
             setCurrentUser(s); 
-            localStorage.setItem('examApp_session', JSON.stringify(s)); 
+            saveSession(s); 
             setActiveTab('my_exams'); 
             addToast(`Hoş geldin ${s.username}!`);
-          } else { setAuthError("Hatalı şifre."); addToast("Giriş başarısız.", "error"); }
-      } else { setAuthError("Kullanıcı bulunamadı."); }
-    } catch (e) { console.error(e); setAuthError("Giriş hatası."); }
+          } else { 
+            setAuthError("Hatalı şifre."); 
+            addToast("Giriş başarısız.", "error"); 
+          }
+      } else { 
+        setAuthError("Kullanıcı bulunamadı."); 
+      }
+    } catch (e) { 
+      console.error("Login error:", e); 
+      setAuthError("Giriş hatası: " + e.message); 
+    }
   };
 
   // --- KAYIT OLMA (REGISTER) - AKTİF ---
@@ -167,7 +226,7 @@ export default function ExamTrackerApp() {
 
         // 7. Otomatik Giriş Yap
         setCurrentUser(newUser);
-        localStorage.setItem('examApp_session', JSON.stringify(newUser));
+        saveSession(newUser);
         setActiveTab('my_exams');
         addToast(`Aramıza hoş geldin, ${newUser.realName}! 🎉`);
 
@@ -179,19 +238,160 @@ export default function ExamTrackerApp() {
     }
   };
 
-  const handleLogout = () => { setCurrentUser(null); localStorage.removeItem('examApp_session'); setActiveTab("calendar"); setAuthInput({}); addToast("Çıkış yapıldı.", "info"); };
+  const handleLogout = () => { 
+    setCurrentUser(null); 
+    try {
+      localStorage.removeItem('examApp_session');
+      sessionStorage.removeItem('examApp_session_backup');
+    } catch (err) {
+      console.error("Logout error:", err);
+    }
+    setActiveTab("calendar"); 
+    setAuthInput({}); 
+    addToast("Çıkış yapıldı.", "info"); 
+  };
 
   // --- EFFECTLER ---
-  useEffect(() => { const initAuth = async () => { try { await signInAnonymously(auth); } catch (err) {} }; initAuth(); onAuthStateChanged(auth, (user) => { setFirebaseUser(user); setLoading(false); const savedSession = localStorage.getItem('examApp_session'); if (savedSession) setCurrentUser(JSON.parse(savedSession)); }); }, []);
+  useEffect(() => { 
+    const initAuth = async () => { 
+      try { 
+        await signInAnonymously(auth); 
+      } catch (err) { 
+        console.error("Firebase auth error:", err);
+      } 
+    }; 
+    initAuth(); 
+    const unsubscribe = onAuthStateChanged(auth, (user) => { 
+      setFirebaseUser(user); 
+      setLoading(false); 
+      try {
+        const savedSession = getSession(); 
+        if (savedSession) {
+          setCurrentUser(savedSession);
+        }
+      } catch (err) {
+        console.error("Session restore error:", err);
+      }
+    }, (error) => {
+      console.error("Auth state changed error:", error);
+      setLoading(false);
+    }); 
+    return () => unsubscribe();
+  }, []);
   
   // Last Seen Güncelleyici
-  useEffect(() => { if (!currentUser || currentUser.isDemo || currentUser.isAdmin) return; const userRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'user_accounts', currentUser.email); updateDoc(userRef, { lastSeen: serverTimestamp() }); const interval = setInterval(() => { updateDoc(userRef, { lastSeen: serverTimestamp() }); }, 120000); return () => clearInterval(interval); }, [currentUser]);
+  useEffect(() => { 
+    if (!currentUser || currentUser.isDemo || currentUser.isAdmin) return; 
+    const userRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'user_accounts', currentUser.email); 
+    
+    const updateLastSeen = async () => {
+      try {
+        await updateDoc(userRef, { lastSeen: serverTimestamp() });
+      } catch (err) {
+        console.error("Last seen update error:", err);
+      }
+    };
+    
+    updateLastSeen();
+    const interval = setInterval(() => { 
+      updateLastSeen();
+    }, 120000); 
+    return () => clearInterval(interval); 
+  }, [currentUser]);
   
   // Veri Dinleyicileri
-  useEffect(() => { if (!firebaseUser) return; const unsubScores = onSnapshot(collection(db, 'artifacts', APP_ID, 'public', 'data', 'exam_scores_v3'), (snap) => { let data = snap.docs.map(d => ({ id: d.id, ...d.data() })); data = data.filter(s => s.internalUserId !== DEMO_INTERNAL_ID); data.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0)); setAllScores(data); }); const unsubUsers = onSnapshot(collection(db, 'artifacts', APP_ID, 'public', 'data', 'user_accounts'), (snap) => { setUsersList(snap.docs.map(d => d.data()).filter(u => u.internalId !== DEMO_INTERNAL_ID)); }); const qQuery = query(collection(db, 'artifacts', APP_ID, 'public', 'data', 'questions'), orderBy('timestamp', 'desc')); const unsubQuestions = onSnapshot(qQuery, (snap) => { setQuestions(snap.docs.map(d => ({ id: d.id, ...d.data() }))); }); return () => { unsubScores(); unsubUsers(); unsubQuestions(); }; }, [firebaseUser]);
+  useEffect(() => { 
+    if (!firebaseUser) return; 
+    
+    try {
+      const unsubScores = onSnapshot(
+        collection(db, 'artifacts', APP_ID, 'public', 'data', 'exam_scores_v3'), 
+        (snap) => { 
+          try {
+            let data = snap.docs.map(d => ({ id: d.id, ...d.data() })); 
+            data = data.filter(s => s.internalUserId !== DEMO_INTERNAL_ID); 
+            data.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0)); 
+            setAllScores(data);
+          } catch (err) {
+            console.error("Scores processing error:", err);
+          }
+        },
+        (error) => {
+          console.error("Scores listener error:", error);
+        }
+      );
+
+      const unsubUsers = onSnapshot(
+        collection(db, 'artifacts', APP_ID, 'public', 'data', 'user_accounts'), 
+        (snap) => { 
+          try {
+            setUsersList(snap.docs.map(d => d.data()).filter(u => u.internalId !== DEMO_INTERNAL_ID));
+          } catch (err) {
+            console.error("Users processing error:", err);
+          }
+        },
+        (error) => {
+          console.error("Users listener error:", error);
+        }
+      );
+
+      const qQuery = query(collection(db, 'artifacts', APP_ID, 'public', 'data', 'questions'), orderBy('timestamp', 'desc')); 
+      const unsubQuestions = onSnapshot(
+        qQuery, 
+        (snap) => { 
+          try {
+            setQuestions(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+          } catch (err) {
+            console.error("Questions processing error:", err);
+          }
+        },
+        (error) => {
+          console.error("Questions listener error:", error);
+        }
+      );
+
+      return () => { 
+        unsubScores(); 
+        unsubUsers(); 
+        unsubQuestions(); 
+      }; 
+    } catch (err) {
+      console.error("Listener setup error:", err);
+    }
+  }, [firebaseUser]);
   
   // Sıralama Hesaplama
-  useEffect(() => { if (!currentUser || allScores.length === 0) return; let mine = allScores.filter(s => s.internalUserId === currentUser.internalId); if (!currentUser.isAdmin && !currentUser.isDemo) { const { placementBonus } = calculateOBP(currentUser.s9Avg, currentUser.s10Avg, currentUser.s11Avg, currentUser.s12Avg); mine = mine.map(s => ({ ...s, placementScore: Number((s.finalScore + Number(placementBonus)).toFixed(2)) })); } setMyScores(mine); const fetchRanks = async () => { const newRanks = {}; for (const s of mine) { const rank = await getEstimatedRank(s.placementScore); newRanks[s.id] = rank; } setRankings(newRanks); }; fetchRanks(); }, [allScores, currentUser]);
+  useEffect(() => { 
+    if (!currentUser || allScores.length === 0) return; 
+    
+    try {
+      let mine = allScores.filter(s => s.internalUserId === currentUser.internalId); 
+      
+      if (!currentUser.isAdmin && !currentUser.isDemo) { 
+        const { placementBonus } = calculateOBP(currentUser.s9Avg, currentUser.s10Avg, currentUser.s11Avg, currentUser.s12Avg); 
+        mine = mine.map(s => ({ ...s, placementScore: Number((s.finalScore + Number(placementBonus)).toFixed(2)) })); 
+      } 
+      
+      setMyScores(mine); 
+      
+      const fetchRanks = async () => { 
+        try {
+          const newRanks = {}; 
+          for (const s of mine) { 
+            const rank = await getEstimatedRank(s.placementScore); 
+            newRanks[s.id] = rank; 
+          } 
+          setRankings(newRanks);
+        } catch (err) {
+          console.error("Rank calculation error:", err);
+        }
+      }; 
+      
+      fetchRanks(); 
+    } catch (err) {
+      console.error("Score processing error:", err);
+    }
+  }, [allScores, currentUser]);
   
   const getUserStats = (uid) => { const userScores = allScores.filter(s => s.internalUserId === uid); if (userScores.length === 0) return null; const examCount = userScores.length; const lastExamDate = new Date(userScores[0].timestamp?.seconds * 1000).toLocaleDateString('tr-TR'); const bestScore = Math.max(...userScores.map(s => s.finalScore)); return { examCount, lastExamDate, bestRank: `${bestScore} Puan` }; };
   const getUserScores = (uid) => allScores.filter(s => s.internalUserId === uid);

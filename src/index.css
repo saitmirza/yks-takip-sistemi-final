@@ -4,6 +4,42 @@
 @tailwind components;
 @tailwind utilities;
 
+/* --- iOS SAFARI DÜZELTMELERİ --- */
+
+/* 1. Yükseklik Sorunu: 100vh yerine 100dvh kullanıyoruz */
+/* Eğer tarayıcı dvh desteklemiyorsa fallback yapıyoruz */
+:root {
+  --app-height: 100vh;
+}
+
+@supports (height: 100dvh) {
+  :root {
+    --app-height: 100dvh;
+  }
+}
+
+body, html, #root {
+  height: 100%;
+  min-height: var(--app-height);
+  /* iOS'te elastik kaydırmayı (bounce effect) engellemek için */
+  overscroll-behavior-y: none; 
+}
+
+/* 2. Cam Efekti (Backdrop Blur) Safari Desteği */
+/* Tailwind'in backdrop-blur sınıfı bazen Safari'de çalışmaz, bunu zorluyoruz */
+.backdrop-blur-md, .backdrop-blur-xl, .backdrop-blur-sm {
+  -webkit-backdrop-filter: blur(12px); /* Safari için zorunlu */
+  backdrop-filter: blur(12px);
+}
+
+/* 3. iPhone Çentik Ayarları (Safe Area) */
+/* İçeriklerin çentik altında kalmaması için padding ekler */
+.safe-area-top {
+  padding-top: env(safe-area-inset-top);
+}
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
 /* Tarayıcıya sitenin karanlık olduğunu bildir (Scrollbar ve Sistem UI için) */
 :root {
   color-scheme: dark;

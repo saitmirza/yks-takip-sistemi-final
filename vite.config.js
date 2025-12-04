@@ -39,4 +39,33 @@ export default defineConfig({
       }
     })
   ],
+  build: {
+    target: 'es2015', // Daha eski tarayıcılar için derler
+    outDir: 'dist',
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: false,
+      },
+    },
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'firebase': ['firebase/app', 'firebase/auth', 'firebase/firestore'],
+          'react-vendor': ['react', 'react-dom'],
+        }
+      }
+    }
+  },
+  server: {
+    headers: {
+      'Cache-Control': 'public, max-age=300'
+    },
+    middlewareMode: false,
+    hmr: {
+      protocol: 'ws',
+      host: 'localhost'
+      // Port otomatik ayarlanacak
+    }
+  }
 })
