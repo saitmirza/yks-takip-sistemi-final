@@ -22,10 +22,26 @@ body, html, #root {
   height: 100%;
   min-height: var(--app-height);
   /* iOS'te elastik kaydırmayı (bounce effect) engellemek için */
-  overscroll-behavior-y: none; 
+  overscroll-behavior-y: none;
+  /* iOS'ta -webkit-text-size-adjust sorunu */
+  -webkit-text-size-adjust: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* 2. Cam Efekti (Backdrop Blur) Safari Desteği */
+/* iOS'ta input placeholder rengi optimizasyonu */
+input::placeholder {
+  -webkit-text-fill-color: #94a3b8;
+  opacity: 1;
+}
+
+/* iOS'ta button / input focus ring */
+button, input, select, textarea {
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
+}
+
+/* 2. Cam Efekti (Backdrop Blur) Safari Desteği */ 
 /* Tailwind'in backdrop-blur sınıfı bazen Safari'de çalışmaz, bunu zorluyoruz */
 .backdrop-blur-md, .backdrop-blur-xl, .backdrop-blur-sm {
   -webkit-backdrop-filter: blur(12px); /* Safari için zorunlu */
@@ -53,6 +69,10 @@ body, html {
   padding: 0;
   overflow-x: hidden; /* Yatay kaymayı engelle */
   -webkit-tap-highlight-color: transparent; /* Mobilde tıklama mavisini kaldır */
+  /* iOS Notch ve Dynamic Island'den uzak tut */
+  padding-left: max(0, env(safe-area-inset-left));
+  padding-right: max(0, env(safe-area-inset-right));
+  padding-top: max(0, env(safe-area-inset-top));
 }
 
 #root {

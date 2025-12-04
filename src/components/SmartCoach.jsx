@@ -46,14 +46,22 @@ export default function SmartCoach({ currentUser, myScores }) {
 
     // 2. GEÇMİŞ RAPORLARI ÇEK
     useEffect(() => {
-        const q = query(collection(db, 'artifacts', APP_ID, 'public', 'data', 'coach_archives'), where("userId", "==", currentUser.internalId));
-        const unsub = onSnapshot(q, (snap) => {
-            const data = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-            data.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
-            setHistory(data);
-            if (data.length > 0 && !latestReport) setLatestReport(data[0]);
-        });
-        return () => unsub();
+        try {
+            const q = query(collection(db, 'artifacts', APP_ID, 'public', 'data', 'coach_archives'), where("userId", "==", currentUser.internalId));
+            const unsub = onSnapshot(q, (snap) => {
+                const data = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                data.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
+                setHistory(data);
+                if (data.length > 0 && !latestReport) setLatestReport(data[0]);
+            }, (error) => {
+                console.warn("Coach archive yüklenemedi:", error.message);
+                setHistory([]);
+            });
+            return () => unsub();
+        } catch (err) {
+            console.warn("Coach archive query hatası:", err.message);
+            setHistory([]);
+        }
     }, [currentUser]);
 
     // 3. PREFERENCES KAYDET
@@ -73,12 +81,19 @@ export default function SmartCoach({ currentUser, myScores }) {
             targetScore = liveUser.dreamSchools[0].targetScore;
         }
 
-        // Haftalık Loglar
+        // Haftalık Loglar - Index sorunu olmadan userId'ye göre çek, sonra JavaScript'te filter et
         const currentWeek = getWeekId();
-        const logsQ = query(collection(db, 'artifacts', APP_ID, 'public', 'data', 'study_logs'), where("userId", "==", currentUser.internalId), where("weekId", "==", currentWeek));
+        const logsQ = query(collection(db, 'artifacts', APP_ID, 'public', 'data', 'study_logs'), where("userId", "==", currentUser.internalId));
         const logsSnap = await getDocs(logsQ);
         let weeklySolved = 0; let weeklyMinutes = 0;
-        logsSnap.forEach(doc => { const d = doc.data(); weeklySolved += Number(d.countValue || 0); weeklyMinutes += Number(d.duration || 0); });
+        logsSnap.forEach(doc => { 
+            const d = doc.data(); 
+            // JavaScript'te currentWeek'e göre filter et
+            if (d.weekId === currentWeek) {
+                weeklySolved += Number(d.countValue || 0); 
+                weeklyMinutes += Number(d.duration || 0); 
+            }
+        });
 
         // Denemeler
         const recentExams = myScores.slice(0, 3).map(s => ({ name: s.examName, total: s.placementScore }));

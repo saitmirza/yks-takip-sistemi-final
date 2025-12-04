@@ -356,7 +356,7 @@ export default function Pomodoro({ currentUser }) {
                 <div className="absolute inset-0 z-50 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl rounded-3xl flex flex-col items-center justify-center p-6 text-center animate-in zoom-in-95 border border-slate-200 dark:border-gray-700">
                      <div className="bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-400 w-10 h-10 rounded-full flex items-center justify-center mb-4"><Music size={20}/></div>
                     <h3 className="font-bold text-lg text-slate-800 dark:text-white mb-4">Nasıl Eklenir?</h3>
-                    <ol className="text-sm text-slate-600 dark:text-slate-300 space-y-2 text-left list-decimal pl-4 mb-4"><li>Spotify'ı aç.</li><li>Çalma listesine sağ tıkla.</li><li><strong>Paylaş > Bağlantıyı kopyala</strong> de.</li><li>Kutucuğa yapıştır.</li></ol>
+                    <ol className="text-sm text-slate-600 dark:text-slate-300 space-y-2 text-left list-decimal pl-4 mb-4"><li>Spotify'ı aç.</li><li>Çalma listesine sağ tıkla.</li><li><strong>Paylaş {'\u2192'} Bağlantıyı kopyala</strong> de.</li><li>Kutucuğa yapıştır.</li></ol>
                     <button onClick={() => setShowSpotifyHelp(false)} className="bg-indigo-600 text-white px-6 py-2 rounded-xl font-bold text-sm">Anlaşıldı</button>
                 </div>
             )}

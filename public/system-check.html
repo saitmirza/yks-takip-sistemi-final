@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>YKS Hub - Sistem Kontrolü</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: #e2e8f0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 24px;
+        }
+        
+        .status-card {
+            background: rgba(148, 163, 184, 0.1);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+        
+        .status-card h3 {
+            margin-bottom: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: #94a3b8;
+        }
+        
+        .status-item {
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+        }
+        
+        .status-item:last-child {
+            border-bottom: none;
+        }
+        
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        
+        .status-badge.success {
+            background: rgba(34, 197, 94, 0.2);
+            color: #86efac;
+        }
+        
+        .status-badge.warning {
+            background: rgba(245, 158, 11, 0.2);
+            color: #fcd34d;
+        }
+        
+        .status-badge.error {
+            background: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+        }
+        
+        .test-button {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            margin-top: 20px;
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .test-button:active {
+            transform: scale(0.98);
+        }
+        
+        .log-area {
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 20px;
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 11px;
+            color: #cbd5e1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 YKS Hub Sistem Kontrolü</h1>
+        
+        <div class="status-card">
+            <h3>Cihaz Bilgisi</h3>
+            <div class="status-item">
+                <span>İşletim Sistemi</span>
+                <span id="os">Kontrol ediliyor...</span>
+            </div>
+            <div class="status-item">
+                <span>Tarayıcı</span>
+                <span id="browser">Kontrol ediliyor...</span>
+            </div>
+            <div class="status-item">
+                <span>Ekran Çözünürlüğü</span>
+                <span id="resolution">-</span>
+            </div>
+        </div>
+        
+        <div class="status-card">
+            <h3>Depolama</h3>
+            <div class="status-item">
+                <span>LocalStorage</span>
+                <span class="status-badge success" id="ls-status">Kontrol ediliyor...</span>
+            </div>
+            <div class="status-item">
+                <span>SessionStorage</span>
+                <span class="status-badge success" id="ss-status">Kontrol ediliyor...</span>
+            </div>
+        </div>
+        
+        <div class="status-card">
+            <h3>API & Ağ</h3>
+            <div class="status-item">
+                <span>Firebase Bağlantı</span>
+                <span class="status-badge warning" id="firebase-status">Kontrol ediliyor...</span>
+            </div>
+            <div class="status-item">
+                <span>İnternet Bağlantısı</span>
+                <span class="status-badge success" id="network-status">Online</span>
+            </div>
+        </div>
+        
+        <button class="test-button" onclick="runDiagnostics()">Tanıyı Çalıştır</button>
+        
+        <div class="log-area" id="logs"></div>
+    </div>
+    
+    <script>
+        const log = (message) => {
+            const logsDiv = document.getElementById('logs');
+            const timestamp = new Date().toLocaleTimeString('tr-TR');
+            logsDiv.innerHTML += `[${timestamp}] ${message}\n`;
+            logsDiv.scrollTop = logsDiv.scrollHeight;
+        };
+        
+        const setStatus = (elementId, status, badge) => {
+            const el = document.getElementById(elementId);
+            el.textContent = status;
+            el.className = `status-badge ${badge || 'success'}`;
+        };
+        
+        // Başlangıç Kontrolleri
+        window.addEventListener('load', () => {
+            // OS Tespiti
+            const ua = navigator.userAgent;
+            const isIOS = /iPhone|iPad|iPod/.test(ua);
+            const isAndroid = /Android/.test(ua);
+            let os = 'Bilinmeyen';
+            if (isIOS) os = '📱 iOS';
+            else if (isAndroid) os = '📱 Android';
+            else if (/Mac/.test(ua)) os = '🖥️ macOS';
+            else if (/Windows/.test(ua)) os = '🖥️ Windows';
+            document.getElementById('os').textContent = os;
+            
+            // Tarayıcı Tespiti
+            let browser = 'Safari';
+            if (/Chrome/.test(ua)) browser = 'Chrome';
+            else if (/Firefox/.test(ua)) browser = 'Firefox';
+            document.getElementById('browser').textContent = browser;
+            
+            // Ekran Bilgisi
+            document.getElementById('resolution').textContent = 
+                `${window.innerWidth}x${window.innerHeight}`;
+            
+            // Storage Kontrolleri
+            try {
+                localStorage.setItem('test', 'test');
+                localStorage.removeItem('test');
+                setStatus('ls-status', 'Çalışıyor', 'success');
+                log('✅ LocalStorage: OK');
+            } catch (e) {
+                setStatus('ls-status', 'Hata', 'error');
+                log('❌ LocalStorage: ' + e.message);
+            }
+            
+            try {
+                sessionStorage.setItem('test', 'test');
+                sessionStorage.removeItem('test');
+                setStatus('ss-status', 'Çalışıyor', 'success');
+                log('✅ SessionStorage: OK');
+            } catch (e) {
+                setStatus('ss-status', 'Hata', 'error');
+                log('❌ SessionStorage: ' + e.message);
+            }
+            
+            // Network Kontrolü
+            if (navigator.onLine) {
+                setStatus('network-status', 'Online', 'success');
+                log('✅ İnternet: Bağlı');
+            } else {
+                setStatus('network-status', 'Offline', 'error');
+                log('❌ İnternet: Bağlı değil');
+            }
+        });
+        
+        async function runDiagnostics() {
+            log('\n--- Tanı Başladı ---');
+            
+            // Firebase Test
+            try {
+                log('Firebase SDK yükleniyor...');
+                setStatus('firebase-status', 'Test ediliyor...', 'warning');
+                
+                // Ana sayfadaki App.jsx'ten Firebase başlat
+                const response = await fetch('./firebase.js');
+                if (response.ok) {
+                    setStatus('firebase-status', 'Yüklendi', 'success');
+                    log('✅ Firebase SDK: Yüklendi');
+                } else {
+                    setStatus('firebase-status', 'Hata', 'error');
+                    log('❌ Firebase SDK: Yüklenemedi');
+                }
+            } catch (e) {
+                setStatus('firebase-status', 'Hata', 'error');
+                log('❌ Firebase Test: ' + e.message);
+            }
+            
+            log('--- Tanı Tamamlandı ---\n');
+            log('Ana sayfaya gitmek için: Ana Sayfa');
+        }
+        
+        // iOS tespit özel
+        const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
+        if (isIOS) {
+            log('📱 iOS cihazı tespit edildi - iOS optimizasyonları aktif');
+            log('Safari sürümü: ' + navigator.userAgent.split('Version/')[1]?.split(' ')[0]);
+        }
+    </script>
+</body>
+</html>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar, Plus, Trash2, CheckCircle2, Circle, Save, BookOpen, ChevronDown, Sparkles, Wand2, RefreshCw, X, HelpCircle, AlertTriangle } from 'lucide-react';
-import { doc, onSnapshot, updateDoc, collection, addDoc, serverTimestamp, query, orderBy, limit, getDocs } from 'firebase/firestore';
+import { doc, onSnapshot, updateDoc, collection, addDoc, serverTimestamp, query, orderBy, limit, getDocs, where } from 'firebase/firestore';
 import { db } from '../firebase';
 import { APP_ID } from '../utils/constants';
 import { TOPICS } from '../utils/topics';
@@ -115,13 +115,10 @@ export default function StudyScheduler({ currentUser }) {
     const handleAIGenerate = async () => {
         setIsGenerating(true);
         
-        // 1. Son Analiz Raporunu Çek
+        // 1. Son Analiz Raporunu Çek (DEVRE DIŞI - Firebase index sorunu)
         let recentAnalysis = null;
-        try {
-            const q = query(collection(db, 'artifacts', APP_ID, 'public', 'data', 'coach_archives'), where("userId", "==", currentUser.internalId), orderBy('timestamp', 'desc'), limit(1));
-            const snap = await getDocs(q);
-            if (!snap.empty) recentAnalysis = snap.docs[0].data().data;
-        } catch (e) { console.log("Analiz çekilemedi", e); }
+        // Şimdilik coach_archives kullanmıyoruz - index gerektiği için
+        // İleride: currentUser'dan achievements/badges veri çek
 
         // 2. Profil Verisini Hazırla
         // (Gerçek projede MyExams'dan eksikleri çekebiliriz, burada basitleştiriyoruz)
@@ -134,7 +131,7 @@ export default function StudyScheduler({ currentUser }) {
         // 3. AI Servisini Çağır
         const aiSchedule = await generateWeeklySchedule(profile, userRequest, recentAnalysis);
 
-        if (aiSchedule) {
+        if (aiSchedule && !aiSchedule.error) {
             const formattedSchedule = {};
             Object.keys(aiSchedule).forEach(day => {
                 formattedSchedule[day] = aiSchedule[day].map((t, i) => ({

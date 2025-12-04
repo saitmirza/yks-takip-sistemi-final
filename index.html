@@ -3,12 +3,91 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-    <meta name="theme-color" content="#4f46e5" /> 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="theme-color" content="#4f46e5" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="apple-touch-icon" href="/vite.svg" />
+    <meta name="apple-mobile-web-app-title" content="YKS Hub" />
     <title>YKS Hub</title>
+    <script>
+      // Başlangıç Debug Bilgisi
+      console.log('%c🚀 YKS Hub Başlıyor...', 'color: #4f46e5; font-size: 14px; font-weight: bold');
+      console.log('⏱️ Sayfa Yükleme Başlangıcı:', new Date().toLocaleTimeString('tr-TR'));
+      
+      // iOS Tespit
+      const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
+      const isAndroid = /Android/.test(navigator.userAgent);
+      const ua = navigator.userAgent;
+      
+      console.log('%cCihaz Bilgisi:', 'font-weight: bold; color: #7c3aed');
+      console.log('OS:', isIOS ? 'iOS' : isAndroid ? 'Android' : 'Diğer');
+      console.log('Safari:', ua.includes('Safari'));
+      console.log('Ekran:', `${window.innerWidth}x${window.innerHeight}`);
+      console.log('DPR:', window.devicePixelRatio);
+      
+      // LocalStorage/SessionStorage Uyarıları
+      console.log('%cDepolama Kontrolleri:', 'font-weight: bold; color: #7c3aed');
+      try {
+        localStorage.setItem('_test', '1');
+        localStorage.removeItem('_test');
+        console.log('✅ LocalStorage:', 'Erişilebilir');
+      } catch (e) {
+        console.warn('⚠️ LocalStorage:', e.message, '- SessionStorage kullanılacak');
+      }
+      
+      try {
+        sessionStorage.setItem('_test', '1');
+        sessionStorage.removeItem('_test');
+        console.log('✅ SessionStorage:', 'Erişilebilir');
+      } catch (e) {
+        console.error('❌ SessionStorage:', e.message);
+      }
+      
+      // Global Error Handler
+      window.addEventListener('error', (event) => {
+        console.error('%c❌ HATA:', 'color: #ef4444; font-weight: bold', {
+          message: event.message,
+          filename: event.filename,
+          lineno: event.lineno,
+          colno: event.colno,
+          error: event.error
+        });
+      });
+      
+      window.addEventListener('unhandledrejection', (event) => {
+        console.error('%c❌ PROMISE HATASI:', 'color: #ef4444; font-weight: bold', {
+          reason: event.reason,
+          promise: event.promise
+        });
+      });
+    </script>
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
+    <script>
+      // Sayfa Yükleme Tamamlandı
+      window.addEventListener('load', () => {
+        console.log('%c✅ Sayfa Tamamen Yüklendi!', 'color: #22c55e; font-size: 14px; font-weight: bold');
+        console.log('⏱️ Yükleme Tamamlama Zamanı:', new Date().toLocaleTimeString('tr-TR'));
+        console.log('Kullanıcı etkileşim yapabilir.');
+      });
+      
+      // İlk Interactive Zamanı
+      if ('PerformanceObserver' in window) {
+        try {
+          const observer = new PerformanceObserver((list) => {
+            for (const entry of list.getEntries()) {
+              console.log(`⏱️ ${entry.name}:`, entry.duration.toFixed(2), 'ms');
+            }
+          });
+          observer.observe({ entryTypes: ['navigation', 'paint'] });
+        } catch (e) {
+          console.log('Performance Observer desteklenmiyor');
+        }
+      }
+    </script>
   </body>
 </html>

@@ -255,13 +255,27 @@ export default function ExamTrackerApp() {
   useEffect(() => { 
     const initAuth = async () => { 
       try { 
-        await signInAnonymously(auth); 
+        // iOS Safari'de timeout sorunu yaşandığı için, signInAnonymously'yi detach et
+        signInAnonymously(auth).catch(err => {
+          console.warn("Anonymous auth başarısız (normal):", err.message);
+          // Devam et - anonymous olmadan da çalışacak
+        });
       } catch (err) { 
         console.error("Firebase auth error:", err);
       } 
     }; 
+    
+    // Auth'u immediate başlat
     initAuth(); 
+    
+    // Listener'ı kur - timeout var
+    let timeoutId = setTimeout(() => {
+      setLoading(false); // Timeout sonrası bile loading'i kapat
+      console.warn("Auth state timeout - yine de devam et");
+    }, 8000);
+    
     const unsubscribe = onAuthStateChanged(auth, (user) => { 
+      clearTimeout(timeoutId);
       setFirebaseUser(user); 
       setLoading(false); 
       try {
@@ -273,10 +287,14 @@ export default function ExamTrackerApp() {
         console.error("Session restore error:", err);
       }
     }, (error) => {
+      clearTimeout(timeoutId);
       console.error("Auth state changed error:", error);
       setLoading(false);
     }); 
-    return () => unsubscribe();
+    return () => {
+      clearTimeout(timeoutId);
+      unsubscribe();
+    };
   }, []);
   
   // Last Seen Güncelleyici
@@ -299,9 +317,12 @@ export default function ExamTrackerApp() {
     return () => clearInterval(interval); 
   }, [currentUser]);
   
-  // Veri Dinleyicileri
+  // Veri Dinleyicileri - Sadece login sonrası başla (app hızını artırmak için)
   useEffect(() => { 
-    if (!firebaseUser) return; 
+    // Login olmadıysa, listeners'ı başlatma - bu giriş ekranını hızlandırır
+    if (!currentUser || !firebaseUser) {
+      return;
+    }
     
     try {
       const unsubScores = onSnapshot(
@@ -358,7 +379,7 @@ export default function ExamTrackerApp() {
     } catch (err) {
       console.error("Listener setup error:", err);
     }
-  }, [firebaseUser]);
+  }, [currentUser, firebaseUser]);
   
   // Sıralama Hesaplama
   useEffect(() => { 
@@ -413,7 +434,29 @@ export default function ExamTrackerApp() {
     `}</style>
   );
 
-  if (loading) return <div className="flex h-screen items-center justify-center bg-slate-900 text-white font-sans"><div className="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div></div>;
+  // iOS'ta loading ekranı optimize et - animasyon minimal yap
+  if (loading) return (
+    <div className="flex h-screen items-center justify-center bg-slate-900 text-white font-sans" style={{ 
+      WebkitUserSelect: 'none',
+      WebkitTouchCallout: 'none'
+    }}>
+      <div style={{
+        width: '40px',
+        height: '40px',
+        border: '4px solid rgba(79, 70, 229, 0.3)',
+        borderTop: '4px solid rgb(79, 70, 229)',
+        borderRadius: '50%',
+        animation: 'none' // iOS'ta spin animation kapat - aksine performansı iyileştirir
+      }}>
+        {/* Spinner yapısını basitleştir */}
+      </div>
+      <style>{`
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
+    </div>
+  );
 
   if (!currentUser) return (
       <div className="min-h-screen flex items-center justify-center p-4" style={{ background: theme.gradient }}>

@@ -2,28 +2,130 @@
 
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from "@google/generative-ai";
 
+// API KEY: Environment variable'dan oku (asla hardcode etme!)
+// .env.local dosyasında: VITE_GOOGLE_AI_API_KEY=your_key_here
+const API_KEY = import.meta.env.VITE_GOOGLE_AI_API_KEY;
 
-const API_KEY = "AIzaSyBxAKesDTq4LOJ2uZCQkwsmSm5uNgrXTnQ"; 
+if (!API_KEY) {
+  console.error(
+    "❌ API KEY bulunamadı! .env.local dosyasında VITE_GOOGLE_AI_API_KEY tanımlayın."
+  );
+}
 
 const genAI = new GoogleGenerativeAI(API_KEY);
 
+// Rate limiting için basit bir queue sistemi
+const requestQueue = [];
+let isProcessing = false;
+const RATE_LIMIT_MS = 1000; // Her istek arasında 1 saniye
+
+const addToQueue = async (fn) => {
+  return new Promise((resolve, reject) => {
+    requestQueue.push({ fn, resolve, reject });
+    processQueue();
+  });
+};
+
+const processQueue = async () => {
+  if (isProcessing || requestQueue.length === 0) return;
+
+  isProcessing = true;
+  const { fn, resolve, reject } = requestQueue.shift();
+
+  try {
+    const result = await fn();
+    resolve(result);
+  } catch (error) {
+    reject(error);
+  }
+
+  setTimeout(() => {
+    isProcessing = false;
+    processQueue();
+  }, RATE_LIMIT_MS);
+};
+
 const getModel = () => {
-    return genAI.getGenerativeModel({ 
-        model: "gemini-2.5-flash",
-        safetySettings: [
-            { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_NONE },
-            { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_NONE },
-            { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_NONE },
-            { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_NONE },
-        ]
-    });
+  return genAI.getGenerativeModel({
+    model: "gemini-2.5-flash",
+    safetySettings: [
+      {
+        category: HarmCategory.HARM_CATEGORY_HARASSMENT,
+        threshold: HarmBlockThreshold.BLOCK_NONE,
+      },
+      {
+        category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
+        threshold: HarmBlockThreshold.BLOCK_NONE,
+      },
+      {
+        category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
+        threshold: HarmBlockThreshold.BLOCK_NONE,
+      },
+      {
+        category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
+        threshold: HarmBlockThreshold.BLOCK_NONE,
+      },
+    ],
+  });
+};
+
+// Güvenli error handling
+const handleAIError = (error, context) => {
+  console.error(`❌ AI Hatası (${context}):`, error);
+
+  // Önemli hataları ayırt et
+  if (error.message?.includes("API key")) {
+    return {
+      error: true,
+      message: "API ayarı hatalı. Sistem yöneticisine başvur.",
+      code: "AUTH_ERROR",
+    };
+  }
+
+  if (error.message?.includes("429") || error.message?.includes("quota")) {
+    return {
+      error: true,
+      message:
+        "API çok fazla istek aldı. Lütfen biraz sonra tekrar dene.",
+      code: "RATE_LIMIT",
+    };
+  }
+
+  if (error.message?.includes("timeout")) {
+    return {
+      error: true,
+      message: "Bağlantı zaman aşımı. İnternet bağlantını kontrol et.",
+      code: "TIMEOUT",
+    };
+  }
+
+  return {
+    error: true,
+    message: "AI servisi şu an kullanılamıyor. Lütfen biraz sonra dene.",
+    code: "UNKNOWN_ERROR",
+  };
 };
 
 // 1. ANALİZ FONKSİYONU
 export const getAIAnalysis = async (studentData) => {
+  // Input validasyonu
+  if (!studentData || !studentData.name) {
+    return {
+      error: true,
+      message: "Geçersiz öğrenci verisi",
+      code: "INVALID_INPUT",
+    };
+  }
+
+  return addToQueue(async () => {
     try {
-        const model = getModel();
-        const prompt = `
+      const model = getModel();
+
+      if (!API_KEY) {
+        throw new Error("API KEY not configured");
+      }
+
+      const prompt = `
             Sen "YKS Komutanı" adında, veri odaklı ve taktiksel bir eğitim koçusun.
             Aşağıdaki öğrenci verilerini analiz et ve sadece geçerli bir JSON objesi döndür.
             Düz metin veya markdown bloğu (backticks) kullanma.
@@ -56,65 +158,137 @@ export const getAIAnalysis = async (studentData) => {
             }
         `;
 
-        const result = await model.generateContent(prompt);
-        const text = result.response.text().replace(/```json/g, '').replace(/```/g, '').trim();
-        return JSON.parse(text);
+      const result = await model.generateContent(prompt);
+      const text = result.response
+        .text()
+        .replace(/```json/g, "")
+        .replace(/```/g, "")
+        .trim();
 
+      const parsed = JSON.parse(text);
+
+      // Sonuç validasyonu
+      if (!parsed.analysis_summary || !parsed.action_plan) {
+        throw new Error("Invalid AI response format");
+      }
+
+      return parsed;
     } catch (error) {
-        console.error("AI Analiz Hatası:", error);
-        return null; 
+      return handleAIError(error, "getAIAnalysis");
     }
+  });
 };
 
 // 2. HAFTALIK PROGRAM OLUŞTURMA FONKSİYONU
 export const generateWeeklySchedule = async (profile, userRequest, recentAnalysis) => {
+  // Input validasyonu
+  if (!profile || !profile.focusArea) {
+    return {
+      error: true,
+      message: "Geçersiz profil verisi",
+      code: "INVALID_INPUT",
+    };
+  }
+
+  if (userRequest && typeof userRequest !== "string") {
+    return {
+      error: true,
+      message: "Geçersiz istek formatı",
+      code: "INVALID_INPUT",
+    };
+  }
+
+  return addToQueue(async () => {
     try {
-        const model = getModel();
+      const model = getModel();
 
-        // Alanına göre ders kısıtlaması (Strict Mode)
-        let allowedSubjects = "";
-        if (profile.focusArea === 'Sayısal') allowedSubjects = "SADECE Matematik, Geometri, Fizik, Kimya, Biyoloji, Türkçe";
-        else if (profile.focusArea === 'Eşit Ağırlık') allowedSubjects = "SADECE Matematik, Geometri, Edebiyat, Tarih, Coğrafya, Türkçe";
-        else if (profile.focusArea === 'Sözel') allowedSubjects = "SADECE Edebiyat, Tarih, Coğrafya, Felsefe, Din, Türkçe";
-        else allowedSubjects = "Tüm dersler serbest";
+      if (!API_KEY) {
+        throw new Error("API KEY not configured");
+      }
 
-        const prompt = `
-            Sen profesyonel bir YKS öğrenci koçusun.
-            Aşağıdaki öğrenci profiline ve ÖZEL İSTEĞİNE göre 7 günlük (Pazartesi-Pazar) detaylı bir çalışma programı oluştur.
-            
-            ÖĞRENCİ PROFİLİ:
-            - Alan: ${profile.focusArea} (${allowedSubjects}) -> BU ALAN DIŞINDA DERS YAZMA!
-            - Günlük Kapasite: Max ${profile.dailyLimit} saat
-            - Tespit Edilen Eksik Konular: ${profile.mistakes.join(", ")}
-            - Son Analizden Tavsiyeler: ${JSON.stringify(recentAnalysis?.weekly_focus_topics || [])}
+      // Alanına göre ders kısıtlaması (Strict Mode)
+      let allowedSubjects = "";
+      if (profile.focusArea === "Sayısal")
+        allowedSubjects =
+          "SADECE Matematik, Geometri, Fizik, Kimya, Biyoloji, Türkçe";
+      else if (profile.focusArea === "Eşit Ağırlık")
+        allowedSubjects =
+          "SADECE Matematik, Geometri, Edebiyat, Tarih, Coğrafya, Türkçe";
+      else if (profile.focusArea === "Sözel")
+        allowedSubjects =
+          "SADECE Edebiyat, Tarih, Coğrafya, Felsefe, Din, Türkçe";
+      else allowedSubjects = "Tüm dersler serbest";
 
-            KULLANICININ ÖZEL İSTEĞİ (Buna kesinlikle uy):
-            "${userRequest}"
+      const prompt = `
+            SİSTEM ROLÜ:
+Sen profesyonel, katı kurallara sahip ve sadece JSON çıktısı üreten bir YKS (Türkiye Üniversite Sınavı) Koçusun.
+Görevin, öğrenci verilerini analiz ederek hatasız bir JSON formatında 7 günlük çalışma programı oluşturmaktır.
 
-            KURALLAR:
-            1. Görevler "Konu Çalışması" veya "Soru Çözümü" olarak net ayrılmalı.
-            2. Eksik konulara öncelik ver. Bunları bitirdikten sonra genel tekrar ve deneme ekle. ASLA AMA ASLA boş yere yeni konu ekleme ve öğrencinin alanına her zaman dikkat et.
-            3. Sayısal öğrencisine Tarih/Coğrafya/Felsefe/Din, Sözel öğrencisine Fizik/Kimya/Biyoloji ASLA yazma. Bu yapman gerekenler arasından en önemli olanı.
-            4. Kullanıcının özel isteği (örn: Çarşamba boş olsun) varsa mutlaka uygula.
-            5. Sadece geçerli JSON formatı döndür.
+GİRDİ VERİLERİ:
+- Öğrenci Alanı: "${profile.focusArea}"
+- İzin Verilen Dersler (WHITELIST): "${allowedSubjects}" (SADECE bu listedeki dersleri kullanabilirsin. Başka ders eklemek YASAKTIR.)
+- Günlük Maksimum Çalışma Süresi: ${profile.dailyLimit} saat
+- Öncelikli Eksik Konular: ${profile.mistakes.join(", ")}
+- Önceki Analiz Tavsiyeleri: ${JSON.stringify(recentAnalysis?.weekly_focus_topics || [])}
+- KULLANICI ÖZEL İSTEĞİ (KESİN UYULACAK): "${userRequest}"
 
-            İSTENEN JSON FORMATI (Array değil, Gün Objeleri):
-            {
-                "Pazartesi": [
-                    { "type": "TYT", "subject": "Matematik", "topic": "Üslü Sayılar", "taskType": "konu" },
-                    { "type": "AYT", "subject": "Fizik", "topic": "Branş Denemesi", "taskType": "soru", "count": 20 }
-                ],
-                "Salı": [],
-                ... (Çarşamba, Perşembe, Cuma, Cumartesi, Pazar)
-            }
+ALGORİTMA ADIMLARI (Bunu uygula ama çıktıya yazma):
+1. Önce "Kullanıcı Özel İsteği"ni analiz et. Eğer bir günün boş olmasını istiyorsa o günün array'ini boş bırak.
+2. Öğrencinin "Öğrenci Alanı"nı kontrol et. 
+   - Sayısal ise: Tarih, Coğrafya, Felsefe, Din ASLA ekleme.
+   - Sözel ise: Fizik, Kimya, Biyoloji ASLA ekleme.
+   - Eşit Ağırlık ise: Fizik, Kimya, Biyoloji ASLA ekleme.
+   - Sadece "İzin Verilen Dersler" listesinden seçim yap.
+3. "Eksik Konular"ı günlere dağıt. Her eksik konu için bir "konu" çalışması ve ardından bir "soru" çözümü görevi ekle.
+4. Günlük kapasiteyi (Max ${profile.dailyLimit} saat) aşma. (Ortalama: Konu çalışması 1 saat, Soru çözümü 45 dk sayılabilir).
+5. Eğer eksik konular biterse, öğrencinin alanına uygun "Genel Tekrar" veya "Branş Denemesi" ekle.
+
+ÇIKTI FORMATI KURALLARI:
+- Sadece ve sadece saf JSON döndür. 
+- Markdown blokları (\`\`\`json) KULLANMA.
+- Açıklama, önsöz veya sonsöz YAZMA.
+- JSON anahtarları Türkçe gün isimleri olmalıdır: "Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi", "Pazar".
+
+ÖRNEK JSON YAPISI:
+{
+  "Pazartesi": [
+    { "type": "TYT", "subject": "Matematik", "topic": "Üslü Sayılar", "taskType": "konu", "duration_min": 60 },
+    { "type": "AYT", "subject": "Fizik", "topic": "Vektörler", "taskType": "soru", "count": 25, "duration_min": 40 }
+  ],
+  "Salı": []
+}
+
+Şimdi, yukarıdaki kurallara ve verilere göre JSON çıktısını üret:
         `;
 
-        const result = await model.generateContent(prompt);
-        const text = result.response.text().replace(/```json/g, '').replace(/```/g, '').trim();
-        return JSON.parse(text);
+      const result = await model.generateContent(prompt);
+      const text = result.response
+        .text()
+        .replace(/```json/g, "")
+        .replace(/```/g, "")
+        .trim();
 
+      const parsed = JSON.parse(text);
+
+      // Sonuç validasyonu - gün isimleri kontrol et
+      const validDays = [
+        "Pazartesi",
+        "Salı",
+        "Çarşamba",
+        "Perşembe",
+        "Cuma",
+        "Cumartesi",
+        "Pazar",
+      ];
+      for (const day of validDays) {
+        if (!(day in parsed)) {
+          throw new Error(`Invalid response: Missing day ${day}`);
+        }
+      }
+
+      return parsed;
     } catch (error) {
-        console.error("AI Schedule Hatası:", error);
-        return null;
+      return handleAIError(error, "generateWeeklySchedule");
     }
+  });
 };

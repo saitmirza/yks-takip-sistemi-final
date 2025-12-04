@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>iPhone Debug - YKS Hub</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        html, body {
+            height: 100%;
+            width: 100%;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: #e2e8f0;
+            padding: max(20px, env(safe-area-inset-left));
+            padding: max(20px, env(safe-area-inset-right));
+            padding-top: max(20px, env(safe-area-inset-top));
+            padding-bottom: max(20px, env(safe-area-inset-bottom));
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 20px;
+        }
+        
+        h2 {
+            font-size: 14px;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            color: #94a3b8;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+        
+        .card {
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+            font-size: 13px;
+        }
+        
+        .info-row:last-child {
+            border-bottom: none;
+        }
+        
+        .label {
+            color: #94a3b8;
+            font-weight: 500;
+        }
+        
+        .value {
+            color: #e2e8f0;
+            font-weight: 600;
+            text-align: right;
+            word-break: break-all;
+        }
+        
+        .status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        
+        .status.ok {
+            background: rgba(34, 197, 94, 0.2);
+            color: #86efac;
+        }
+        
+        .status.warning {
+            background: rgba(245, 158, 11, 0.2);
+            color: #fcd34d;
+        }
+        
+        .status.error {
+            background: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 8px;
+            margin-top: 16px;
+        }
+        
+        .button {
+            flex: 1;
+            padding: 12px;
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+        
+        .button:active {
+            transform: scale(0.95);
+        }
+        
+        .button.secondary {
+            background: linear-gradient(135deg, #64748b 0%, #475569 100%);
+        }
+        
+        .log {
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            color: #cbd5e1;
+            line-height: 1.4;
+        }
+        
+        .log-entry {
+            padding: 4px 0;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+        }
+        
+        .log-entry:last-child {
+            border-bottom: none;
+        }
+        
+        .timestamp {
+            color: #64748b;
+            font-weight: bold;
+        }
+        
+        .success { color: #86efac; }
+        .error { color: #fca5a5; }
+        .warning { color: #fcd34d; }
+        .info { color: #93c5fd; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📱 iPhone Debug Dashboard</h1>
+        
+        <div class="card">
+            <h2>Cihaz Bilgisi</h2>
+            <div class="info-row">
+                <span class="label">İşletim Sistemi</span>
+                <span class="value" id="os">-</span>
+            </div>
+            <div class="info-row">
+                <span class="label">Tarayıcı</span>
+                <span class="value" id="browser">-</span>
+            </div>
+            <div class="info-row">
+                <span class="label">Ekran Boyutu</span>
+                <span class="value" id="screen">-</span>
+            </div>
+            <div class="info-row">
+                <span class="label">Viewport</span>
+                <span class="value" id="viewport">-</span>
+            </div>
+            <div class="info-row">
+                <span class="label">Retina (DPR)</span>
+                <span class="value" id="dpr">-</span>
+            </div>
+            <div class="info-row">
+                <span class="label">Orientation</span>
+                <span class="value" id="orientation">-</span>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2>Depolama Sistem</h2>
+            <div class="info-row">
+                <span class="label">LocalStorage</span>
+                <span id="ls-status" class="status warning">Test...</span>
+            </div>
+            <div class="info-row">
+                <span class="label">SessionStorage</span>
+                <span id="ss-status" class="status warning">Test...</span>
+            </div>
+            <div class="info-row">
+                <span class="label">IndexedDB</span>
+                <span id="idb-status" class="status warning">Test...</span>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2>Network & API</h2>
+            <div class="info-row">
+                <span class="label">İnternet Bağlantısı</span>
+                <span id="network-status" class="status ok">Online</span>
+            </div>
+            <div class="info-row">
+                <span class="label">Firebase SDK</span>
+                <span id="firebase-status" class="status warning">Yükleniyor...</span>
+            </div>
+            <div class="info-row">
+                <span class="label">API Erişim</span>
+                <span id="api-status" class="status warning">Test...</span>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2>Test Komutları</h2>
+            <div class="button-group">
+                <button class="button" onclick="testLocalStorage()">LocalStorage Test</button>
+                <button class="button secondary" onclick="testNetwork()">Ağ Testi</button>
+            </div>
+            <div class="button-group">
+                <button class="button" onclick="testFirebase()">Firebase Test</button>
+                <button class="button secondary" onclick="clearAllData()">Veri Temizle</button>
+            </div>
+            <div class="button-group">
+                <button class="button secondary" onclick="goHome()">Ana Sayfa</button>
+                <button class="button" onclick="downloadLogs()">Logları İndir</button>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2>Konsol Logları</h2>
+            <div class="log" id="logs"></div>
+        </div>
+    </div>
+    
+    <script>
+        // Log sistemi
+        const logs = [];
+        const logsDiv = document.getElementById('logs');
+        
+        function addLog(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString('tr-TR');
+            const entry = { timestamp, message, type };
+            logs.push(entry);
+            
+            const logEl = document.createElement('div');
+            logEl.className = `log-entry ${type}`;
+            logEl.innerHTML = `<span class="timestamp">[${timestamp}]</span> ${escapeHtml(message)}`;
+            logsDiv.appendChild(logEl);
+            logsDiv.scrollTop = logsDiv.scrollHeight;
+            
+            // Max 100 log
+            if (logs.length > 100) {
+                logs.shift();
+                logsDiv.removeChild(logsDiv.firstChild);
+            }
+            
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        // Cihaz Bilgisi
+        window.addEventListener('load', () => {
+            const ua = navigator.userAgent;
+            const isIOS = /iPhone|iPad|iPod/.test(ua);
+            const isAndroid = /Android/.test(ua);
+            
+            // OS
+            let osText = 'Bilinmeyen';
+            if (isIOS) osText = '📱 iOS (Safari)';
+            else if (isAndroid) osText = '📱 Android';
+            else if (/Mac/.test(ua)) osText = '🖥️ macOS';
+            else if (/Windows/.test(ua)) osText = '🖥️ Windows';
+            document.getElementById('os').textContent = osText;
+            
+            // Tarayıcı
+            let browser = 'Safari';
+            if (/Chrome/.test(ua)) browser = 'Chrome';
+            else if (/Firefox/.test(ua)) browser = 'Firefox';
+            document.getElementById('browser').textContent = browser;
+            
+            // Ekran
+            document.getElementById('screen').textContent = 
+                `${screen.width}x${screen.height}`;
+            document.getElementById('viewport').textContent = 
+                `${window.innerWidth}x${window.innerHeight}`;
+            document.getElementById('dpr').textContent = 
+                window.devicePixelRatio + 'x';
+            document.getElementById('orientation').textContent = 
+                window.innerWidth > window.innerHeight ? 'Landscape' : 'Portrait';
+            
+            // Storage Tests
+            testStorage();
+            
+            // Network
+            if (navigator.onLine) {
+                document.getElementById('network-status').textContent = 'Online';
+                document.getElementById('network-status').className = 'status ok';
+                addLog('✅ İnternet Bağlantısı: OK', 'success');
+            } else {
+                document.getElementById('network-status').textContent = 'Offline';
+                document.getElementById('network-status').className = 'status error';
+                addLog('❌ İnternet Bağlantısı: Yok!', 'error');
+            }
+            
+            // iOS özel check
+            if (isIOS) {
+                addLog('📱 iOS cihazı tespit edildi', 'warning');
+                addLog('Safari Version: ' + (ua.split('Version/')[1]?.split(' ')[0] || 'Unknown'), 'info');
+            }
+            
+            addLog('Dashboard hazır!', 'success');
+        });
+        
+        function testStorage() {
+            // LocalStorage
+            try {
+                const testKey = '_test_' + Date.now();
+                localStorage.setItem(testKey, 'test');
+                const testVal = localStorage.getItem(testKey);
+                localStorage.removeItem(testKey);
+                
+                if (testVal === 'test') {
+                    document.getElementById('ls-status').textContent = '✅ Çalışıyor';
+                    document.getElementById('ls-status').className = 'status ok';
+                    addLog('LocalStorage: OK', 'success');
+                } else {
+                    throw new Error('Value mismatch');
+                }
+            } catch (e) {
+                document.getElementById('ls-status').textContent = '❌ Hata';
+                document.getElementById('ls-status').className = 'status error';
+                addLog(`LocalStorage Hatası: ${e.message}`, 'error');
+            }
+            
+            // SessionStorage
+            try {
+                const testKey = '_test_' + Date.now();
+                sessionStorage.setItem(testKey, 'test');
+                const testVal = sessionStorage.getItem(testKey);
+                sessionStorage.removeItem(testKey);
+                
+                if (testVal === 'test') {
+                    document.getElementById('ss-status').textContent = '✅ Çalışıyor';
+                    document.getElementById('ss-status').className = 'status ok';
+                    addLog('SessionStorage: OK', 'success');
+                }
+            } catch (e) {
+                document.getElementById('ss-status').textContent = '❌ Hata';
+                document.getElementById('ss-status').className = 'status error';
+                addLog(`SessionStorage Hatası: ${e.message}`, 'error');
+            }
+            
+            // IndexedDB
+            try {
+                if ('indexedDB' in window) {
+                    const req = indexedDB.open('test', 1);
+                    req.onerror = () => {
+                        document.getElementById('idb-status').textContent = '❌ Hata';
+                        document.getElementById('idb-status').className = 'status error';
+                        addLog('IndexedDB: Hata', 'error');
+                    };
+                    req.onsuccess = () => {
+                        document.getElementById('idb-status').textContent = '✅ Çalışıyor';
+                        document.getElementById('idb-status').className = 'status ok';
+                        addLog('IndexedDB: OK', 'success');
+                    };
+                } else {
+                    document.getElementById('idb-status').textContent = '⚠️ Desteklenmiyor';
+                    document.getElementById('idb-status').className = 'status warning';
+                    addLog('IndexedDB: Desteklenmiyor', 'warning');
+                }
+            } catch (e) {
+                document.getElementById('idb-status').textContent = '❌ Hata';
+                addLog(`IndexedDB: ${e.message}`, 'error');
+            }
+        }
+        
+        async function testLocalStorage() {
+            addLog('LocalStorage testi başlıyor...', 'info');
+            try {
+                localStorage.setItem('testUser', JSON.stringify({ name: 'Test User', time: new Date().toISOString() }));
+                const saved = localStorage.getItem('testUser');
+                addLog(`✅ Kaydedildi ve alındı: ${saved}`, 'success');
+            } catch (e) {
+                addLog(`❌ Hata: ${e.message}`, 'error');
+            }
+        }
+        
+        async function testNetwork() {
+            addLog('Ağ testi başlıyor...', 'info');
+            try {
+                const res = await fetch('https://www.google.com/favicon.ico', { method: 'HEAD' });
+                addLog(`✅ Google erişilebilir (${res.status})`, 'success');
+            } catch (e) {
+                addLog(`❌ Ağ hatası: ${e.message}`, 'error');
+            }
+        }
+        
+        async function testFirebase() {
+            addLog('Firebase testi başlıyor...', 'info');
+            document.getElementById('firebase-status').textContent = 'Yükleniyor...';
+            
+            try {
+                // Basit Firebase SDK check
+                const script = document.createElement('script');
+                script.src = 'https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js';
+                script.onload = () => {
+                    document.getElementById('firebase-status').textContent = '✅ SDK Yüklendi';
+                    document.getElementById('firebase-status').className = 'status ok';
+                    addLog('Firebase SDK başarıyla yüklendi', 'success');
+                };
+                script.onerror = () => {
+                    document.getElementById('firebase-status').textContent = '❌ Hata';
+                    document.getElementById('firebase-status').className = 'status error';
+                    addLog('Firebase SDK yüklenemedi', 'error');
+                };
+                document.head.appendChild(script);
+            } catch (e) {
+                addLog(`Firebase Hatası: ${e.message}`, 'error');
+            }
+        }
+        
+        function clearAllData() {
+            if (!confirm('Tüm veri silinecek. Emin misiniz?')) return;
+            
+            try {
+                localStorage.clear();
+                sessionStorage.clear();
+                addLog('✅ Tüm veriler temizlendi', 'success');
+            } catch (e) {
+                addLog(`❌ Temizleme hatası: ${e.message}`, 'error');
+            }
+        }
+        
+        function downloadLogs() {
+            const text = logs.map(l => `[${l.timestamp}] [${l.type.toUpperCase()}] ${l.message}`).join('\n');
+            const blob = new Blob([text], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `ykshub-debug-${new Date().getTime()}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            addLog('Loglar indirildi', 'success');
+        }
+        
+        function goHome() {
+            window.location.href = '/';
+        }
+        
+        // Orientation change dinle
+        window.addEventListener('orientationchange', () => {
+            document.getElementById('orientation').textContent = 
+                window.innerWidth > window.innerHeight ? 'Landscape' : 'Portrait';
+            addLog(`Yön değişti: ${window.innerWidth}x${window.innerHeight}`, 'info');
+        });
+    </script>
+</body>
+</html>
