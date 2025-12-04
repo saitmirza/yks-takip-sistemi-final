@@ -6,13 +6,24 @@ import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from "@google/ge
 // .env.local dosyasında: VITE_GOOGLE_AI_API_KEY=your_key_here
 const API_KEY = import.meta.env.VITE_GOOGLE_AI_API_KEY;
 
+let genAI = null;
+
 if (!API_KEY) {
   console.error(
-    "❌ API KEY bulunamadı! .env.local dosyasında VITE_GOOGLE_AI_API_KEY tanımlayın."
+    "❌ API KEY bulunamadı!"
   );
+  console.warn("ÇÖZÜM:");
+  console.warn("1. Local dev: .env.local dosyasına VITE_GOOGLE_AI_API_KEY=... ekle");
+  console.warn("2. Vercel: Dashboard → Settings → Environment Variables ekle");
+  console.warn("3. Firebase Hosting: firebase deploy --env production çalıştır");
+} else {
+  try {
+    genAI = new GoogleGenerativeAI(API_KEY);
+    console.log("✅ Google AI API initialized successfully");
+  } catch (err) {
+    console.error("❌ Google AI initialization error:", err.message);
+  }
 }
-
-const genAI = new GoogleGenerativeAI(API_KEY);
 
 // Rate limiting için basit bir queue sistemi
 const requestQueue = [];
@@ -46,6 +57,11 @@ const processQueue = async () => {
 };
 
 const getModel = () => {
+  if (!genAI) {
+    throw new Error(
+      "API KEY not configured. Set VITE_GOOGLE_AI_API_KEY in environment variables."
+    );
+  }
   return genAI.getGenerativeModel({
     model: "gemini-2.5-flash",
     safetySettings: [
