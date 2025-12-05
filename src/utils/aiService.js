@@ -2,18 +2,31 @@
 
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from "@google/generative-ai";
 
-// API KEY: Environment variable'dan oku (asla hardcode etme!)
-// .env.local dosyasında: VITE_GOOGLE_AI_API_KEY=your_key_here
-const API_KEY = import.meta.env.VITE_GOOGLE_AI_API_KEY;
+// ⚠️ KRITIK: API KEY'i runtime'da çek, hardcode ETMEYİN
+// Build time'da API_KEY expose edilmemesi için environment variable kullan
+const getAPIKey = () => {
+  // Önce window.__API_KEY__ kontrol et (deployment'ta set edilir)
+  if (typeof window !== 'undefined' && window.__API_KEY__) {
+    return window.__API_KEY__;
+  }
+  // Dev'de .env.local'dan çek
+  return import.meta.env.VITE_GOOGLE_AI_API_KEY || '';
+};
+
+const API_KEY = getAPIKey();
 
 let genAI = null;
+const isDev = import.meta.env.DEV || location.hostname === 'localhost';
 
 if (!API_KEY) {
-  // Silently handle missing API key - will show user-friendly message when feature used
-  console.warn("⚠️ Google AI API key not configured. AI features will be unavailable.");
+  if (isDev) {
+    console.warn("⚠️ Google AI API key not configured. AI features will be unavailable.");
+    console.warn("Set VITE_GOOGLE_AI_API_KEY in .env.local or Vercel environment variables.");
+  }
 } else {
   try {
     genAI = new GoogleGenerativeAI(API_KEY);
+    if (isDev) console.log("✅ Google AI initialized");
   } catch (err) {
     console.error("Google AI initialization error:", err.message);
   }

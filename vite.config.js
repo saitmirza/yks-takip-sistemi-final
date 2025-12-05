@@ -64,8 +64,8 @@ export default defineConfig({
     middlewareMode: false,
     hmr: {
       protocol: 'ws',
-      host: 'localhost'
-      // Port otomatik ayarlanacak
+      host: 'localhost',
+      port: 5173
     }
   }
 })
