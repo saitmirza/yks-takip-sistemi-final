@@ -2,24 +2,38 @@
 
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from "@google/generative-ai";
 
-// API KEY: Build time'da inject edilir, source'da görünmez
-// ASLA hardcode ETME - sadece environment variables'dan al
-const API_KEY = typeof __GOOGLE_AI_API_KEY__ !== 'undefined' ? __GOOGLE_AI_API_KEY__ : '';
-
-let genAI = null;
+// API KEY: Runtime injection - ASLA hardcode ETME
 const isDev = import.meta.env.DEV || location.hostname === 'localhost';
 
+const getAPIKey = () => {
+  // Production: Vercel'den window variable'ı oku
+  if (typeof window !== 'undefined' && window.__API_KEY__) {
+    return window.__API_KEY__;
+  }
+  // Development: .env.local'den oku
+  if (import.meta.env.VITE_GOOGLE_AI_API_KEY) {
+    return import.meta.env.VITE_GOOGLE_AI_API_KEY;
+  }
+  return '';
+};
+
+const API_KEY = getAPIKey();
+let genAI = null;
+
 if (!API_KEY) {
+  console.warn("⚠️ Google AI API key not configured.");
+  console.warn("AI features will be unavailable.");
   if (isDev) {
-    console.warn("⚠️ Google AI API key not configured. AI features will be unavailable.");
-    console.warn("Set VITE_GOOGLE_AI_API_KEY in .env.local or Vercel environment variables.");
+    console.warn("📍 Development: Set VITE_GOOGLE_AI_API_KEY in .env.local");
+  } else {
+    console.warn("📍 Production: Set VITE_GOOGLE_AI_API_KEY in Vercel environment variables");
   }
 } else {
   try {
     genAI = new GoogleGenerativeAI(API_KEY);
-    if (isDev) console.log("✅ Google AI initialized");
+    console.log("✅ Google AI initialized successfully");
   } catch (err) {
-    console.error("Google AI initialization error:", err.message);
+    console.error("❌ Google AI initialization error:", err.message);
   }
 }
 
