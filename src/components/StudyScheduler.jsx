@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, Plus, Trash2, CheckCircle2, Circle, Save, BookOpen, ChevronDown, Sparkles, Wand2, RefreshCw, X, HelpCircle, AlertTriangle } from 'lucide-react';
+import { Calendar, Plus, Trash2, CheckCircle2, Circle, Save, BookOpen, ChevronDown, Sparkles, Wand2, RefreshCw, X, HelpCircle, AlertTriangle, Mic, MicOff } from 'lucide-react';
 import { doc, onSnapshot, updateDoc, collection, addDoc, serverTimestamp, query, orderBy, limit, getDocs, where } from 'firebase/firestore';
 import { db } from '../firebase';
 import { APP_ID } from '../utils/constants';
 import { TOPICS } from '../utils/topics';
 import { generateWeeklySchedule } from '../utils/aiService';
+import { useSpeechRecognition } from '../utils/speechService';
 
 export default function StudyScheduler({ currentUser }) {
     const days = ["Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi", "Pazar"];
@@ -18,6 +19,19 @@ export default function StudyScheduler({ currentUser }) {
     const [showAIModal, setShowAIModal] = useState(false);
     const [userRequest, setUserRequest] = useState("");
     const [isGenerating, setIsGenerating] = useState(false);
+    const [isListening, setIsListening] = useState(false);
+    
+    // SES TANIMA HOOK'U
+    const speechRecognition = useSpeechRecognition(
+        (result) => {
+            setUserRequest(prev => prev + (prev ? " " : "") + result);
+            setIsListening(false);
+        },
+        (error) => {
+            alert(error);
+            setIsListening(false);
+        }
+    );
     
     // LOGLAMA İÇİN STATE'LER
     const [logModal, setLogModal] = useState(null); // { day, task }
@@ -260,12 +274,35 @@ export default function StudyScheduler({ currentUser }) {
 
                             <div>
                                 <label className="text-xs font-bold text-slate-500 dark:text-gray-400 uppercase mb-2 block">Özel İsteğin Var mı?</label>
-                                <textarea 
-                                    className="w-full p-3 bg-slate-50 dark:bg-gray-800 border border-slate-200 dark:border-gray-700 rounded-xl outline-none focus:ring-2 focus:ring-purple-500 text-sm dark:text-white h-24 resize-none"
-                                    placeholder="Örn: Çarşamba günü deneme sınavım var, o günü boş bırak. Matematiğe ağırlık ver."
-                                    value={userRequest}
-                                    onChange={e => setUserRequest(e.target.value)}
-                                ></textarea>
+                                <div className="flex gap-2 items-end">
+                                    <textarea 
+                                        className="flex-1 p-3 bg-slate-50 dark:bg-gray-800 border border-slate-200 dark:border-gray-700 rounded-xl outline-none focus:ring-2 focus:ring-purple-500 text-sm dark:text-white h-24 resize-none"
+                                        placeholder="Örn: Çarşamba günü deneme sınavım var, o günü boş bırak. Matematiğe ağırlık ver."
+                                        value={userRequest}
+                                        onChange={e => setUserRequest(e.target.value)}
+                                    ></textarea>
+                                    <button 
+                                        onClick={() => {
+                                            if (!speechRecognition.isSupported) return alert("Tarayıcınız ses tanıma desteklemiyor.");
+                                            if (isListening) {
+                                                speechRecognition.stopListening();
+                                                setIsListening(false);
+                                            } else {
+                                                speechRecognition.startListening();
+                                                setIsListening(true);
+                                            }
+                                        }}
+                                        className={`p-3 rounded-xl font-bold transition-all flex-shrink-0 ${
+                                            isListening 
+                                                ? 'bg-red-500 text-white animate-pulse' 
+                                                : 'bg-blue-500 hover:bg-blue-600 text-white'
+                                        }`}
+                                        title={isListening ? "Dinliyor..." : "Sesi metne çevir"}
+                                    >
+                                        {isListening ? <MicOff size={20} /> : <Mic size={20} />}
+                                    </button>
+                                </div>
+                                {isListening && <p className="text-xs text-blue-600 dark:text-blue-400 mt-2 animate-pulse">🎤 Dinliyor...</p>}
                             </div>
 
                             <button 
