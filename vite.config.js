@@ -63,9 +63,8 @@ export default defineConfig({
     },
     middlewareMode: false,
     hmr: {
-      protocol: 'ws',
       host: 'localhost',
-      port: 5173
+      protocol: 'ws'
     }
   }
 })
