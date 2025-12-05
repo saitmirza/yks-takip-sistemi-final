@@ -139,14 +139,20 @@ export default function SmartCoach({ currentUser, myScores }) {
             return alert("Uygulanacak tavsiye yok.");
         }
 
+        // Email validation
+        const userEmail = liveUser?.email || currentUser?.email;
+        if (!userEmail) {
+            return alert("Kullanıcı email bulunamadı. Sayfayı yenile.");
+        }
+
         setApplyingTips(true);
         try {
             // Action plan'ı parse et
-            const tasks = latestReport.data.action_plan; // Örn: ["Fonksiyonlardan 30 soru çöz", "Türkçe edebiyat tekrarı"]
+            const tasks = latestReport.data.action_plan;
             const days = ["Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi", "Pazar"];
             
             // Mevcut schedule'ı çek
-            const userRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'user_accounts', currentUser.email);
+            const userRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'user_accounts', userEmail);
             const userSnap = await getDoc(userRef);
             const currentSchedule = userSnap.data()?.studySchedule || days.reduce((acc, day) => ({ ...acc, [day]: [] }), {});
 
@@ -187,15 +193,19 @@ export default function SmartCoach({ currentUser, myScores }) {
 
                 // Görevi schedule'a ekle
                 if (!newSchedule[day]) newSchedule[day] = [];
-                newSchedule[day].push({
+                const taskObj = {
                     id: Date.now() + i,
                     type: "TYT",
                     subject,
                     topic,
                     taskType,
-                    count: taskType === "soru" ? count : undefined,
                     isCompleted: false
-                });
+                };
+                // Eğer soru tipi ise count ekle, değilse ekleme
+                if (taskType === "soru") {
+                    taskObj.count = count;
+                }
+                newSchedule[day].push(taskObj);
 
                 taskIndex++;
             }
