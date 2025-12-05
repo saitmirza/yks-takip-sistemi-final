@@ -25,7 +25,7 @@ export default function Pomodoro({ currentUser }) {
     // --- SPOTIFY ---
     const [showSpotify, setShowSpotify] = useState(false);
     const [showSpotifyHelp, setShowSpotifyHelp] = useState(false);
-    const [spotifyUrl, setSpotifyUrl] = useState(() => localStorage.getItem('user_spotify_link') || "https://open.spotify.com/playlist/37i9dQZF1DWWQRwui0ExPn");
+    const [spotifyUrl, setSpotifyUrl] = useState(() => localStorage.getItem('user_spotify_link') || "https://open.spotify.com/playlist/07tkrILaQ1gcD6JV2cMebx?si=33b2a0b6f69e4559&pt=e0cbd49fe0b8db61ca4b62655841d2f3");
 
     // --- MODALLAR ---
     const [showSettings, setShowSettings] = useState(false);
@@ -154,6 +154,7 @@ export default function Pomodoro({ currentUser }) {
                 userId: currentUser.internalId,
                 username: currentUser.username,
                 avatar: currentUser.base64Avatar || currentUser.avatar,
+                classSection: currentUser.classSection || "Belirsiz",
                 examType: examType,
                 subject: logData.subject,
                 topic: logData.topic,
@@ -241,8 +242,11 @@ export default function Pomodoro({ currentUser }) {
                 <div className="absolute inset-0 z-50 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl rounded-3xl flex flex-col items-center justify-center p-6 animate-in zoom-in-95 border border-slate-200 dark:border-gray-700">
                     <div className="bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-400 w-12 h-12 rounded-full flex items-center justify-center mb-3"><CheckCircle size={24}/></div>
                     <h3 className="font-bold text-slate-800 dark:text-white mb-1">Harika İş! 🎉</h3>
-                    <p className="text-xs text-slate-500 dark:text-gray-400 mb-4">
+                    <p className="text-xs text-slate-500 dark:text-gray-400 mb-1">
                         Süre: {timerType === 'pomodoro' ? customTimes.focus : Math.floor(elapsedTime / 60)} dakika.
+                    </p>
+                    <p className="text-[10px] text-indigo-600 dark:text-indigo-400 font-bold mb-4 bg-indigo-50 dark:bg-indigo-900/30 px-3 py-1 rounded-full">
+                        Sınıf: {currentUser.classSection || "Belirsiz"}
                     </p>
                     
                     <div className="w-full space-y-3">
