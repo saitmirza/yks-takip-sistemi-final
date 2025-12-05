@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Brain, Sparkles, AlertTriangle, Target, Activity, Zap, CheckSquare, Calendar, History, ChevronRight, Bell, Settings, Clock, Save, Lock, Download } from 'lucide-react';
+import { Brain, Sparkles, AlertTriangle, Target, Activity, Zap, CheckSquare, Calendar, History, ChevronRight, Bell, Settings, Clock, Save, Lock, Download, Mic, MicOff } from 'lucide-react';
 import { getAIAnalysis } from '../utils/aiService';
+import { useSpeechRecognition } from '../utils/speechService';
 import { collection, addDoc, query, where, orderBy, onSnapshot, serverTimestamp, getDocs, doc, updateDoc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { APP_ID } from '../utils/constants';
@@ -20,6 +21,7 @@ export default function SmartCoach({ currentUser, myScores }) {
     const [history, setHistory] = useState([]); 
     const [activeTab, setActiveTab] = useState("current"); 
     const [applyingTips, setApplyingTips] = useState(false); 
+    const [isListening, setIsListening] = useState(false);
     
     // YENİ STATE'LER (Veritabanından taze çekilecek)
     const [liveUser, setLiveUser] = useState(currentUser);
@@ -27,6 +29,18 @@ export default function SmartCoach({ currentUser, myScores }) {
     const [preferences, setPreferences] = useState({
         dailyLimit: 2, questionCapacity: 50, focusArea: 'Dengeli'
     });
+
+    // SES TANIMA HOOK'U
+    const speechRecognition = useSpeechRecognition(
+        (result) => {
+            setPreferences(prev => ({ ...prev, focusArea: prev.focusArea + " " + result }));
+            setIsListening(false);
+        },
+        (error) => {
+            alert(error);
+            setIsListening(false);
+        }
+    );
 
     // 1. KULLANICI VERİSİNİ CANLI TAKİP ET (Hedef Hatasını Çözer)
     useEffect(() => {
@@ -242,10 +256,42 @@ export default function SmartCoach({ currentUser, myScores }) {
                         </div>
                         <div>
                             <label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-2">Odak Alanı</label>
-                            <div className="flex gap-2">
-                                {['Sayısal', 'Eşit Ağırlık', 'Sözel', 'Dil', 'Dengeli'].map(area => (
-                                    <button key={area} onClick={() => setPreferences({...preferences, focusArea: area})} className={`flex-1 py-2 rounded-lg text-xs font-bold border transition-all ${preferences.focusArea === area ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-slate-50 dark:bg-gray-700 text-slate-500 dark:text-gray-400 border-slate-200 dark:border-gray-600'}`}>{area}</button>
-                                ))}
+                            <div className="space-y-2">
+                                <div className="flex gap-2">
+                                    {['Sayısal', 'Eşit Ağırlık', 'Sözel', 'Dil', 'Dengeli'].map(area => (
+                                        <button key={area} onClick={() => setPreferences({...preferences, focusArea: area})} className={`flex-1 py-2 rounded-lg text-xs font-bold border transition-all ${preferences.focusArea === area ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-slate-50 dark:bg-gray-700 text-slate-500 dark:text-gray-400 border-slate-200 dark:border-gray-600'}`}>{area}</button>
+                                    ))}
+                                </div>
+                                <div className="flex gap-2 items-center">
+                                    <input 
+                                        type="text" 
+                                        className="flex-1 p-2 bg-slate-50 dark:bg-gray-900 border border-slate-200 dark:border-gray-600 rounded-lg outline-none text-sm dark:text-white"
+                                        placeholder="Örn: Kimya ağırlıklı olsun"
+                                        value={preferences.focusArea}
+                                        onChange={e => setPreferences({...preferences, focusArea: e.target.value})}
+                                    />
+                                    <button 
+                                        onClick={() => {
+                                            if (!speechRecognition.isSupported) return alert("Tarayıcınız ses tanıma desteklemiyor.");
+                                            if (isListening) {
+                                                speechRecognition.stopListening();
+                                                setIsListening(false);
+                                            } else {
+                                                speechRecognition.startListening();
+                                                setIsListening(true);
+                                            }
+                                        }}
+                                        className={`p-2 rounded-lg font-bold transition-all flex-shrink-0 ${
+                                            isListening 
+                                                ? 'bg-red-500 text-white animate-pulse' 
+                                                : 'bg-blue-500 hover:bg-blue-600 text-white'
+                                        }`}
+                                        title={isListening ? "Dinliyor..." : "Sesi metne çevir"}
+                                    >
+                                        {isListening ? <MicOff size={18} /> : <Mic size={18} />}
+                                    </button>
+                                </div>
+                                {isListening && <p className="text-xs text-blue-600 dark:text-blue-400 animate-pulse">🎤 Dinliyor...</p>}
                             </div>
                         </div>
                         <button onClick={savePreferences} className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-xl shadow-lg transition-transform active:scale-95 flex items-center justify-center gap-2"><Save size={20}/> <span>Kaydet ve Başla</span></button>
