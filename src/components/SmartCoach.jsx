@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Brain, Sparkles, AlertTriangle, Target, Activity, Zap, CheckSquare, Calendar, History, ChevronRight, Bell, Settings, Clock, Save, Lock } from 'lucide-react';
+import { Brain, Sparkles, AlertTriangle, Target, Activity, Zap, CheckSquare, Calendar, History, ChevronRight, Bell, Settings, Clock, Save, Lock, Download } from 'lucide-react';
 import { getAIAnalysis } from '../utils/aiService';
 import { collection, addDoc, query, where, orderBy, onSnapshot, serverTimestamp, getDocs, doc, updateDoc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
@@ -19,6 +19,7 @@ export default function SmartCoach({ currentUser, myScores }) {
     const [latestReport, setLatestReport] = useState(null);
     const [history, setHistory] = useState([]); 
     const [activeTab, setActiveTab] = useState("current"); 
+    const [applyingTips, setApplyingTips] = useState(false); 
     
     // YENİ STATE'LER (Veritabanından taze çekilecek)
     const [liveUser, setLiveUser] = useState(currentUser);
@@ -132,6 +133,85 @@ export default function SmartCoach({ currentUser, myScores }) {
         setLoading(false);
     };
 
+    // --- TAVSIYELERI UYGULAMAK IÇIN FONKSIYON ---
+    const applyRecommendations = async () => {
+        if (!latestReport?.data?.weekly_focus_topics || !latestReport?.data?.action_plan) {
+            return alert("Uygulanacak tavsiye yok.");
+        }
+
+        setApplyingTips(true);
+        try {
+            // Action plan'ı parse et
+            const tasks = latestReport.data.action_plan; // Örn: ["Fonksiyonlardan 30 soru çöz", "Türkçe edebiyat tekrarı"]
+            const days = ["Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi", "Pazar"];
+            
+            // Mevcut schedule'ı çek
+            const userRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'user_accounts', currentUser.email);
+            const userSnap = await getDoc(userRef);
+            const currentSchedule = userSnap.data()?.studySchedule || days.reduce((acc, day) => ({ ...acc, [day]: [] }), {});
+
+            // Görevleri haftanın günlerine dağıt
+            let taskIndex = 0;
+            const newSchedule = { ...currentSchedule };
+
+            for (let i = 0; i < days.length && taskIndex < tasks.length; i++) {
+                const day = days[i];
+                const task = tasks[taskIndex];
+                
+                // Görev stringini parse et (örn: "Fonksiyonlardan 30 soru çöz")
+                const match = task.match(/(\d+)/); // Sayı bul
+                const count = match ? match[0] : "20";
+                
+                // Görev türü belirle
+                let subject = "Matematik";
+                let topic = "Genel Tekrar";
+                let taskType = "konu";
+                
+                // Anahtar kelimelere göre konu belirle
+                if (task.toLowerCase().includes("soru")) {
+                    taskType = "soru";
+                } else {
+                    taskType = "konu";
+                }
+                
+                if (task.toLowerCase().includes("fonksiyon")) topic = "Fonksiyonlar";
+                else if (task.toLowerCase().includes("trigonometri")) topic = "Trigonometri";
+                else if (task.toLowerCase().includes("logaritma")) topic = "Logaritma";
+                else if (task.toLowerCase().includes("türkçe") || task.toLowerCase().includes("edebiyat")) { subject = "Türkçe"; topic = "Edebiyat"; }
+                else if (task.toLowerCase().includes("tarih")) { subject = "Tarih"; topic = "Tarihsel Olaylar"; }
+                else if (task.toLowerCase().includes("coğrafya")) { subject = "Coğrafya"; topic = "Fiziki Coğrafya"; }
+                else if (task.toLowerCase().includes("fizik")) { subject = "Fizik"; topic = "Mekanik"; }
+                else if (task.toLowerCase().includes("kimya")) { subject = "Kimya"; topic = "Genel Kimya"; }
+                else if (task.toLowerCase().includes("biyoloji")) { subject = "Biyoloji"; topic = "Hücre Biyolojisi"; }
+                else topic = task.substring(0, 30); // İlk 30 karakteri topic olarak al
+
+                // Görevi schedule'a ekle
+                if (!newSchedule[day]) newSchedule[day] = [];
+                newSchedule[day].push({
+                    id: Date.now() + i,
+                    type: "TYT",
+                    subject,
+                    topic,
+                    taskType,
+                    count: taskType === "soru" ? count : undefined,
+                    isCompleted: false
+                });
+
+                taskIndex++;
+            }
+
+            // Firebase'e kaydet
+            await updateDoc(userRef, { studySchedule: newSchedule });
+            
+            alert("✅ Tavsiyeleri uygulandı! StudyScheduler'a bakabilirsin.");
+            setApplyingTips(false);
+        } catch (err) {
+            console.error("Tavsiye uygulanırken hata:", err);
+            alert("Hata oluştu. Tekrar dene.");
+            setApplyingTips(false);
+        }
+    };
+
     // --- ANKET EKRANI ---
     if (showOnboarding) {
         return (
@@ -229,6 +309,21 @@ export default function SmartCoach({ currentUser, myScores }) {
                                         ))}
                                     </div>
                                 </div>
+                            </div>
+                            <div className="p-5 border-t border-slate-100 dark:border-gray-700 flex gap-3">
+                                <button onClick={applyRecommendations} disabled={applyingTips} className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold py-3 rounded-xl shadow-lg transition-all active:scale-95 disabled:opacity-70 flex items-center justify-center gap-2">
+                                    {applyingTips ? (
+                                        <>
+                                            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                                            Uygulanıyor...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Download size={18} />
+                                            Tavsiyeleri Uyguла
+                                        </>
+                                    )}
+                                </button>
                             </div>
                         </div>
                     ) : !loading && <div className="text-center py-12 text-slate-400"><Brain size={48} className="mx-auto mb-3 opacity-20"/><p>Henüz bir rapor oluşturulmadı.</p></div>}
