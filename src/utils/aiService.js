@@ -2,18 +2,9 @@
 
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from "@google/generative-ai";
 
-// ⚠️ KRITIK: API KEY'i runtime'da çek, hardcode ETMEYİN
-// Build time'da API_KEY expose edilmemesi için environment variable kullan
-const getAPIKey = () => {
-  // Önce window.__API_KEY__ kontrol et (deployment'ta set edilir)
-  if (typeof window !== 'undefined' && window.__API_KEY__) {
-    return window.__API_KEY__;
-  }
-  // Dev'de .env.local'dan çek
-  return import.meta.env.VITE_GOOGLE_AI_API_KEY || '';
-};
-
-const API_KEY = getAPIKey();
+// API KEY: Build time'da inject edilir, source'da görünmez
+// ASLA hardcode ETME - sadece environment variables'dan al
+const API_KEY = typeof __GOOGLE_AI_API_KEY__ !== 'undefined' ? __GOOGLE_AI_API_KEY__ : '';
 
 let genAI = null;
 const isDev = import.meta.env.DEV || location.hostname === 'localhost';
@@ -170,6 +161,7 @@ export const getAIAnalysis = async (studentData) => {
             Öğrencinin kapasitesini ASLA aşmayacak şekilde, gerçekçi ve uygulanabilir bir haftalık plan yap.
             Eğer "Hedef Girilmemiş" ise ona önce hedef belirlemesini söyle.
             Eğer eksik konu yoksa, genel tekrar ve deneme öner.
+            Verilecek görevleri kısa ve net yaz sanki bir programa eklenecekmiş gibi.
 
             İSTENEN JSON FORMATI:
             {
