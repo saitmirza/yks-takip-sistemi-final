@@ -1,5 +1,5 @@
 import React from 'react';
-import { Flag, BookOpen, Zap, Target, Feather, Globe, Crown, Star, Trophy, Award, Rocket, Flame, Crosshair, PenTool, CheckCircle2, Lightbulb, Moon, CalendarDays, Sun, Infinity, TrendingUp, HelpCircle, MessageSquare, Search, School, UserCheck, ThumbsUp, Layers } from 'lucide-react';
+import { Flag, BookOpen, Zap, Target, Feather, Globe, Crown, Star, Trophy, Award, Rocket, Flame, Crosshair, PenTool, CheckCircle2, Lightbulb, Moon, CalendarDays, Sun, Infinity, TrendingUp, HelpCircle, MessageSquare, Search, School, UserCheck, ThumbsUp, Layers, Archive, Share2 } from 'lucide-react';
 
 export const BADGE_DEFINITIONS = [
     // --- YENİ: DİSİPLİN & STREAK (ZİNCİR) ---
@@ -99,6 +99,23 @@ export const BADGE_DEFINITIONS = [
         id: 'problem_solved', title: 'Çözüldü!', desc: 'Sorduğun bir soru "Çözüldü" işaretlendi.',
         icon: <ThumbsUp />, color: 'bg-green-500', 
         check: (scores, questions, user) => questions.some(q => q.askerId === user.internalId && q.isSolved)
+    },
+
+    // --- YENİ: KAYNAK KÜTÜPHANESİ ROZET SİSTEMİ ---
+    {
+        id: 'resource_archivist', title: '🗂️ Arşivci', desc: '10+ kaynak yükledin.',
+        icon: <Archive />, color: 'bg-cyan-500', 
+        check: (scores, questions, user) => (user.resourceUploads || 0) >= 10
+    },
+    {
+        id: 'knowledge_sharer', title: '📚 Bilgi Paylaşımcısı', desc: 'Bir kaynağı 50+ kişi indirdi.',
+        icon: <Share2 />, color: 'bg-teal-600', 
+        check: (scores, questions, user) => (user.maxResourceDownloads || 0) >= 50
+    },
+    {
+        id: 'popular_author', title: '⭐ Popüler Yazar', desc: 'Bir kaynağın 100+ beğeni alması.',
+        icon: <Star />, color: 'bg-amber-500', 
+        check: (scores, questions, user) => (user.maxResourceLikes || 0) >= 100
     }
 ];
 

@@ -488,7 +488,7 @@ export default function ExamTrackerApp() {
             {activeTab === 'stats' && !currentUser.isAdmin && <Stats myScores={myScores} />}
             {activeTab === 'questions' && <QuestionWall currentUser={currentUser} initialQuestions={questions} />}
             {activeTab === 'pomodoro' && !currentUser.isAdmin && <Pomodoro currentUser={currentUser} />}
-            {activeTab === 'achievements' && !currentUser.isAdmin && <Achievements myScores={myScores} currentUser={currentUser} questions={questions} />}
+            {activeTab === 'achievements' && !currentUser.isAdmin && <Achievements myScores={myScores} currentUser={currentUser} questions={questions} appId={APP_ID} />}
             {activeTab === 'simulator' && !currentUser.isAdmin && <Simulator currentUser={currentUser} />}
             {activeTab === 'videos' && !currentUser.isAdmin && <VideoLessons />}
             {activeTab === 'studylog' && !currentUser.isAdmin && <StudyLogger currentUser={currentUser} />}

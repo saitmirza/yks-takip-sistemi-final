@@ -1,11 +1,30 @@
-import React from 'react';
-import { Medal, Lock, Trophy } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Medal, Lock, Trophy, BookOpen } from 'lucide-react';
 import { BADGE_DEFINITIONS, calculateUserBadges } from '../utils/badges.jsx';
+import { getUserContributions } from '../utils/resourceLibraryService';
 
-export default function Achievements({ myScores, currentUser, questions }) {
-  
+export default function Achievements({ myScores, currentUser, questions, appId }) {
+  const [userContributions, setUserContributions] = useState(null);
+
+  // Kaynak kütüphanesi verilerini çek
+  useEffect(() => {
+    if (appId && currentUser?.internalId) {
+      getUserContributions(appId, currentUser.internalId).then(data => {
+        setUserContributions(data);
+      }).catch(err => console.error("Katkılar çekilirken hata:", err));
+    }
+  }, [appId, currentUser]);
+
+  // Kullanıcı verilerini rozetler için birleştir
+  const userDataForBadges = {
+    ...currentUser,
+    resourceUploads: userContributions?.uploads || 0,
+    maxResourceDownloads: userContributions?.maxDownloads || 0,
+    maxResourceLikes: userContributions?.maxLikes || 0
+  };
+
   // DÜZELTME: Tüm parametreleri gönderiyoruz
-  const earnedBadges = calculateUserBadges(myScores, questions, currentUser);
+  const earnedBadges = calculateUserBadges(myScores, questions, userDataForBadges);
   
   const earnedIds = earnedBadges.map(b => b.id);
   const progress = Math.round((earnedBadges.length / BADGE_DEFINITIONS.length) * 100);
@@ -44,6 +63,33 @@ export default function Achievements({ myScores, currentUser, questions }) {
                 </div>
             </div>
         </div>
+
+        {/* KAYNAK KÜTÜPHANESİ KATKISI STATS */}
+        {userContributions && (
+            <div className="bg-gradient-to-br from-cyan-50 to-teal-50 dark:from-cyan-900/20 dark:to-teal-900/20 rounded-3xl p-6 border border-cyan-200 dark:border-cyan-700/30">
+                <h3 className="text-lg font-bold text-cyan-900 dark:text-cyan-300 flex items-center gap-2 mb-4">
+                    <BookOpen size={24}/> Kaynak Kütüphanesi Katkılarım
+                </h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-cyan-100 dark:border-cyan-700/50 text-center">
+                        <div className="text-2xl font-bold text-cyan-600 dark:text-cyan-400">{userContributions.uploads || 0}</div>
+                        <div className="text-xs font-bold text-gray-600 dark:text-gray-400 uppercase mt-1">Yüklenen Kaynak</div>
+                    </div>
+                    <div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-cyan-100 dark:border-cyan-700/50 text-center">
+                        <div className="text-2xl font-bold text-teal-600 dark:text-teal-400">{userContributions.totalDownloads || 0}</div>
+                        <div className="text-xs font-bold text-gray-600 dark:text-gray-400 uppercase mt-1">Toplam İndirme</div>
+                    </div>
+                    <div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-cyan-100 dark:border-cyan-700/50 text-center">
+                        <div className="text-2xl font-bold text-amber-600 dark:text-amber-400">{userContributions.totalLikes || 0}</div>
+                        <div className="text-xs font-bold text-gray-600 dark:text-gray-400 uppercase mt-1">Toplam Beğeni</div>
+                    </div>
+                    <div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-cyan-100 dark:border-cyan-700/50 text-center">
+                        <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{userContributions.approvedCount || 0}</div>
+                        <div className="text-xs font-bold text-gray-600 dark:text-gray-400 uppercase mt-1">Onaylanan</div>
+                    </div>
+                </div>
+            </div>
+        )}
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {BADGE_DEFINITIONS.map((badge) => {
