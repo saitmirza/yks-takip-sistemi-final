@@ -46,11 +46,17 @@ export default function AdminDashboard({ usersList, allScores, appId }) {
     // --- 1B. KAYNAK MODERASYONU - Beklemede Olan Kaynakları Çek ---
     const fetchPendingResources = async () => {
         try {
-            const resources = await getPendingResources(appId);
-            setPendingResources(resources);
-            if (resources.length > 0) setSelectedResource(resources[0]);
+            const result = await getPendingResources(appId);
+            // getPendingResources {success, resources} döndürüyor
+            if (result && result.resources) {
+                setPendingResources(result.resources);
+                if (result.resources.length > 0) setSelectedResource(result.resources[0]);
+            } else {
+                setPendingResources([]);
+            }
         } catch (error) {
             console.error("Kaynaklar çekilirken hata:", error);
+            setPendingResources([]);
         }
     };
 
