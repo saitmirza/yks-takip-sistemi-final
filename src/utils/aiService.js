@@ -3,7 +3,13 @@
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from "@google/generative-ai";
 
 // API KEY: Runtime injection - ASLA hardcode ETME
-const isDev = (typeof window !== 'undefined' && window.location && window.location.hostname === 'localhost');
+const isLocalhost = () => {
+  if (typeof window === 'undefined') return false;
+  if (!window.location) return false;
+  return window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+};
+
+const isDev = isLocalhost();
 
 const getAPIKey = () => {
   // Production: Vercel'den window variable'ı oku
