@@ -3,7 +3,7 @@
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from "@google/generative-ai";
 
 // API KEY: Runtime injection - ASLA hardcode ETME
-const isDev = import.meta.env.DEV || location.hostname === 'localhost';
+const isDev = (typeof window !== 'undefined' && window.location && window.location.hostname === 'localhost');
 
 const getAPIKey = () => {
   // Production: Vercel'den window variable'ı oku
@@ -11,8 +11,12 @@ const getAPIKey = () => {
     return window.__API_KEY__;
   }
   // Development: .env.local'den oku
-  if (import.meta.env.VITE_GOOGLE_AI_API_KEY) {
-    return import.meta.env.VITE_GOOGLE_AI_API_KEY;
+  try {
+    if (import.meta.env && import.meta.env.VITE_GOOGLE_AI_API_KEY) {
+      return import.meta.env.VITE_GOOGLE_AI_API_KEY;
+    }
+  } catch (e) {
+    // import.meta kullanılamıyorsa sessiz devam et
   }
   return '';
 };
