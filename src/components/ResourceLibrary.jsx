@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Download, Heart, Flag, Search, Filter, X } from 'lucide-react';
 import { searchResources, downloadResource, toggleLike, reportResource } from '../utils/resourceLibraryService';
+import StudentResourceUpload from './StudentResourceUpload';
 
 export default function ResourceLibrary({ currentUser }) {
     const [resources, setResources] = useState([]);
@@ -103,9 +104,12 @@ export default function ResourceLibrary({ currentUser }) {
     return (
         <div className="w-full pb-24 space-y-4">
             {/* BAŞLIK */}
-            <div className="bg-gradient-to-br from-indigo-600 to-purple-600 rounded-3xl p-6 text-white shadow-lg">
-                <h2 className="text-2xl font-bold mb-1">📚 Kaynak Kütüphanesi</h2>
-                <p className="text-indigo-200 text-sm">Binlerce not, deneme ve çıkmış soru...</p>
+            <div className="bg-gradient-to-br from-indigo-600 to-purple-600 rounded-3xl p-6 text-white shadow-lg flex justify-between items-center">
+                <div>
+                    <h2 className="text-2xl font-bold mb-1">📚 Kaynak Kütüphanesi</h2>
+                    <p className="text-indigo-200 text-sm">Binlerce not, deneme ve çıkmış soru...</p>
+                </div>
+                <StudentResourceUpload currentUser={currentUser} onSuccess={fetchResources} />
             </div>
 
             {/* FİLTRELER */}

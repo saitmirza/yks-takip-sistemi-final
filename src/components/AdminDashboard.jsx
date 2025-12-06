@@ -1,10 +1,11 @@
 
 
 import React, { useState, useEffect } from 'react';
-import { Users, MessageCircle, AlertTriangle, Trash2, Shield, Activity, FileText, Search, Key, Ban, CheckCircle, MessageSquarePlus, Send, XCircle, FileInput, Edit, X, Zap} from 'lucide-react';
+import { Users, MessageCircle, AlertTriangle, Trash2, Shield, Activity, FileText, Search, Key, Ban, CheckCircle, MessageSquarePlus, Send, XCircle, FileInput, Edit, X, Zap, BookOpen, Download} from 'lucide-react';
 import { collection, query, orderBy, limit, getDocs, deleteDoc, doc, updateDoc, where, serverTimestamp, arrayUnion } from 'firebase/firestore';
 import { db } from '../firebase';
 import AdminExcelView from './AdminExcelView';
+import { approveResource, rejectResource, getPendingResources } from '../utils/resourceLibraryService';
 
 export default function AdminDashboard({ usersList, allScores, appId }) {
     const [activeTab, setActiveTab] = useState('requests'); 
@@ -16,7 +17,11 @@ export default function AdminDashboard({ usersList, allScores, appId }) {
     const [suspiciousData, setSuspiciousData] = useState({ scores: [], logs: [] });
     
     const [feedbacks, setFeedbacks] = useState([]);
-    const [examRequests, setExamRequests] = useState([]); 
+    const [examRequests, setExamRequests] = useState([]);
+    
+    // Kaynaklar moderasyon
+    const [pendingResources, setPendingResources] = useState([]);
+    const [selectedResource, setSelectedResource] = useState(null);
     
     const [examDataToEdit, setExamDataToEdit] = useState(null);
     const [replyText, setReplyText] = useState("");
@@ -28,6 +33,7 @@ export default function AdminDashboard({ usersList, allScores, appId }) {
         else if (activeTab === 'logs') fetchLogs();
         else if (activeTab === 'feedback') fetchFeedbacks();
         else if (activeTab === 'requests') fetchExamRequests();
+        else if (activeTab === 'resources') fetchPendingResources();
     }, [activeTab]);
 
     // --- 1. TALEPLERİ ÇEK ---
@@ -35,6 +41,32 @@ export default function AdminDashboard({ usersList, allScores, appId }) {
         const q = query(collection(db, 'artifacts', appId, 'public', 'data', 'exam_requests'), orderBy('timestamp', 'desc'));
         const snap = await getDocs(q);
         setExamRequests(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    };
+
+    // --- 1B. KAYNAK MODERASYONU - Beklemede Olan Kaynakları Çek ---
+    const fetchPendingResources = async () => {
+        try {
+            const resources = await getPendingResources(appId);
+            setPendingResources(resources);
+            if (resources.length > 0) setSelectedResource(resources[0]);
+        } catch (error) {
+            console.error("Kaynaklar çekilirken hata:", error);
+        }
+    };
+
+    // --- 1C. KAYNAK ONAY VEYA RED ---
+    const handleResourceApproval = async (resourceId, approved, rejectionReason = null) => {
+        try {
+            if (approved) {
+                await approveResource(appId, resourceId);
+            } else {
+                await rejectResource(appId, resourceId, rejectionReason || "Admin tarafından reddedildi");
+            }
+            fetchPendingResources();
+            setSelectedResource(null);
+        } catch (error) {
+            console.error("Kaynak işlemi hatası:", error);
+        }
     };
 
     // --- 2. MODERASYON VERİSİ ---
@@ -175,6 +207,7 @@ const handleReplyFeedback = async (id, isResolving = false) => {
                         { id: 'requests', icon: <FileText size={18}/>, label: 'Talepler' },
                         { id: 'exams', icon: <Edit size={18}/>, label: 'Sınav Girişi' },
                         { id: 'users', icon: <Users size={18}/>, label: 'Kullanıcılar' },
+                        { id: 'resources', icon: <BookOpen size={18}/>, label: 'Kaynaklar' },
                         { id: 'moderation', icon: <MessageCircle size={18}/>, label: 'İçerik' },
                         { id: 'logs', icon: <Activity size={18}/>, label: 'Anomali' },
                         { id: 'feedback', icon: <MessageSquarePlus size={18}/>, label: 'Destek' },
@@ -188,6 +221,105 @@ const handleReplyFeedback = async (id, isResolving = false) => {
 
             {/* --- 1. SINAV GİRİŞ --- */}
             {activeTab === 'exams' && <AdminExcelView usersList={usersList} allScores={allScores} appId={appId} dataToEdit={examDataToEdit} />}
+
+            {/* --- 1B. KAYNAK MODERASYONu --- */}
+            {activeTab === 'resources' && (
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    {/* Sol Panel: Beklemede Olan Kaynaklar */}
+                    <div className="lg:col-span-1 bg-white dark:bg-gray-800 rounded-3xl border border-slate-200 dark:border-gray-700 overflow-hidden shadow-sm">
+                        <div className="bg-gradient-to-r from-amber-500 to-orange-500 p-4 text-white font-bold flex items-center gap-2">
+                            <BookOpen size={20}/> Beklemede ({pendingResources.length})
+                        </div>
+                        <div className="divide-y divide-slate-100 dark:divide-gray-700 max-h-96 overflow-y-auto">
+                            {pendingResources.length === 0 ? (
+                                <p className="p-4 text-slate-500 text-center">Beklemede kaynak yok ✨</p>
+                            ) : (
+                                pendingResources.map(res => (
+                                    <div 
+                                        key={res.id}
+                                        onClick={() => setSelectedResource(res)}
+                                        className={`p-3 cursor-pointer transition-colors border-l-4 ${
+                                            selectedResource?.id === res.id 
+                                                ? 'bg-amber-50 dark:bg-amber-900/20 border-l-amber-500' 
+                                                : 'hover:bg-slate-50 dark:hover:bg-gray-700/30 border-l-slate-300'
+                                        }`}
+                                    >
+                                        <div className="font-bold text-sm text-slate-800 dark:text-white truncate">{res.title}</div>
+                                        <div className="text-xs text-slate-500 mt-1">{res.category} / {res.subject}</div>
+                                        <div className="text-[10px] text-slate-400 mt-1">{res.uploaderName}</div>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Sağ Panel: Seçili Kaynağın Detayı */}
+                    {selectedResource && (
+                        <div className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-3xl border border-slate-200 dark:border-gray-700 p-6 shadow-sm">
+                            <div className="space-y-4">
+                                <div>
+                                    <h3 className="font-bold text-lg text-slate-800 dark:text-white">{selectedResource.title}</h3>
+                                    <p className="text-sm text-slate-600 dark:text-gray-300 mt-2">{selectedResource.description}</p>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-3 text-sm">
+                                    <div className="bg-slate-50 dark:bg-gray-700 p-3 rounded-lg">
+                                        <span className="text-slate-600 dark:text-gray-400">Kategori</span>
+                                        <div className="font-bold text-slate-800 dark:text-white">{selectedResource.category}</div>
+                                    </div>
+                                    <div className="bg-slate-50 dark:bg-gray-700 p-3 rounded-lg">
+                                        <span className="text-slate-600 dark:text-gray-400">Konu</span>
+                                        <div className="font-bold text-slate-800 dark:text-white">{selectedResource.subject}</div>
+                                    </div>
+                                    <div className="bg-slate-50 dark:bg-gray-700 p-3 rounded-lg">
+                                        <span className="text-slate-600 dark:text-gray-400">Tür</span>
+                                        <div className="font-bold text-slate-800 dark:text-white">{selectedResource.type}</div>
+                                    </div>
+                                    <div className="bg-slate-50 dark:bg-gray-700 p-3 rounded-lg">
+                                        <span className="text-slate-600 dark:text-gray-400">Dosya Boyutu</span>
+                                        <div className="font-bold text-slate-800 dark:text-white">{(selectedResource.fileSize / 1024 / 1024).toFixed(2)} MB</div>
+                                    </div>
+                                </div>
+
+                                <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg border border-blue-200 dark:border-blue-700">
+                                    <div className="text-sm text-blue-700 dark:text-blue-300 font-bold">Yükleyen</div>
+                                    <div className="text-sm text-blue-600 dark:text-blue-400 mt-1">{selectedResource.uploaderName}</div>
+                                    <div className="text-xs text-blue-500 mt-1">{new Date(selectedResource.uploadDate?.seconds * 1000).toLocaleString()}</div>
+                                </div>
+
+                                {selectedResource.tags && selectedResource.tags.length > 0 && (
+                                    <div>
+                                        <span className="text-sm font-bold text-slate-700 dark:text-gray-300">Etiketler</span>
+                                        <div className="flex flex-wrap gap-2 mt-2">
+                                            {selectedResource.tags.map(tag => (
+                                                <span key={tag} className="bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 px-3 py-1 rounded-full text-xs font-bold">
+                                                    {tag}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Onay / Red Butonları */}
+                                <div className="flex gap-3 pt-4 border-t border-slate-200 dark:border-gray-700">
+                                    <button 
+                                        onClick={() => handleResourceApproval(selectedResource.id, true)}
+                                        className="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-xl transition-colors flex items-center justify-center gap-2"
+                                    >
+                                        <CheckCircle size={18}/> Onayla
+                                    </button>
+                                    <button 
+                                        onClick={() => handleResourceApproval(selectedResource.id, false, "Admin tarafından reddedildi")}
+                                        className="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-xl transition-colors flex items-center justify-center gap-2"
+                                    >
+                                        <XCircle size={18}/> Reddet
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            )}
 
 {activeTab === 'requests' && (
     <div className="bg-white dark:bg-gray-800 rounded-3xl border border-slate-200 dark:border-gray-700 p-6 shadow-sm">
