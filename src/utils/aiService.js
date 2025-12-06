@@ -10,13 +10,10 @@ const getAPIKey = () => {
   if (typeof window !== 'undefined' && window.__API_KEY__) {
     return window.__API_KEY__;
   }
-  // Development: .env.local'den oku
-  try {
-    if (import.meta.env && import.meta.env.VITE_GOOGLE_AI_API_KEY) {
-      return import.meta.env.VITE_GOOGLE_AI_API_KEY;
-    }
-  } catch (e) {
-    // import.meta kullanılamıyorsa sessiz devam et
+  // Development: localStorage veya manual configuration
+  if (typeof window !== 'undefined' && window.localStorage) {
+    const storedKey = window.localStorage.getItem('VITE_GOOGLE_AI_API_KEY');
+    if (storedKey) return storedKey;
   }
   return '';
 };
