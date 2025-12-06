@@ -1,5 +1,5 @@
 import React from 'react';
-import { Trophy, ShieldCheck, Calendar as CalendarIcon, User, BarChart3, List, MessageCircle, Settings, Search, LineChart as LineChartIcon, LogOut, HelpCircle, Timer, Medal, Calculator, UserCog, Map, PenTool, Flame, CalendarDays, PlayCircle, MessageSquarePlus, BookOpen, Monitor, FileText, MessageSquare, Target, Brain } from 'lucide-react';
+import { Trophy, ShieldCheck, Calendar as CalendarIcon, User, BarChart3, List, MessageCircle, Settings, Search, LineChart as LineChartIcon, LogOut, HelpCircle, Timer, Medal, Calculator, UserCog, Map, PenTool, Flame, CalendarDays, PlayCircle, MessageSquarePlus, BookOpen, Monitor, FileText, MessageSquare, Target, Brain, Library } from 'lucide-react';
 import Countdown from './Countdown';
 
 export default function Sidebar({ currentUser, activeTab, setActiveTab, handleLogout }) {
@@ -29,6 +29,7 @@ export default function Sidebar({ currentUser, activeTab, setActiveTab, handleLo
       { id: 'achievements', icon: <Medal size={20}/>, label: 'Rozet', role: 'student' },
       
       // SOSYAL & ARAÇLAR
+      { id: 'library', icon: <Library size={20}/>, label: 'Kütüphane', role: 'all' },
       { id: 'chat', icon: <MessageCircle size={20}/>, label: 'Sohbet', role: 'all' },
       { id: 'questions', icon: <HelpCircle size={20}/>, label: 'Sorular', role: 'all' },
       { id: 'pomodoro', icon: <Timer size={20}/>, label: 'Sayaç', role: 'student' },

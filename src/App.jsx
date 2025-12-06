@@ -35,6 +35,7 @@ import StudentExamRequest from './components/StudentExamRequest';
 import Forum from './components/Forum'; 
 import DreamSchool from './components/DreamSchool'; 
 import SmartCoach from './components/SmartCoach';
+import ResourceLibrary from './components/ResourceLibrary';
 
 export default function ExamTrackerApp() {
   const [firebaseUser, setFirebaseUser] = useState(null);
@@ -498,6 +499,7 @@ export default function ExamTrackerApp() {
             {activeTab === 'forum' && <Forum currentUser={currentUser} />}
             {activeTab === 'dreams' && !currentUser.isAdmin && <DreamSchool currentUser={currentUser} myScores={myScores} />}
             {activeTab === 'coach' && !currentUser.isAdmin && <SmartCoach currentUser={currentUser} myScores={myScores} />}
+            {activeTab === 'library' && <ResourceLibrary currentUser={currentUser} />}
         </div>
       </div>
     </div>
