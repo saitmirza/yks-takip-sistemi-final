@@ -276,7 +276,6 @@ export const searchResources = async (filters) => {
    *   - limit: Kaç kayıt (default: 20)
    */
   try {
-    let q;
     const constraints = [where('status', '==', 'approved')];
 
     if (filters.category) {
@@ -289,32 +288,66 @@ export const searchResources = async (filters) => {
       constraints.push(where('type', '==', filters.type));
     }
 
-    // Sıralama
-    let orderByField = 'uploadedAt';
+    // Sıralama alanı
+    let orderByField = 'timestamp';
     if (filters.sortBy === 'popular') {
       orderByField = 'downloads';
     } else if (filters.sortBy === 'rating') {
-      orderByField = 'rating';
+      orderByField = 'likes';
     }
 
     const resourcesRef = collection(db, 'artifacts', APP_ID, 'public', 'data', 'resources');
-    q = query(
-      resourcesRef,
-      ...constraints,
-      orderBy(orderByField, 'desc'),
-      limit(filters.limit || 20)
-    );
-
-    const snapshot = await getDocs(q);
-    const resources = snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
-
-    return { success: true, resources };
+    
+    try {
+      // Birinci deneme: orderBy ile
+      const q = query(
+        resourcesRef,
+        ...constraints,
+        orderBy(orderByField, 'desc'),
+        limit(filters.limit || 20)
+      );
+      const snapshot = await getDocs(q);
+      const resources = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      return { success: true, resources };
+    } catch (orderByError) {
+      // Index yoksa fallback
+      if (orderByError.code === 'failed-precondition') {
+        console.log('⚠️  Firestore index gerekli - in-memory sort yapılıyor');
+        
+        const q = query(
+          resourcesRef,
+          ...constraints,
+          limit(100)
+        );
+        const snapshot = await getDocs(q);
+        
+        const resources = snapshot.docs
+          .map(doc => ({
+            id: doc.id,
+            ...doc.data()
+          }))
+          .sort((a, b) => {
+            if (orderByField === 'downloads') {
+              return (b.downloads || 0) - (a.downloads || 0);
+            } else if (orderByField === 'likes') {
+              return (b.likes || 0) - (a.likes || 0);
+            } else {
+              return (b.timestamp || 0) - (a.timestamp || 0);
+            }
+          })
+          .slice(0, filters.limit || 20);
+        
+        return { success: true, resources };
+      } else {
+        throw orderByError;
+      }
+    }
 
   } catch (error) {
-    console.error("Search error:", error);
+    console.error("❌ Search error:", error.message);
     return { success: false, message: error.message, resources: [] };
   }
 };
