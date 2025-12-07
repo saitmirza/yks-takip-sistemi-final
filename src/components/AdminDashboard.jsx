@@ -7,7 +7,7 @@ import { db } from '../firebase';
 import AdminExcelView from './AdminExcelView';
 import { approveResource, rejectResource, getPendingResources } from '../utils/resourceLibraryService';
 
-export default function AdminDashboard({ usersList, allScores, appId }) {
+export default function AdminDashboard({ usersList, allScores, appId, currentUser }) {
     const [activeTab, setActiveTab] = useState('requests'); 
     
     // Veri State'leri
@@ -63,10 +63,13 @@ export default function AdminDashboard({ usersList, allScores, appId }) {
     // --- 1C. KAYNAK ONAY VEYA RED ---
     const handleResourceApproval = async (resourceId, approved, rejectionReason = null) => {
         try {
+            const adminId = currentUser?.internalId || "ADMIN_ID";
             if (approved) {
-                await approveResource(appId, resourceId);
+                // NOTE: approveResource expects (resourceId, adminId)
+                await approveResource(resourceId, adminId);
             } else {
-                await rejectResource(appId, resourceId, rejectionReason || "Admin tarafından reddedildi");
+                // NOTE: rejectResource expects (resourceId, reason, adminId)
+                await rejectResource(resourceId, rejectionReason || "Admin tarafından reddedildi", adminId);
             }
             fetchPendingResources();
             setSelectedResource(null);

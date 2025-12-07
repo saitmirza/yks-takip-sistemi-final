@@ -478,7 +478,7 @@ export default function ExamTrackerApp() {
 
       <div className="flex-1 p-4 md:p-8 pt-20 pb-32 md:pt-8 md:pb-8 md:ml-64 min-h-screen relative scroll-smooth">
         <div key={activeTab} className="page-enter max-w-7xl mx-auto">
-            {activeTab === 'dashboard' && currentUser.isAdmin && <AdminDashboard usersList={usersList} allScores={allScores} appId={APP_ID} />}
+            {activeTab === 'dashboard' && currentUser.isAdmin && <AdminDashboard usersList={usersList} allScores={allScores} appId={APP_ID} currentUser={currentUser} />}
             {activeTab === 'leaderboard' && <Leaderboard allScores={allScores} usersList={usersList} currentUser={currentUser} onUserClick={handleUserClick} />}
             {activeTab === 'my_exams' && !currentUser.isAdmin && <MyExams myScores={myScores} currentUser={currentUser} rankings={rankings} />}
             {activeTab === 'chat' && <Chat currentUser={currentUser} usersList={usersList} onUserClick={handleUserClick} />}
