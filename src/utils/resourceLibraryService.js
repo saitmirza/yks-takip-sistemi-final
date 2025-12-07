@@ -110,7 +110,8 @@ export const uploadResource = async (file, resourceData) => {
       // Etiketler
       tags: resourceData.tags || [],
 
-      // Tarihler
+      // Tarihler (timestamp indexlenebilir)
+      timestamp: Date.now(), // Simple numeric timestamp for indexing
       uploadedAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     };
@@ -330,7 +331,7 @@ export const getPendingResources = async () => {
     const q = query(
       resourcesRef,
       where('status', '==', 'pending'),
-      orderBy('uploadedAt', 'asc'),
+      orderBy('timestamp', 'asc'),
       limit(50)
     );
 
