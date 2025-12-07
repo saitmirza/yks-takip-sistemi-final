@@ -51,8 +51,39 @@ export default function ResourceLibrary({ currentUser }) {
     };
 
     const handleDownload = async (resource) => {
-        await downloadResource(resource.id, currentUser.internalId);
-        alert(`📥 ${resource.title} indirildi!`);
+        try {
+            // Log download
+            await downloadResource(resource.id, currentUser.internalId);
+            
+            // Dosyayı indır (Base64'ten)
+            if (resource.fileData) {
+                // Base64'ü Blob'a çevir
+                const byteCharacters = atob(resource.fileData);
+                const byteNumbers = new Array(byteCharacters.length);
+                for (let i = 0; i < byteCharacters.length; i++) {
+                    byteNumbers[i] = byteCharacters.charCodeAt(i);
+                }
+                const byteArray = new Uint8Array(byteNumbers);
+                const blob = new Blob([byteArray], { type: resource.fileType });
+                
+                // İndir
+                const url = window.URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = resource.fileName;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                window.URL.revokeObjectURL(url);
+                
+                console.log(`✅ Downloaded: ${resource.fileName}`);
+            } else {
+                alert("Dosya bulunamadı!");
+            }
+        } catch (error) {
+            console.error("Download error:", error);
+            alert("İndirme hatası!");
+        }
     };
 
     const handleLike = async (resource) => {

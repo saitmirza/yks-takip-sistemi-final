@@ -18,8 +18,7 @@ import {
   serverTimestamp,
   deleteDoc
 } from 'firebase/firestore';
-import { ref, uploadBytes, deleteObject } from 'firebase/storage';
-import { db, storage } from '../firebase';
+import { db } from '../firebase';
 import { APP_ID } from './constants';
 
 // ============================================
@@ -45,9 +44,9 @@ export const uploadResource = async (file, resourceData) => {
   
   try {
     // 1. Dosya doğrulaması
-    const MAX_SIZE = 50 * 1024 * 1024; // 50 MB
+    const MAX_SIZE = 5 * 1024 * 1024; // 5 MB (Firestore limiti: 1MB per document, ama compressed)
     if (file.size > MAX_SIZE) {
-      return { success: false, message: "Dosya çok büyük (Max: 50 MB)" };
+      return { success: false, message: "Dosya çok büyük (Max: 5 MB). Daha küçük bir dosya yükleyin." };
     }
 
     const ALLOWED_TYPES = ['application/pdf', 'image/jpeg', 'image/png', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
@@ -55,21 +54,21 @@ export const uploadResource = async (file, resourceData) => {
       return { success: false, message: "Desteklenmeyen dosya tipi (PDF, JPG, PNG, DOC)" };
     }
 
-    // 2. Storage'a yükle
+    // 2. Dosyayı Base64'e çevir
+    console.log(`📤 Converting file to Base64: ${file.name}`);
+    const base64Data = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result.split(',')[1]); // Base64 part only
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+
+    // 3. Firestore'a metadata ve dosya data'sı kaydet
+    const resourceRef = collection(db, 'artifacts', APP_ID, 'public', 'data', 'resources');
+    
     const timestamp = Date.now();
     const fileExt = file.name.split('.').pop();
     const cleanFileName = file.name.replace(/\.[^/.]+$/, "").replace(/[^a-z0-9-]/gi, '-').toLowerCase();
-    const uniqueFileName = `${timestamp}_${resourceData.userId}_${cleanFileName}.${fileExt}`;
-    
-    const storagePath = `artifacts/${APP_ID}/resources/${resourceData.category.toLowerCase()}/${resourceData.subject.toLowerCase().replace(/\s+/g, '-')}/${uniqueFileName}`;
-    const storageRef = ref(storage, storagePath);
-
-    console.log(`📤 Uploading to: ${storagePath}`);
-    const snapshot = await uploadBytes(storageRef, file);
-    const fileUrl = `gs://${snapshot.bucket}/${snapshot.fullPath}`;
-
-    // 3. Firestore'a metadata kaydet
-    const resourceRef = collection(db, 'artifacts', APP_ID, 'public', 'data', 'resources');
     
     const resourceDoc = {
       // Yükleyici bilgisi
@@ -87,49 +86,49 @@ export const uploadResource = async (file, resourceData) => {
       subject: resourceData.subject,
       type: resourceData.type,
 
-      // Dosya
+      // Dosya (Base64 encoded)
       fileName: file.name,
       fileSize: file.size,
-      fileUrl: fileUrl,
-      fileType: fileExt,
+      fileData: base64Data, // Base64 encoded file content
+      fileType: file.type,
+      fileExtension: fileExt,
 
       // Moderasyon (Admin direkt onaylı, öğrenci pending)
       status: resourceData.isAdmin ? 'approved' : 'pending',
       source: resourceData.isAdmin ? 'official' : 'student',
       approvedBy: resourceData.isAdmin ? resourceData.userId : null,
       approvedAt: resourceData.isAdmin ? serverTimestamp() : null,
+      rejectedBy: null,
+      rejectionReason: null,
 
-      // Etkileşim
+      // İstatistikler
+      views: 0,
       downloads: 0,
       likes: 0,
       reports: 0,
-      rating: 0,
-      ratingCount: 0,
-      views: 0,
 
-      // Meta
+      // Etiketler
       tags: resourceData.tags || [],
+
+      // Tarihler
       uploadedAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     };
 
     const docRef = await addDoc(resourceRef, resourceDoc);
-    console.log(`✅ Resource created: ${docRef.id}`);
 
-    // 4. Admin İse Direkt Onaylı, Öğrenci İse Pending
-    const statusMsg = resourceData.isAdmin 
-      ? "✅ Dosya onaylandı ve kütüphanede yayında!"
-      : "⏳ Dosyan inceleniyor. Admin onayı sonrası görünür.";
-
+    console.log(`✅ Resource uploaded successfully: ${docRef.id}`);
     return { 
       success: true, 
-      resourceId: docRef.id,
-      message: statusMsg
+      resourceId: docRef.id, 
+      message: resourceData.isAdmin 
+        ? "✅ Kaynak başarıyla yüklendi ve onaylandı!" 
+        : "⏳ Kaynağınız yüklendi. Admin tarafından incelendikten sonra görünecektir."
     };
 
   } catch (error) {
-    console.error("Upload error:", error);
-    return { success: false, message: `Hata: ${error.message}` };
+    console.error("❌ Upload error:", error);
+    return { success: false, message: `Yükleme hatası: ${error.message}` };
   }
 };
 
@@ -520,14 +519,7 @@ export const deleteResource = async (resourceId, userId, isAdmin) => {
       return { success: false, message: "Yetkiniz yok." };
     }
 
-    // Storage'dan sil
-    const fileUrl = resource.fileUrl;
-    if (fileUrl) {
-      const fileRef = ref(storage, fileUrl);
-      await deleteObject(fileRef).catch(err => console.warn("Storage delete error:", err));
-    }
-
-    // Firestore'dan sil
+    // Firestore'dan sil (Base64 verisi yayılımı olmadığı için Storage silme gerekmez)
     await deleteDoc(resourceRef);
 
     console.log(`🗑️ Resource deleted: ${resourceId}`);
