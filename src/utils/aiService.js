@@ -19,14 +19,14 @@ const isDev = isLocalhost();
 const getAPIKey = () => {
   // Try multiple sources in order
   
-  // 1. Window variable (set by parent app or Vercel)
+  // 1. Window variable (set by parent app or Vercel at build time)
   if (typeof window !== 'undefined' && window.__API_KEY__) {
     return window.__API_KEY__;
   }
   
-  // 2. Environment variable injected at runtime by Vercel
-  if (typeof process !== 'undefined' && process.env && process.env.VITE_GOOGLE_AI_API_KEY) {
-    return process.env.VITE_GOOGLE_AI_API_KEY;
+  // 2. Window variable set by vite.config.js
+  if (typeof window !== 'undefined' && window.__VITE_GOOGLE_AI_API_KEY__) {
+    return window.__VITE_GOOGLE_AI_API_KEY__;
   }
   
   // 3. localStorage (developer fallback)

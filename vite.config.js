@@ -2,11 +2,15 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
+// Load environment variables
+const apiKey = process.env.VITE_GOOGLE_AI_API_KEY || ''
+
 // https://vitejs.dev/config/
 export default defineConfig({
   define: {
-    // Inject environment variables into the browser globally
-    'window.__VITE_GOOGLE_AI_API_KEY__': JSON.stringify(process.env.VITE_GOOGLE_AI_API_KEY || '')
+    // Inject API key at build time
+    'import.meta.env.VITE_GOOGLE_AI_API_KEY': JSON.stringify(apiKey),
+    'window.__VITE_GOOGLE_AI_API_KEY__': JSON.stringify(apiKey)
   },
   plugins: [
     react(),
