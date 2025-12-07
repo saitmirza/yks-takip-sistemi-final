@@ -12,12 +12,18 @@
     <meta name="apple-mobile-web-app-title" content="YKS Hub" />
     <title>YKS Hub</title>
     <script>
-      // Development logging
-      const isDev = import.meta.env.DEV || location.hostname === 'localhost';
+      // Development logging - no import.meta in HTML
+      const isDev = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
       
       if (isDev) {
         console.log('%c🚀 YKS Hub Starting...', 'color: #4f46e5; font-size: 14px; font-weight: bold');
         console.log('⏱️ Load start:', new Date().toLocaleTimeString('tr-TR'));
+      }
+      
+      // API Key from Vercel environment variable
+      // If VITE_GOOGLE_AI_API_KEY is set in Vercel, it will be available via window.__API_KEY__
+      if (typeof window !== 'undefined' && window.__VITE_GOOGLE_AI_API_KEY__) {
+        window.__API_KEY__ = window.__VITE_GOOGLE_AI_API_KEY__;
       }
       
       // iOS Detection

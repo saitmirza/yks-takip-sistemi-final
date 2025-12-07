@@ -2,25 +2,39 @@
 
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from "@google/generative-ai";
 
-// API KEY: Runtime injection - ASLA hardcode ETME
+// --- API KEY CONFIGURATION ---
+// Localhost check - no import.meta usage
 const isLocalhost = () => {
-  if (typeof window === 'undefined') return false;
-  if (!window.location) return false;
-  return window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+  try {
+    return typeof window !== 'undefined' && 
+           (window.location.hostname === 'localhost' || 
+            window.location.hostname === '127.0.0.1');
+  } catch {
+    return false;
+  }
 };
 
 const isDev = isLocalhost();
 
 const getAPIKey = () => {
-  // Production: Vercel'den window variable'ı oku
+  // Try multiple sources in order
+  
+  // 1. Window variable (set by parent app or Vercel)
   if (typeof window !== 'undefined' && window.__API_KEY__) {
     return window.__API_KEY__;
   }
-  // Development: localStorage veya manual configuration
-  if (typeof window !== 'undefined' && window.localStorage) {
-    const storedKey = window.localStorage.getItem('VITE_GOOGLE_AI_API_KEY');
-    if (storedKey) return storedKey;
+  
+  // 2. Environment variable injected at runtime by Vercel
+  if (typeof process !== 'undefined' && process.env && process.env.VITE_GOOGLE_AI_API_KEY) {
+    return process.env.VITE_GOOGLE_AI_API_KEY;
   }
+  
+  // 3. localStorage (developer fallback)
+  if (typeof window !== 'undefined' && window.localStorage) {
+    const stored = window.localStorage.getItem('GOOGLE_AI_API_KEY');
+    if (stored) return stored;
+  }
+  
   return '';
 };
 
