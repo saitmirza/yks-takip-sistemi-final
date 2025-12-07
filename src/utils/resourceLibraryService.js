@@ -360,25 +360,33 @@ export const getPendingResources = async () => {
   /**
    * Admin paneli için bekleme kuyruğu
    * Hem pending hem approved resources'ları getir
-   * NOT: Firestore index oluşturması gerekebilir
-   * https://console.firebase.google.com → Firestore Database → Indexes
    */
   try {
     const resourcesRef = collection(db, 'artifacts', APP_ID, 'public', 'data', 'resources');
     
-    // Pending ve Approved kaynakları al
     try {
-      // Birinci deneme: status kontrol ederek queryler
+      // Pending resources
       const pendingQ = query(
         resourcesRef,
-        where('status', 'in', ['pending', 'approved']),
+        where('status', '==', 'pending'),
         orderBy('timestamp', 'desc'),
         limit(100)
       );
-      const snapshot = await getDocs(pendingQ);
-      console.log(`✅ Resources (ordered): ${snapshot.size} tane`);
+      const pendingSnap = await getDocs(pendingQ);
       
-      const resources = snapshot.docs.map(doc => ({
+      // Approved resources
+      const approvedQ = query(
+        resourcesRef,
+        where('status', '==', 'approved'),
+        orderBy('timestamp', 'desc'),
+        limit(100)
+      );
+      const approvedSnap = await getDocs(approvedQ);
+      
+      const allDocs = [...pendingSnap.docs, ...approvedSnap.docs];
+      console.log(`✅ Pending+Approved (ordered): ${allDocs.length} tane`);
+      
+      const resources = allDocs.map(doc => ({
         id: doc.id,
         ...doc.data()
       }));
@@ -387,19 +395,28 @@ export const getPendingResources = async () => {
       
       return { success: true, resources };
     } catch (orderByError) {
-      // Eğer orderBy hatası verirse (index olmadan), fallback kullan
+      // Fallback
       if (orderByError.code === 'failed-precondition') {
         console.log('⚠️  Firestore index gerekli - fallback query kullanılıyor');
         
-        const q = query(
+        const pendingQ = query(
           resourcesRef,
-          where('status', 'in', ['pending', 'approved']),
+          where('status', '==', 'pending'),
           limit(100)
         );
-        const snapshot = await getDocs(q);
-        console.log(`✅ Resources (no order): ${snapshot.size} tane`);
+        const pendingSnap = await getDocs(pendingQ);
         
-        const resources = snapshot.docs
+        const approvedQ = query(
+          resourcesRef,
+          where('status', '==', 'approved'),
+          limit(100)
+        );
+        const approvedSnap = await getDocs(approvedQ);
+        
+        const allDocs = [...pendingSnap.docs, ...approvedSnap.docs];
+        console.log(`✅ Pending+Approved (no order): ${allDocs.length} tane`);
+        
+        const resources = allDocs
           .map(doc => ({
             id: doc.id,
             ...doc.data()
