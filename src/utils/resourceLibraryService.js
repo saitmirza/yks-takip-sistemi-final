@@ -20,6 +20,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '../firebase';
 import { APP_ID } from './constants';
+import { uploadToCloudinary } from './cloudinaryService';
 
 // ============================================
 // 1. DOSYA YÜKLEME (Upload)
@@ -44,9 +45,9 @@ export const uploadResource = async (file, resourceData) => {
   
   try {
     // 1. Dosya doğrulaması
-    const MAX_SIZE = 5 * 1024 * 1024; // 5 MB (Firestore limiti: 1MB per document, ama compressed)
+    const MAX_SIZE = 100 * 1024 * 1024; // 100 MB (Cloudinary limiti)
     if (file.size > MAX_SIZE) {
-      return { success: false, message: "Dosya çok büyük (Max: 5 MB). Daha küçük bir dosya yükleyin." };
+      return { success: false, message: "Dosya çok büyük (Max: 100 MB)" };
     }
 
     const ALLOWED_TYPES = ['application/pdf', 'image/jpeg', 'image/png', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
@@ -54,21 +55,18 @@ export const uploadResource = async (file, resourceData) => {
       return { success: false, message: "Desteklenmeyen dosya tipi (PDF, JPG, PNG, DOC)" };
     }
 
-    // 2. Dosyayı Base64'e çevir
-    console.log(`📤 Converting file to Base64: ${file.name}`);
-    const base64Data = await new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result.split(',')[1]); // Base64 part only
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
+    // 2. Dosyayı Cloudinary'e upload et
+    console.log(`📤 Uploading to Cloudinary: ${file.name}`);
+    const uploadResult = await uploadToCloudinary(file, resourceData.title);
+    
+    if (!uploadResult.success) {
+      return { success: false, message: uploadResult.message };
+    }
 
-    // 3. Firestore'a metadata ve dosya data'sı kaydet
+    // 3. Firestore'a metadata ve Cloudinary URL'sini kaydet
     const resourceRef = collection(db, 'artifacts', APP_ID, 'public', 'data', 'resources');
     
-    const timestamp = Date.now();
     const fileExt = file.name.split('.').pop();
-    const cleanFileName = file.name.replace(/\.[^/.]+$/, "").replace(/[^a-z0-9-]/gi, '-').toLowerCase();
     
     const resourceDoc = {
       // Yükleyici bilgisi
@@ -86,10 +84,11 @@ export const uploadResource = async (file, resourceData) => {
       subject: resourceData.subject,
       type: resourceData.type,
 
-      // Dosya (Base64 encoded)
+      // Dosya (Cloudinary URL)
       fileName: file.name,
-      fileSize: file.size,
-      fileData: base64Data, // Base64 encoded file content
+      fileSize: uploadResult.fileSize,
+      fileUrl: uploadResult.url, // Cloudinary secure URL
+      cloudinaryPublicId: uploadResult.publicId, // Silme için gerekli
       fileType: file.type,
       fileExtension: fileExt,
 
@@ -110,8 +109,8 @@ export const uploadResource = async (file, resourceData) => {
       // Etiketler
       tags: resourceData.tags || [],
 
-      // Tarihler (timestamp indexlenebilir)
-      timestamp: Date.now(), // Simple numeric timestamp for indexing
+      // Tarihler
+      timestamp: Date.now(), // Indexlenebilir
       uploadedAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     };

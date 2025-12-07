@@ -55,9 +55,21 @@ export default function ResourceLibrary({ currentUser }) {
             // Log download
             await downloadResource(resource.id, currentUser.internalId);
             
-            // Dosyayı indır (Base64'ten)
-            if (resource.fileData) {
-                // Base64'ü Blob'a çevir
+            // Dosyayı indır (Cloudinary URL'sinden)
+            if (resource.fileUrl) {
+                // Cloudinary URL'sini aç (indir)
+                const link = document.createElement('a');
+                link.href = resource.fileUrl;
+                link.download = resource.fileName;
+                link.target = '_blank';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                console.log(`✅ Downloaded from Cloudinary: ${resource.fileName}`);
+            } else if (resource.fileData) {
+                // Fallback: eski Base64 desteği
+                console.log('📦 Using fallback Base64 storage for backward compatibility');
                 const byteCharacters = atob(resource.fileData);
                 const byteNumbers = new Array(byteCharacters.length);
                 for (let i = 0; i < byteCharacters.length; i++) {
@@ -66,7 +78,6 @@ export default function ResourceLibrary({ currentUser }) {
                 const byteArray = new Uint8Array(byteNumbers);
                 const blob = new Blob([byteArray], { type: resource.fileType });
                 
-                // İndir
                 const url = window.URL.createObjectURL(blob);
                 const link = document.createElement('a');
                 link.href = url;
@@ -76,7 +87,7 @@ export default function ResourceLibrary({ currentUser }) {
                 document.body.removeChild(link);
                 window.URL.revokeObjectURL(url);
                 
-                console.log(`✅ Downloaded: ${resource.fileName}`);
+                console.log(`✅ Downloaded from Base64: ${resource.fileName}`);
             } else {
                 alert("Dosya bulunamadı!");
             }
