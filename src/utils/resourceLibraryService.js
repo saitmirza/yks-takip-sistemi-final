@@ -364,8 +364,12 @@ export const getPendingResources = async () => {
   try {
     const resourcesRef = collection(db, 'artifacts', APP_ID, 'public', 'data', 'resources');
     
+    console.log('🔍 getPendingResources başlatılıyor...');
+    console.log('   resourcesRef path kontrolü:', APP_ID);
+    
     try {
       // Pending resources
+      console.log('📌 Pending query yapılıyor...');
       const pendingQ = query(
         resourcesRef,
         where('status', '==', 'pending'),
@@ -373,8 +377,10 @@ export const getPendingResources = async () => {
         limit(100)
       );
       const pendingSnap = await getDocs(pendingQ);
+      console.log(`   ✅ Pending docs: ${pendingSnap.size}`);
       
       // Approved resources
+      console.log('📌 Approved query yapılıyor...');
       const approvedQ = query(
         resourcesRef,
         where('status', '==', 'approved'),
@@ -382,20 +388,29 @@ export const getPendingResources = async () => {
         limit(100)
       );
       const approvedSnap = await getDocs(approvedQ);
+      console.log(`   ✅ Approved docs: ${approvedSnap.size}`);
       
       const allDocs = [...pendingSnap.docs, ...approvedSnap.docs];
       console.log(`✅ Pending+Approved (ordered): ${allDocs.length} tane`);
       
-      const resources = allDocs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
+      const resources = allDocs.map((doc, idx) => {
+        const data = doc.data();
+        const resource = {
+          id: doc.id,
+          ...data
+        };
+        if (idx < 2) {
+          console.log(`   Doc ${idx}: id="${resource.id}", title="${resource.title}", status="${resource.status}"`);
+        }
+        return resource;
+      });
       
-      console.log('📋 Loaded resources:', resources.slice(0, 2).map(r => ({ id: r.id, title: r.title, status: r.status })));
+      console.log(`📋 Total resources mapped: ${resources.length}`);
       
       return { success: true, resources };
     } catch (orderByError) {
       // Fallback
+      console.log('❌ OrderBy hatası:', orderByError.code);
       if (orderByError.code === 'failed-precondition') {
         console.log('⚠️  Firestore index gerekli - fallback query kullanılıyor');
         
@@ -405,6 +420,7 @@ export const getPendingResources = async () => {
           limit(100)
         );
         const pendingSnap = await getDocs(pendingQ);
+        console.log(`   ✅ Pending docs (fallback): ${pendingSnap.size}`);
         
         const approvedQ = query(
           resourcesRef,
@@ -412,18 +428,26 @@ export const getPendingResources = async () => {
           limit(100)
         );
         const approvedSnap = await getDocs(approvedQ);
+        console.log(`   ✅ Approved docs (fallback): ${approvedSnap.size}`);
         
         const allDocs = [...pendingSnap.docs, ...approvedSnap.docs];
         console.log(`✅ Pending+Approved (no order): ${allDocs.length} tane`);
         
         const resources = allDocs
-          .map(doc => ({
-            id: doc.id,
-            ...doc.data()
-          }))
+          .map((doc, idx) => {
+            const data = doc.data();
+            const resource = {
+              id: doc.id,
+              ...data
+            };
+            if (idx < 2) {
+              console.log(`   Doc ${idx}: id="${resource.id}", title="${resource.title}", status="${resource.status}"`);
+            }
+            return resource;
+          })
           .sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
         
-        console.log('📋 Loaded resources:', resources.slice(0, 2).map(r => ({ id: r.id, title: r.title, status: r.status })));
+        console.log(`📋 Total resources mapped (fallback): ${resources.length}`);
         
         return { success: true, resources };
       } else {
@@ -433,6 +457,7 @@ export const getPendingResources = async () => {
 
   } catch (error) {
     console.error("❌ Resources error:", error.message);
+    console.error("   Full error:", error);
     return { success: false, message: error.message, resources: [] };
   }
 };
