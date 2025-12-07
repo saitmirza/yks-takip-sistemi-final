@@ -66,30 +66,10 @@ export default function ResourceLibrary({ currentUser }) {
                 link.click();
                 document.body.removeChild(link);
                 
-                console.log(`✅ Downloaded from Cloudinary: ${resource.fileName}`);
-            } else if (resource.fileData) {
-                // Fallback: eski Base64 desteği
-                console.log('📦 Using fallback Base64 storage for backward compatibility');
-                const byteCharacters = atob(resource.fileData);
-                const byteNumbers = new Array(byteCharacters.length);
-                for (let i = 0; i < byteCharacters.length; i++) {
-                    byteNumbers[i] = byteCharacters.charCodeAt(i);
-                }
-                const byteArray = new Uint8Array(byteNumbers);
-                const blob = new Blob([byteArray], { type: resource.fileType });
-                
-                const url = window.URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.href = url;
-                link.download = resource.fileName;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                window.URL.revokeObjectURL(url);
-                
-                console.log(`✅ Downloaded from Base64: ${resource.fileName}`);
+                console.log(`✅ Cloudinary'den indirildi: ${resource.fileName}`);
             } else {
-                alert("Dosya bulunamadı!");
+                console.error('❌ Dosya URL\'si bulunamadı - yeni format kullan');
+                alert("Dosya URL'si bulunamadı!");
             }
         } catch (error) {
             console.error("Download error:", error);

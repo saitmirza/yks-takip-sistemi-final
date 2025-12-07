@@ -326,55 +326,57 @@ export const searchResources = async (filters) => {
 export const getPendingResources = async () => {
   /**
    * Admin paneli için bekleme kuyruğu
+   * NOT: Firestore index oluşturması gerekebilir
+   * https://console.firebase.google.com → Firestore Database → Indexes
    */
   try {
     const resourcesRef = collection(db, 'artifacts', APP_ID, 'public', 'data', 'resources');
-    const q = query(
-      resourcesRef,
-      where('status', '==', 'pending'),
-      orderBy('timestamp', 'asc'),
-      limit(50)
-    );
-
-    console.log('📋 Pending resources sorgusu başlatılıyor...');
-    const snapshot = await getDocs(q);
-    console.log(`✅ Pending resources: ${snapshot.size} tane bulundu`);
     
-    const resources = snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
-
-    return { success: true, resources };
+    // Birinci deneme: orderBy ile
+    try {
+      const q = query(
+        resourcesRef,
+        where('status', '==', 'pending'),
+        orderBy('timestamp', 'asc'),
+        limit(50)
+      );
+      const snapshot = await getDocs(q);
+      console.log(`✅ Pending resources (ordered): ${snapshot.size} tane`);
+      
+      const resources = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      return { success: true, resources };
+    } catch (orderByError) {
+      // Eğer orderBy hatası verirse (index olmadan), fallback kullan
+      if (orderByError.code === 'failed-precondition') {
+        console.log('⚠️  Firestore index gerekli - fallback query kullanılıyor');
+        
+        const q = query(
+          resourcesRef,
+          where('status', '==', 'pending'),
+          limit(50)
+        );
+        const snapshot = await getDocs(q);
+        console.log(`✅ Pending resources (no order): ${snapshot.size} tane`);
+        
+        const resources = snapshot.docs
+          .map(doc => ({
+            id: doc.id,
+            ...doc.data()
+          }))
+          .sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+        
+        return { success: true, resources };
+      } else {
+        throw orderByError;
+      }
+    }
 
   } catch (error) {
     console.error("❌ Pending resources error:", error.message);
-    console.error("   Code:", error.code);
-    
-    // Fallback: orderBy olmadan sadece where
-    try {
-      console.log('⚠️  Fallback query çalıştırılıyor (orderBy olmadan)...');
-      const resourcesRef = collection(db, 'artifacts', APP_ID, 'public', 'data', 'resources');
-      const fallbackQ = query(
-        resourcesRef,
-        where('status', '==', 'pending'),
-        limit(50)
-      );
-      const snapshot = await getDocs(fallbackQ);
-      console.log(`✅ Fallback ile ${snapshot.size} pending resource bulundu`);
-      
-      const resources = snapshot.docs
-        .map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }))
-        .sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
-      
-      return { success: true, resources };
-    } catch (fallbackError) {
-      console.error("❌ Fallback query da başarısız:", fallbackError);
-      return { success: false, message: fallbackError.message, resources: [] };
-    }
+    return { success: false, message: error.message, resources: [] };
   }
 };
 
@@ -384,34 +386,47 @@ export const approveResource = async (resourceId, adminId) => {
    */
   try {
     const resourceRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'resources', resourceId);
+    
+    // Kaynağı getir
+    const resourceSnap = await getDoc(resourceRef);
+    if (!resourceSnap.exists()) {
+      console.error(`❌ Kaynak bulunamadı: ${resourceId}`);
+      return { success: false, message: "Kaynak bulunamadı!" };
+    }
+
+    // Kaynağı onayla
     await updateDoc(resourceRef, {
       status: 'approved',
       approvedBy: adminId,
       approvedAt: serverTimestamp(),
-      source: 'student' // Onaylanan öğrenci kaynağı
+      source: 'student'
     });
 
-    // Yükleyici kontribüsyon istatistiğini güncelle
-    const resourceSnap = await getDoc(resourceRef);
-    if (resourceSnap.exists()) {
-      const uploaderId = resourceSnap.data().uploaderId;
-      const userContribRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'user_contributions', uploaderId);
-      
-      await updateDoc(userContribRef, {
-        approvedUploads: increment(1),
-        pendingUploads: increment(-1),
-        contributionXP: increment(50) // 50 XP per approved upload
-      });
+    console.log(`✅ Kaynak onaylandı: ${resourceId}`);
 
-      // Rozet kontrolü
+    // Yükleyici kontribüsyon istatistiğini güncelle
+    const uploaderId = resourceSnap.data().uploaderId;
+    const userContribRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'user_contributions', uploaderId);
+    
+    try {
+      const contribSnap = await getDoc(userContribRef);
+      if (contribSnap.exists()) {
+        await updateDoc(userContribRef, {
+          approvedUploads: increment(1),
+          pendingUploads: increment(-1),
+          contributionXP: increment(50)
+        });
+        console.log(`✅ User contribution updated: ${uploaderId}`);
+      }
       await checkAndAwardBadges(uploaderId);
+    } catch (contribError) {
+      console.warn(`⚠️  Contribution update skipped:`, contribError.message);
     }
 
-    console.log(`✅ Resource approved: ${resourceId}`);
-    return { success: true, message: "Kaynak onaylandı!" };
+    return { success: true, message: "✅ Kaynak onaylandı!" };
 
   } catch (error) {
-    console.error("Approve error:", error);
+    console.error("❌ Approve error:", error.message);
     return { success: false, message: error.message };
   }
 };
@@ -422,30 +437,45 @@ export const rejectResource = async (resourceId, reason, adminId) => {
    */
   try {
     const resourceRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'resources', resourceId);
+    
+    // Kaynağı getir
+    const resourceSnap = await getDoc(resourceRef);
+    if (!resourceSnap.exists()) {
+      console.error(`❌ Kaynak bulunamadı: ${resourceId}`);
+      return { success: false, message: "Kaynak bulunamadı!" };
+    }
+
+    // Kaynağı reddet
     await updateDoc(resourceRef, {
       status: 'rejected',
       rejectionReason: reason,
-      approvedBy: adminId,
-      approvedAt: serverTimestamp()
+      rejectedBy: adminId,
+      rejectedAt: serverTimestamp()
     });
 
+    console.log(`❌ Kaynak reddedildi: ${resourceId}`);
+
     // Yükleyici kontribüsyon istatistiğini güncelle
-    const resourceSnap = await getDoc(resourceRef);
-    if (resourceSnap.exists()) {
-      const uploaderId = resourceSnap.data().uploaderId;
-      const userContribRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'user_contributions', uploaderId);
-      
-      await updateDoc(userContribRef, {
-        rejectedUploads: increment(1),
-        pendingUploads: increment(-1)
-      });
+    const uploaderId = resourceSnap.data().uploaderId;
+    const userContribRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'user_contributions', uploaderId);
+    
+    try {
+      const contribSnap = await getDoc(userContribRef);
+      if (contribSnap.exists()) {
+        await updateDoc(userContribRef, {
+          rejectedUploads: increment(1),
+          pendingUploads: increment(-1)
+        });
+        console.log(`✅ User contribution updated: ${uploaderId}`);
+      }
+    } catch (contribError) {
+      console.warn(`⚠️  Contribution update skipped:`, contribError.message);
     }
 
-    console.log(`❌ Resource rejected: ${resourceId}`);
-    return { success: true, message: "Kaynak reddedildi." };
+    return { success: true, message: "✅ Kaynak reddedildi!" };
 
   } catch (error) {
-    console.error("Reject error:", error);
+    console.error("❌ Reject error:", error.message);
     return { success: false, message: error.message };
   }
 };
