@@ -396,8 +396,8 @@ export const getPendingResources = async () => {
       const resources = allDocs.map((doc, idx) => {
         const data = doc.data();
         const resource = {
-          id: doc.id,
-          ...data
+          ...data,
+          id: doc.id  // IMPORTANT: Always use actual document ID, not stored id field
         };
         if (idx < 2) {
           console.log(`   Doc ${idx}: id="${resource.id}", title="${resource.title}", status="${resource.status}"`);
@@ -437,8 +437,8 @@ export const getPendingResources = async () => {
           .map((doc, idx) => {
             const data = doc.data();
             const resource = {
-              id: doc.id,
-              ...data
+              ...data,
+              id: doc.id  // IMPORTANT: Always use actual document ID, not stored id field
             };
             if (idx < 2) {
               console.log(`   Doc ${idx}: id="${resource.id}", title="${resource.title}", status="${resource.status}"`);
