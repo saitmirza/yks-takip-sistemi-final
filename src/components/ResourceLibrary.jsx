@@ -50,30 +50,59 @@ export default function ResourceLibrary({ currentUser }) {
         fetchResources(newFilters);
     };
 
+    // --- GÜNCELLENMİŞ AKILLI İNDİRME FONKSİYONU ---
     const handleDownload = async (resource) => {
         try {
-            // Log download
+            // 1. Veritabanında indirme sayısını artır
             await downloadResource(resource.id, currentUser.internalId);
             
-            // Dosyayı indır (Cloudinary URL'sinden)
-            if (resource.fileUrl) {
-                // Cloudinary URL'sini aç (indir)
+            let url = resource.fileUrl;
+            const fileName = resource.fileName || 'indirilen-dosya';
+
+            if (!url) {
+                alert("Dosya bağlantısı bulunamadı.");
+                return;
+            }
+
+            // 2. Cloudinary Kontrolü (En Hızlı Yöntem)
+            // Cloudinary URL'si ise 'fl_attachment' ekleyerek indirmeye zorlarız.
+            if (url.includes("cloudinary.com")) {
+                if (!url.includes("fl_attachment")) {
+                    // /upload/ kısmını bulup sonrasına bayrağı ekliyoruz
+                    url = url.replace("/upload/", "/upload/fl_attachment/");
+                }
+                
                 const link = document.createElement('a');
-                link.href = resource.fileUrl;
-                link.download = resource.fileName;
-                link.target = '_blank';
+                link.href = url;
+                link.setAttribute('download', fileName);
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
+            } 
+            // 3. Diğer Servisler İçin (Fetch & Blob Yöntemi)
+            // Eğer Cloudinary değilse veya yukarıdaki çalışmazsa
+            else {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error("Dosya çekilemedi");
                 
-                console.log(`✅ Cloudinary'den indirildi: ${resource.fileName}`);
-            } else {
-                console.error('❌ Dosya URL\'si bulunamadı - yeni format kullan');
-                alert("Dosya URL'si bulunamadı!");
+                const blob = await response.blob();
+                const blobUrl = window.URL.createObjectURL(blob);
+                
+                const link = document.createElement('a');
+                link.href = blobUrl;
+                link.setAttribute('download', fileName);
+                document.body.appendChild(link);
+                link.click();
+                
+                // Temizlik
+                document.body.removeChild(link);
+                window.URL.revokeObjectURL(blobUrl);
             }
+
         } catch (error) {
-            console.error("Download error:", error);
-            alert("İndirme hatası!");
+            console.error("İndirme hatası:", error);
+            // Hata durumunda son çare olarak yeni sekmede açmayı dener
+            window.open(resource.fileUrl, '_blank');
         }
     };
 
@@ -126,7 +155,7 @@ export default function ResourceLibrary({ currentUser }) {
     return (
         <div className="w-full pb-24 space-y-4">
             {/* BAŞLIK */}
-            <div className="bg-gradient-to-br from-indigo-600 to-purple-600 rounded-3xl p-6 text-white shadow-lg flex justify-between items-center">
+            <div className="bg-gradient-to-br from-indigo-600 to-purple-600 rounded-3xl p-6 text-white shadow-lg flex flex-col md:flex-row justify-between items-center gap-4">
                 <div>
                     <h2 className="text-2xl font-bold mb-1">📚 Kaynak Kütüphanesi</h2>
                     <p className="text-indigo-200 text-sm">Binlerce not, deneme ve çıkmış soru...</p>
