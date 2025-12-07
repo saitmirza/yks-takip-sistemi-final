@@ -51,14 +51,22 @@ export default function AdminResourceModeration({ currentUser }) {
     };
 
     const handleApprove = async () => {
-        if (!selectedResource) return;
+        if (!selectedResource) {
+            alert('Lütfen bir dosya seçin');
+            return;
+        }
+        
+        console.log('📝 Onaylama başlatılıyor...');
+        console.log('   Selected Resource ID:', selectedResource.id);
+        console.log('   Selected Resource Title:', selectedResource.title);
+        console.log('   Admin ID:', currentUser.internalId);
+        
         setApproving(true);
         
         const result = await approveResource(selectedResource.id, currentUser.internalId);
         
         if (result.success) {
             console.log('✅ Onaylama başarılı, resources yenileniyor...');
-            // Tüm resources'ı yenile
             await fetchResources();
             setSelectedResource(null);
             alert(result.message || '✅ Dosya başarıyla onaylandı!');
@@ -128,27 +136,27 @@ export default function AdminResourceModeration({ currentUser }) {
             </div>
 
             {/* FİLTER TABS */}
-            <div className="flex gap-2 border-b border-slate-200 dark:border-gray-700">
+            <div className="flex gap-0 border-b border-slate-200 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-t-lg">
                 <button
                     onClick={() => setFilterTab('pending')}
-                    className={`px-4 py-3 font-bold text-sm transition-all border-b-2 ${
+                    className={`flex-1 px-4 py-3 font-bold text-sm transition-colors flex items-center justify-center gap-2 ${
                         filterTab === 'pending'
-                            ? 'text-amber-600 dark:text-amber-400 border-amber-600 dark:border-amber-400'
-                            : 'text-slate-600 dark:text-gray-400 border-transparent hover:text-slate-800 dark:hover:text-gray-200'
+                            ? 'bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 border-b-2 border-amber-600'
+                            : 'text-slate-600 dark:text-gray-400 hover:bg-slate-50 dark:hover:bg-gray-800'
                     }`}
                 >
-                    <Clock size={16} className="inline mr-2" />
+                    <Clock size={16} />
                     Beklemede ({allResources.filter(r => r.status === 'pending').length})
                 </button>
                 <button
                     onClick={() => setFilterTab('approved')}
-                    className={`px-4 py-3 font-bold text-sm transition-all border-b-2 ${
+                    className={`flex-1 px-4 py-3 font-bold text-sm transition-colors flex items-center justify-center gap-2 ${
                         filterTab === 'approved'
-                            ? 'text-green-600 dark:text-green-400 border-green-600 dark:border-green-400'
-                            : 'text-slate-600 dark:text-gray-400 border-transparent hover:text-slate-800 dark:hover:text-gray-200'
+                            ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 border-b-2 border-green-600'
+                            : 'text-slate-600 dark:text-gray-400 hover:bg-slate-50 dark:hover:bg-gray-800'
                     }`}
                 >
-                    <CheckCircle size={16} className="inline mr-2" />
+                    <CheckCircle size={16} />
                     Onaylanan ({allResources.filter(r => r.status === 'approved').length})
                 </button>
             </div>

@@ -359,27 +359,32 @@ export const searchResources = async (filters) => {
 export const getPendingResources = async () => {
   /**
    * Admin paneli için bekleme kuyruğu
+   * Hem pending hem approved resources'ları getir
    * NOT: Firestore index oluşturması gerekebilir
    * https://console.firebase.google.com → Firestore Database → Indexes
    */
   try {
     const resourcesRef = collection(db, 'artifacts', APP_ID, 'public', 'data', 'resources');
     
-    // Birinci deneme: orderBy ile
+    // Pending ve Approved kaynakları al
     try {
-      const q = query(
+      // Birinci deneme: status kontrol ederek queryler
+      const pendingQ = query(
         resourcesRef,
-        where('status', '==', 'pending'),
-        orderBy('timestamp', 'asc'),
-        limit(50)
+        where('status', 'in', ['pending', 'approved']),
+        orderBy('timestamp', 'desc'),
+        limit(100)
       );
-      const snapshot = await getDocs(q);
-      console.log(`✅ Pending resources (ordered): ${snapshot.size} tane`);
+      const snapshot = await getDocs(pendingQ);
+      console.log(`✅ Resources (ordered): ${snapshot.size} tane`);
       
       const resources = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
       }));
+      
+      console.log('📋 Loaded resources:', resources.slice(0, 2).map(r => ({ id: r.id, title: r.title, status: r.status })));
+      
       return { success: true, resources };
     } catch (orderByError) {
       // Eğer orderBy hatası verirse (index olmadan), fallback kullan
@@ -388,18 +393,20 @@ export const getPendingResources = async () => {
         
         const q = query(
           resourcesRef,
-          where('status', '==', 'pending'),
-          limit(50)
+          where('status', 'in', ['pending', 'approved']),
+          limit(100)
         );
         const snapshot = await getDocs(q);
-        console.log(`✅ Pending resources (no order): ${snapshot.size} tane`);
+        console.log(`✅ Resources (no order): ${snapshot.size} tane`);
         
         const resources = snapshot.docs
           .map(doc => ({
             id: doc.id,
             ...doc.data()
           }))
-          .sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+          .sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+        
+        console.log('📋 Loaded resources:', resources.slice(0, 2).map(r => ({ id: r.id, title: r.title, status: r.status })));
         
         return { success: true, resources };
       } else {
@@ -408,7 +415,7 @@ export const getPendingResources = async () => {
     }
 
   } catch (error) {
-    console.error("❌ Pending resources error:", error.message);
+    console.error("❌ Resources error:", error.message);
     return { success: false, message: error.message, resources: [] };
   }
 };
