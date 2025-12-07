@@ -22,7 +22,7 @@ export const uploadToCloudinary = async (file, resourceTitle = 'resource') => {
     formData.append('resource_type', 'auto'); // Otomatik dosya tipi algıla
 
     // 2. Cloudinary API'sine POST et
-    console.log(`📤 Uploading to Cloudinary: ${file.name}`);
+    console.log(`📤 Uploading to Cloudinary: ${file.name} (${file.type})`);
     const response = await fetch(
       `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/upload`,
       {
@@ -31,13 +31,15 @@ export const uploadToCloudinary = async (file, resourceTitle = 'resource') => {
       }
     );
 
-    if (!response.ok) {
-      throw new Error(`Cloudinary error: ${response.statusText}`);
-    }
-
     const data = await response.json();
 
+    if (!response.ok) {
+      console.error('❌ Cloudinary error response:', data);
+      throw new Error(data.error?.message || `Cloudinary error: ${response.statusText}`);
+    }
+
     console.log(`✅ Cloudinary upload successful: ${data.public_id}`);
+    console.log(`📍 URL: ${data.secure_url}`);
     return {
       success: true,
       url: data.secure_url, // HTTPS URL
@@ -47,7 +49,8 @@ export const uploadToCloudinary = async (file, resourceTitle = 'resource') => {
     };
 
   } catch (error) {
-    console.error('❌ Cloudinary upload error:', error);
+    console.error('❌ Cloudinary upload error:', error.message);
+    console.error('   Full error:', error);
     return {
       success: false,
       message: `Cloudinary yükleme hatası: ${error.message}`

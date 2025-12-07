@@ -56,12 +56,14 @@ export const uploadResource = async (file, resourceData) => {
     }
 
     // 2. Dosyayı Cloudinary'e upload et
-    console.log(`📤 Uploading to Cloudinary: ${file.name}`);
+    console.log(`📤 Cloudinary'ye yükleniyor: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`);
     const uploadResult = await uploadToCloudinary(file, resourceData.title);
     
     if (!uploadResult.success) {
+      console.error(`❌ Cloudinary upload hatası: ${uploadResult.message}`);
       return { success: false, message: uploadResult.message };
     }
+    console.log(`✅ Cloudinary'ye başarıyla yüklendi: ${uploadResult.url}`);
 
     // 3. Firestore'a metadata ve Cloudinary URL'sini kaydet
     const resourceRef = collection(db, 'artifacts', APP_ID, 'public', 'data', 'resources');
@@ -334,7 +336,10 @@ export const getPendingResources = async () => {
       limit(50)
     );
 
+    console.log('📋 Pending resources sorgusu başlatılıyor...');
     const snapshot = await getDocs(q);
+    console.log(`✅ Pending resources: ${snapshot.size} tane bulundu`);
+    
     const resources = snapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data()
@@ -343,8 +348,33 @@ export const getPendingResources = async () => {
     return { success: true, resources };
 
   } catch (error) {
-    console.error("Pending resources error:", error);
-    return { success: false, message: error.message, resources: [] };
+    console.error("❌ Pending resources error:", error.message);
+    console.error("   Code:", error.code);
+    
+    // Fallback: orderBy olmadan sadece where
+    try {
+      console.log('⚠️  Fallback query çalıştırılıyor (orderBy olmadan)...');
+      const resourcesRef = collection(db, 'artifacts', APP_ID, 'public', 'data', 'resources');
+      const fallbackQ = query(
+        resourcesRef,
+        where('status', '==', 'pending'),
+        limit(50)
+      );
+      const snapshot = await getDocs(fallbackQ);
+      console.log(`✅ Fallback ile ${snapshot.size} pending resource bulundu`);
+      
+      const resources = snapshot.docs
+        .map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }))
+        .sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+      
+      return { success: true, resources };
+    } catch (fallbackError) {
+      console.error("❌ Fallback query da başarısız:", fallbackError);
+      return { success: false, message: fallbackError.message, resources: [] };
+    }
   }
 };
 
