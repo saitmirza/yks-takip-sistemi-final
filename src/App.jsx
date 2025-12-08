@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { signInAnonymously, onAuthStateChanged } from 'firebase/auth';
+import { signInAnonymously, onAuthStateChanged, setPersistence, browserLocalPersistence } from 'firebase/auth';
 import { collection, doc, getDoc, onSnapshot, updateDoc, serverTimestamp, setDoc, query, where, getDocs, orderBy } from 'firebase/firestore';
 import { auth, db } from './firebase';
 import { APP_ID, DEMO_INTERNAL_ID, ADMIN_USERNAME, ADMIN_PASSWORD, DEMO_USERNAME, DEMO_PASSWORD, DEMO_USER_DATA, COLOR_THEMES } from './utils/constants';
@@ -52,12 +52,12 @@ export default function ExamTrackerApp() {
   const [authInput, setAuthInput] = useState({});
   const [authError, setAuthError] = useState("");
 
+  // Ref'ler ve Yardımcılar
   const userEmailRef = useRef(null);
   const addToast = (message, type = 'success') => { setToast({ message, type }); };
-
   const saveSession = (user) => { try { localStorage.setItem('examApp_session', JSON.stringify(user)); } catch (err) {} };
-  const getSession = () => { try { const saved = localStorage.getItem('examApp_session'); if (saved) return JSON.parse(saved); } catch (err) {} return null; };
 
+  // --- TEMA MOTORU ---
   const getActiveTheme = () => {
       const themeId = currentUser?.themeColor || 'indigo';
       if (COLOR_THEMES[themeId]) return COLOR_THEMES[themeId];
@@ -84,6 +84,7 @@ export default function ExamTrackerApp() {
         .border-indigo-600 { border-color: var(--primary) !important; }
         .ring-indigo-500 { --tw-ring-color: var(--primary) !important; }
         
+        /* Glass Effect */
         .dark .bg-gray-800, .dark .bg-slate-900, .bg-white.dark\\:bg-gray-800 {
             background-color: rgba(15, 23, 42, 0.75) !important;
             backdrop-filter: blur(12px) !important;
@@ -94,6 +95,42 @@ export default function ExamTrackerApp() {
     `}</style>
   );
 
+  // --- AUTH VE OTURUM YÖNETİMİ (iOS FIX) ---
+  useEffect(() => {
+    const initAuth = async () => {
+      try {
+        await setPersistence(auth, browserLocalPersistence);
+      } catch (err) { console.error("Persistence error:", err); }
+    };
+    initAuth();
+
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        setFirebaseUser(user);
+        if (!user.isAnonymous && user.email) {
+            try {
+                const userRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'user_accounts', user.email);
+                const docSnap = await getDoc(userRef);
+                if (docSnap.exists()) {
+                    const userData = docSnap.data();
+                    setCurrentUser(userData);
+                    saveSession(userData);
+                } else if (user.email === ADMIN_USERNAME) {
+                    const adminUser = { username: "Yönetici", email: ADMIN_USERNAME, internalId: "ADMIN_ID", isAdmin: true, avatar: "🛡️", realName: "Admin", classSection: "Yönetim" };
+                    setCurrentUser(adminUser);
+                }
+            } catch (err) { console.error(err); }
+        }
+      } else {
+        setFirebaseUser(null);
+        setCurrentUser(null);
+      }
+      setLoading(false);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  // --- GİRİŞ YAPMA ---
   const handleLogin = async (e) => {
     e.preventDefault(); setAuthError("");
     const inputVal = authInput.email?.trim(); 
@@ -108,6 +145,8 @@ export default function ExamTrackerApp() {
     }
     
     try {
+      await setPersistence(auth, browserLocalPersistence);
+      
       let userData = null;
       if (inputVal.includes('@')) {
           const emailKey = inputVal.toLowerCase(); const userRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'user_accounts', emailKey);
@@ -126,6 +165,7 @@ export default function ExamTrackerApp() {
     } catch (e) { console.error(e); setAuthError("Giriş hatası."); }
   };
 
+  // --- KAYIT OLMA ---
   const handleRegister = async (e) => {
     e.preventDefault(); setAuthError("");
     if (!authInput.email || !authInput.password || !authInput.username || !authInput.realName) { setAuthError("Lütfen tüm zorunlu alanları doldurun."); return; }
@@ -159,8 +199,9 @@ export default function ExamTrackerApp() {
 
   const handleLogout = () => { setCurrentUser(null); localStorage.removeItem('examApp_session'); setActiveTab("calendar"); setAuthInput({}); addToast("Çıkış yapıldı.", "info"); };
 
-  useEffect(() => { const initAuth = async () => { try { await signInAnonymously(auth); } catch (err) {} }; initAuth(); onAuthStateChanged(auth, (user) => { setFirebaseUser(user); setLoading(false); const savedSession = localStorage.getItem('examApp_session'); if (savedSession) setCurrentUser(JSON.parse(savedSession)); }); }, []);
+  // --- CANLI VERİ DİNLEYİCİLERİ ---
   
+  // 1. Kullanıcı Verisi (Loop Fix ile)
   useEffect(() => {
     if (!currentUser?.email || currentUser.isDemo || currentUser.isAdmin) return;
     if (userEmailRef.current === currentUser.email) return;
@@ -183,6 +224,7 @@ export default function ExamTrackerApp() {
     return () => { unsubscribe(); userEmailRef.current = null; };
   }, [currentUser?.email]);
 
+  // 2. Last Seen
   useEffect(() => { 
       if (!currentUser || currentUser.isDemo || currentUser.isAdmin) return; 
       const updateSeen = () => updateDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'user_accounts', currentUser.email), { lastSeen: serverTimestamp() }).catch(e => console.log(e));
@@ -191,6 +233,7 @@ export default function ExamTrackerApp() {
       return () => clearInterval(interval); 
   }, [currentUser?.email]);
 
+  // 3. Genel Veriler (Skor, Kullanıcı, Soru)
   useEffect(() => { 
       if (!firebaseUser) return; 
       const unsubScores = onSnapshot(collection(db, 'artifacts', APP_ID, 'public', 'data', 'exam_scores_v3'), (snap) => { let data = snap.docs.map(d => ({ id: d.id, ...d.data() })); data = data.filter(s => s.internalUserId !== DEMO_INTERNAL_ID); data.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0)); setAllScores(data); }); 
@@ -199,6 +242,7 @@ export default function ExamTrackerApp() {
       return () => { unsubScores(); unsubUsers(); unsubQuestions(); }; 
   }, [firebaseUser]);
   
+  // 4. Sıralama
   useEffect(() => { 
       if (!currentUser || allScores.length === 0) return; 
       let mine = allScores.filter(s => s.internalUserId === currentUser.internalId); 
@@ -226,7 +270,6 @@ export default function ExamTrackerApp() {
   );
 
   return (
-    // ANA KAPSAYICI: Sabit ve tam ekran
     <div className="fixed inset-0 w-full h-[100dvh] bg-slate-900 text-slate-100 font-sans overflow-hidden flex flex-col md:flex-row" style={{ background: theme.gradient }}>
       <DynamicStyles />
       <NotificationManager currentUser={currentUser} />
@@ -234,21 +277,9 @@ export default function ExamTrackerApp() {
       {viewingUser && <ProfileCard user={viewingUser} onClose={() => setViewingUser(null)} stats={getUserStats(viewingUser.internalId)} userScores={getUserScores(viewingUser.internalId)} questions={questions} />}
       <ClassSelectionModal currentUser={currentUser} setCurrentUser={setCurrentUser} />
       
-      {/* Sidebar (Mobilde üst/alt bar, PC'de sol bar) */}
       <Sidebar currentUser={currentUser} activeTab={activeTab} setActiveTab={setActiveTab} handleLogout={handleLogout} />
 
-      {/* İÇERİK ALANI (Düzeltildi) */}
-      {/* flex-1: Kalan alanı doldur */}
-      {/* overflow-y-auto: Sadece bu alan kaydırılsın */}
-      {/* relative: İçerik konumlandırması için */}
       <main className="flex-1 h-full w-full relative overflow-y-auto overflow-x-hidden scroll-smooth custom-scrollbar">
-          
-          {/* İçerik Kapsayıcısı ve Padding Ayarları */}
-          {/* pt-20: Mobilde üst barın altından başla */}
-          {/* pb-24: Mobilde alt barın üstünde bit */}
-          {/* md:p-8: Masaüstünde normal boşluk */}
-          {/* md:ml-0: Flex yapısında olduğumuz için margin-left GEREKMEZ, flex-row yan yana koyar zaten. Ancak Sidebar fixed ise, içerik kaymasın diye md:pl-64 verebiliriz ama flex yapısında Sidebar'ı akışta tutmak daha sağlıklıdır. Sidebar bileşeniniz 'fixed' döndürüyorsa, burada md:pl-64 kullanmak gerekir. Sidebar kodunuza baktığımda 'fixed' kullanıyor. O yüzden buraya md:pl-64 ekliyorum. */}
-          
           <div className="pt-20 pb-24 px-4 md:py-8 md:px-8 md:ml-64 min-h-full">
             <div className="max-w-7xl mx-auto page-enter pb-10">
                 {activeTab === 'dashboard' && currentUser.isAdmin && <AdminDashboard usersList={usersList} allScores={allScores} appId={APP_ID} currentUser={currentUser} />}
