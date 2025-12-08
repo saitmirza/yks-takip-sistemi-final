@@ -15,3 +15,4 @@ build
 .vite/
 .env
 .env.*
+.vercel
