@@ -5,7 +5,7 @@ import { db } from '../firebase';
 import { APP_ID } from '../utils/constants';
 import { TOPICS } from '../utils/topics';
 
-// YARDIMCI: Haftanın ID'si (Örn: 2025-W12)
+// YARDIMCI: Haftanın ID'si
 const getWeekId = () => {
     const d = new Date();
     d.setHours(0, 0, 0, 0);
@@ -16,7 +16,7 @@ const getWeekId = () => {
 };
 
 export default function StudyLogger({ currentUser }) {
-    const [activeTab, setActiveTab] = useState('class_feed'); // 'class_feed', 'school_feed', 'history'
+    const [activeTab, setActiveTab] = useState('class_feed'); 
     const [logs, setLogs] = useState([]);
     const [logType, setLogType] = useState("question");
     const [examType, setExamType] = useState("TYT");
@@ -41,7 +41,7 @@ export default function StudyLogger({ currentUser }) {
         setSelectedTopic("");
     }, [examType]);
 
-    // KAYDETME İŞLEMİ (LOG + STREAK)
+    // KAYDETME İŞLEMİ (STREAK DÜZELTİLDİ)
     const handleSave = async (e) => {
         e.preventDefault();
         if (!countValue) return alert("Soru sayısı veya değer giriniz.");
@@ -64,31 +64,41 @@ export default function StudyLogger({ currentUser }) {
                 timestamp: serverTimestamp()
             });
 
-            // 2. KULLANICI PROFİLİNİ GÜNCELLE (STREAK & TOTAL)
+            // 2. KULLANICI PROFİLİNİ GÜNCELLE (STREAK HESAPLAMA)
             const userRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'user_accounts', currentUser.email);
             const userSnap = await getDoc(userRef);
 
             if (userSnap.exists()) {
                 const userData = userSnap.data();
-                const today = new Date().toISOString().split('T')[0]; 
+                
+                // Tarihleri "YYYY-MM-DD" formatında al (Yerel Saat)
+                const now = new Date();
+                const todayStr = now.toLocaleDateString('en-CA'); // '2023-12-09' gibi formatlar
+
+                const yesterdayDate = new Date(now);
+                yesterdayDate.setDate(now.getDate() - 1);
+                const yesterdayStr = yesterdayDate.toLocaleDateString('en-CA');
+
                 const lastDate = userData.lastStudyDate || "";
                 let newStreak = userData.streak || 0;
-                
-                // Dünü bul
-                const d = new Date(); 
-                d.setDate(d.getDate() - 1);
-                const yesterday = d.toISOString().split('T')[0];
 
-                if (lastDate === yesterday) {
-                    newStreak += 1; // Zincir devam ediyor
-                } else if (lastDate !== today) {
-                    newStreak = 1; // Zincir kırıldı veya yeni başladı (Bugün değilse)
+                // STREAK MANTIĞI:
+                if (lastDate === todayStr) {
+                    // Bugün zaten çalışmış, streak değişmez.
+                    console.log("Bugün zaten log girilmiş.");
+                } else if (lastDate === yesterdayStr) {
+                    // Dün çalışmış, bugün de çalıştı -> Streak Artır
+                    newStreak += 1;
+                    console.log("Zincir devam ediyor! +1");
+                } else {
+                    // Dün çalışmamış (veya ilk defa) -> Streak 1'e sıfırla
+                    newStreak = 1;
+                    console.log("Zincir kırıldı veya yeni başladı. Streak: 1");
                 }
-                // Eğer lastDate === today ise streak değişmez, aynı gün içindeyiz.
 
                 await updateDoc(userRef, {
                     streak: newStreak,
-                    lastStudyDate: today,
+                    lastStudyDate: todayStr,
                     totalSolved: increment(Number(countValue) || 0),
                     totalStudyMinutes: increment(Number(duration) || 0)
                 });
@@ -103,6 +113,7 @@ export default function StudyLogger({ currentUser }) {
         }
     };
 
+    // ... (Diğer fonksiyonlar aynen kalacak) ...
     const calculatePoints = (type, count) => {
         const val = Number(count) || 0;
         if(type === 'branch') return val * 1.5;
@@ -110,54 +121,42 @@ export default function StudyLogger({ currentUser }) {
         return val;
     };
 
-    // GÜNLÜK LİDERLERİ HESAPLA
     const getDailyLeaders = () => {
         const today = new Date().toDateString();
-        // Sadece bugünün loglarını al
         const dailyLogs = logs.filter(l => l.timestamp && new Date(l.timestamp.seconds * 1000).toDateString() === today);
-        
         const stats = {};
         dailyLogs.forEach(log => {
-            // Eğer "Sınıf Akışı"ndaysak sadece sınıfı, "Okul"daysak herkesi hesapla
-            // (Burada genel liderlik için herkesi alıyoruz, istersen filtreleyebilirsin)
             if (!stats[log.userId]) stats[log.userId] = { username: log.username, avatar: log.avatar, totalPoints: 0 };
             stats[log.userId].totalPoints += calculatePoints(log.logType || 'question', log.countValue || log.questionCount);
         });
-        
         return Object.values(stats).sort((a, b) => b.totalPoints - a.totalPoints).slice(0, 5);
     };
     
     const dailyLeaders = getDailyLeaders();
 
-    // AKIŞ FİLTRELEME
     const getFilteredLogs = () => {
         if (activeTab === 'history') return logs.filter(l => l.userId === currentUser.internalId);
         if (activeTab === 'class_feed') return logs.filter(l => l.classSection === currentUser.classSection);
-        return logs; // school_feed (Tümü)
+        return logs; 
     };
 
     const filteredLogs = getFilteredLogs();
 
     return (
         <div className="max-w-6xl mx-auto flex flex-col lg:flex-row gap-6 h-auto lg:h-[calc(100vh-8rem)] pb-20">
-            
+            {/* ... (JSX yapısı AYNEN kalacak, önceki kodla aynı) ... */}
             {/* SOL PANEL (GİRİŞ & LİDERLER) */}
             <div className="w-full lg:w-1/3 flex flex-col gap-6">
-                
-                {/* Giriş Kartı */}
                 <div className="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-gray-700 transition-colors">
                     <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-4 flex items-center gap-2">
                         <Activity className="text-indigo-600 dark:text-indigo-400"/> Aktivite Ekle
                     </h2>
-                    
                     <div className="flex bg-slate-100 dark:bg-gray-700 p-1 rounded-xl mb-4">
                         {[{id:'question', l:'Soru'}, {id:'branch', l:'Branş'}, {id:'general', l:'Genel'}].map(t => (
                             <button key={t.id} onClick={() => setLogType(t.id)} className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${logType === t.id ? 'bg-white dark:bg-gray-600 text-indigo-600 dark:text-white shadow-sm' : 'text-slate-500 dark:text-gray-400'}`}>{t.l}</button>
                         ))}
                     </div>
-
                     <form onSubmit={handleSave} className="space-y-4">
-                        {/* Alan Seçimi */}
                         <div>
                             <label className="text-xs font-bold text-slate-400 uppercase mb-1 block">Alan</label>
                             <div className="flex bg-slate-100 dark:bg-gray-700 p-1 rounded-xl">
@@ -166,8 +165,6 @@ export default function StudyLogger({ currentUser }) {
                                 ))}
                             </div>
                         </div>
-
-                        {/* Ders ve Konu Seçimi */}
                         {logType !== 'general' && (
                             <div>
                                 <label className="text-xs font-bold text-slate-400 uppercase mb-1 block">Ders</label>
@@ -185,8 +182,6 @@ export default function StudyLogger({ currentUser }) {
                                 </select>
                             </div>
                         )}
-
-                        {/* Sayı ve Süre */}
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <label className="text-xs font-bold text-slate-400 uppercase mb-1 block">{logType === 'question' ? 'Soru' : 'Net'}</label>
@@ -200,8 +195,8 @@ export default function StudyLogger({ currentUser }) {
                         <button className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 rounded-xl shadow-lg transition-all active:scale-95">Kaydet</button>
                     </form>
                 </div>
-
-                {/* Günün Liderleri */}
+                
+                {/* Liderler */}
                 <div className="bg-gradient-to-b from-orange-500 to-red-500 p-6 rounded-3xl shadow-lg text-white">
                     <h3 className="font-bold text-lg flex items-center gap-2 mb-4"><TrendingUp/> Bugünün Liderleri</h3>
                     <div className="space-y-3">
@@ -222,26 +217,15 @@ export default function StudyLogger({ currentUser }) {
 
             {/* SAĞ PANEL (AKIŞ) */}
             <div className="flex-1 bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-slate-100 dark:border-gray-700 flex flex-col overflow-hidden transition-colors min-h-[500px]">
-                
-                {/* Tablar */}
                 <div className="p-2 border-b border-slate-100 dark:border-gray-700 flex gap-2 overflow-x-auto no-scrollbar">
-                    <button onClick={() => setActiveTab('class_feed')} className={`flex-1 py-3 px-4 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all whitespace-nowrap ${activeTab === 'class_feed' ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-300' : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-gray-700'}`}>
-                        <Users size={16}/> Sınıf
-                    </button>
-                    <button onClick={() => setActiveTab('school_feed')} className={`flex-1 py-3 px-4 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all whitespace-nowrap ${activeTab === 'school_feed' ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-300' : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-gray-700'}`}>
-                        <School size={16}/> Okul
-                    </button>
-                    <button onClick={() => setActiveTab('history')} className={`flex-1 py-3 px-4 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all whitespace-nowrap ${activeTab === 'history' ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-300' : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-gray-700'}`}>
-                        <User size={16}/> Ben
-                    </button>
+                    <button onClick={() => setActiveTab('class_feed')} className={`flex-1 py-3 px-4 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all whitespace-nowrap ${activeTab === 'class_feed' ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-300' : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-gray-700'}`}><Users size={16}/> Sınıf</button>
+                    <button onClick={() => setActiveTab('school_feed')} className={`flex-1 py-3 px-4 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all whitespace-nowrap ${activeTab === 'school_feed' ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-300' : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-gray-700'}`}><School size={16}/> Okul</button>
+                    <button onClick={() => setActiveTab('history')} className={`flex-1 py-3 px-4 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all whitespace-nowrap ${activeTab === 'history' ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-300' : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-gray-700'}`}><User size={16}/> Ben</button>
                 </div>
-                
-                {/* Liste */}
                 <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
                     {filteredLogs.length > 0 ? filteredLogs.map(log => {
                         const val = Number(log.countValue || log.questionCount || 0);
                         const type = log.logType || 'question';
-                        
                         return (
                             <div key={log.id} className="flex gap-4 p-4 rounded-2xl bg-slate-50 dark:bg-gray-700/30 border border-slate-100 dark:border-gray-600 hover:border-indigo-200 transition-colors">
                                 <div className="flex-shrink-0">
@@ -253,36 +237,20 @@ export default function StudyLogger({ currentUser }) {
                                     <div className="flex justify-between items-start">
                                         <div>
                                             <span className="font-bold text-slate-800 dark:text-white">{log.username}</span>
-                                            {/* Okul akışındaysa sınıfını göster */}
                                             {activeTab === 'school_feed' && <span className="ml-2 text-[10px] bg-slate-200 dark:bg-slate-600 px-1.5 py-0.5 rounded text-slate-600 dark:text-slate-300 font-bold">{log.classSection || "?"}</span>}
                                         </div>
-                                        <div className="text-[10px] text-slate-400 flex items-center gap-1">
-                                            <Clock size={12}/> {log.timestamp ? new Date(log.timestamp.seconds * 1000).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'Az önce'}
-                                        </div>
+                                        <div className="text-[10px] text-slate-400 flex items-center gap-1"><Clock size={12}/> {log.timestamp ? new Date(log.timestamp.seconds * 1000).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'Az önce'}</div>
                                     </div>
                                     <div className="mt-3 flex flex-wrap gap-2">
-                                        <span className="bg-white dark:bg-gray-900 border border-slate-200 dark:border-gray-600 px-3 py-1 rounded-lg text-xs font-bold text-slate-600 dark:text-gray-300 flex items-center gap-1">
-                                            <BookOpen size={14} className="text-indigo-500"/> {log.subject}
-                                        </span>
-                                        {log.topic && (
-                                            <span className="bg-white dark:bg-gray-900 border border-slate-200 dark:border-gray-600 px-3 py-1 rounded-lg text-xs font-bold text-slate-600 dark:text-gray-300 flex items-center gap-1">
-                                                <Hash size={14} className="text-orange-500"/> {log.topic}
-                                            </span>
-                                        )}
-                                        <span className="bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-400 px-3 py-1 rounded-lg text-xs font-bold">
-                                            {type === 'question' ? `+${val} Soru` : `+${val} Net`}
-                                        </span>
+                                        <span className="bg-white dark:bg-gray-900 border border-slate-200 dark:border-gray-600 px-3 py-1 rounded-lg text-xs font-bold text-slate-600 dark:text-gray-300 flex items-center gap-1"><BookOpen size={14} className="text-indigo-500"/> {log.subject}</span>
+                                        {log.topic && <span className="bg-white dark:bg-gray-900 border border-slate-200 dark:border-gray-600 px-3 py-1 rounded-lg text-xs font-bold text-slate-600 dark:text-gray-300 flex items-center gap-1"><Hash size={14} className="text-orange-500"/> {log.topic}</span>}
+                                        <span className="bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-400 px-3 py-1 rounded-lg text-xs font-bold">{type === 'question' ? `+${val} Soru` : `+${val} Net`}</span>
                                         {log.duration > 0 && <span className="bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400 px-3 py-1 rounded-lg text-xs font-bold">{log.duration} Dk</span>}
                                     </div>
                                 </div>
                             </div>
                         );
-                    }) : (
-                        <div className="flex flex-col items-center justify-center h-64 text-slate-400">
-                            <Filter size={48} className="mb-2 opacity-20"/>
-                            <p>Henüz aktivite yok.</p>
-                        </div>
-                    )}
+                    }) : <div className="flex flex-col items-center justify-center h-64 text-slate-400"><Filter size={48} className="mb-2 opacity-20"/><p>Henüz aktivite yok.</p></div>}
                 </div>
             </div>
         </div>

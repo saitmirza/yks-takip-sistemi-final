@@ -79,55 +79,138 @@ export const PROFILE_COVERS = [
     "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=800&q=80", // Sisli Orman
     "https://images.unsplash.com/photo-1536152470836-b943b246224c?auto=format&fit=crop&w=800&q=80", // Dijital Pikseller
 ];
-// --- RENK TEMALARI (GÜNCELLENDİ: GRADYANLAR EKLENDİ) ---
+// --- RENK TEMALARI (GENİŞLETİLMİŞ PAKET) ---
 export const COLOR_THEMES = {
+    // 1. KLASİKLER
     indigo: { 
         label: "Varsayılan (İndigo)", 
-        primary: "#4f46e5", 
+        primary: "#6366f1", 
         light: "#eef2ff", 
         dark: "#312e81",
         gradient: "linear-gradient(to bottom right, #0f172a, #1e1b4b, #312e81)" 
     },
     rose: { 
         label: "Gül Kırmızısı",       
-        primary: "#e11d48", 
+        primary: "#f43f5e", 
         light: "#fff1f2", 
         dark: "#881337",
         gradient: "linear-gradient(to bottom right, #0f172a, #4c0519, #881337)"
     },
-    blue: { 
-        label: "Okyanus Mavisi",      
-        primary: "#2563eb", 
-        light: "#eff6ff", 
-        dark: "#1e3a8a",
-        gradient: "linear-gradient(to bottom right, #0f172a, #172554, #1e3a8a)"
-    },
     emerald: { 
-        label: "Zümrüt Yeşili",       
-        primary: "#059669", 
+        label: "Zümrüt Ormanı",       
+        primary: "#10b981", 
         light: "#ecfdf5", 
         dark: "#064e3b",
-        gradient: "linear-gradient(to bottom right, #0f172a, #022c22, #064e3b)"
+        gradient: "linear-gradient(to bottom right, #0f172a, #022c22, #065f46)"
     },
+
+    // 2. MODERN / TRENDY
     violet: { 
-        label: "Asil Mor",            
-        primary: "#7c3aed", 
+        label: "Cyberpunk Moru",            
+        primary: "#8b5cf6", 
         light: "#f5f3ff", 
         dark: "#4c1d95",
-        gradient: "linear-gradient(to bottom right, #0f172a, #2e1065, #4c1d95)"
+        gradient: "linear-gradient(to bottom right, #0f172a, #2e1065, #7c3aed)"
     },
-    orange: { 
-        label: "Gün Batımı",          
-        primary: "#ea580c", 
-        light: "#fff7ed", 
-        dark: "#7c2d12",
-        gradient: "linear-gradient(to bottom right, #0f172a, #431407, #7c2d12)"
+    coral: { 
+        label: "Mercan Resifi", 
+        primary: "#fb7185", // Gül Kurusu/Mercan
+        light: "#fff1f2", 
+        dark: "#881337",
+        gradient: "linear-gradient(to bottom right, #0f172a, #881337, #f43f5e)" 
     },
+
     cyan: { 
-        label: "Siber Turkuaz",       
-        primary: "#0891b2", 
+        label: "Buzul Mavisi",       
+        primary: "#06b6d4", 
         light: "#ecfeff", 
         dark: "#164e63",
-        gradient: "linear-gradient(to bottom right, #0f172a, #083344, #155e75)"
+        gradient: "linear-gradient(to bottom right, #0f172a, #083344, #0e7490)"
     },
+
+    // 3. DARK MODE ÖZEL (SİYAH AĞIRLIKLI)
+    midnight: {
+        label: "Gece Yarısı",
+        primary: "#3b82f6", // Parlak mavi vurgu
+        light: "#1e293b",
+        dark: "#020617",
+        gradient: "linear-gradient(to bottom right, #000000, #0f172a, #1e3a8a)"
+    },
+    lavender: {
+        label: "Lavanta Bahçesi",
+        primary: "#a78bfa", // Yumuşak Mor
+        light: "#f5f3ff",
+        dark: "#2e1065",
+        gradient: "linear-gradient(to bottom right, #0f172a, #2e1065, #7c3aed)"
+    },
+        crimson: { 
+        label: "Kızıl Ejder", 
+        primary: "#dc2626", // Kırmızı
+        light: "#fef2f2", 
+        dark: "#450a0a",
+        gradient: "linear-gradient(to bottom right, #0f172a, #450a0a, #7f1d1d)" 
+    },
+    teal: { 
+        label: "Atlantis", 
+        primary: "#0d9488", // Turkuaz
+        light: "#f0fdfa", 
+        dark: "#042f2e",
+        gradient: "linear-gradient(to bottom right, #0f172a, #042f2e, #115e59)" 
+    },
+    neon: { 
+        label: "Neon Cyber", 
+        primary: "#d946ef", // Parlak Fuşya
+        light: "#fdf4ff", 
+        dark: "#4a044e",
+        gradient: "linear-gradient(to bottom right, #020617, #2e1065, #c026d3)" 
+    },
+    gold: { 
+        label: "Şampiyon", 
+        primary: "#eab308", // Altın Sarısı
+        light: "#fefce8", 
+        dark: "#422006",
+        gradient: "linear-gradient(to bottom right, #000000, #422006, #a16207)" 
+    },
+    acid: { 
+        label: "Radyoaktif", 
+        primary: "#84cc16", // Lime (Asit Yeşili)
+        light: "#f7fee7", 
+        dark: "#1a2e05",
+        gradient: "linear-gradient(to bottom right, #000000, #14532d, #65a30d)" 
+    },
+    berry: { 
+        label: "Yaban Mersini", 
+        primary: "#7c3aed", // Derin Mor
+        light: "#f5f3ff", 
+        dark: "#2e1065",
+        gradient: "linear-gradient(to bottom right, #0f172a, #1e1b4b, #5b21b6)" 
+    },
+    sunset: { 
+        label: "Mars Kolonisi", 
+        primary: "#ea580c", // Yanık Turuncu
+        light: "#fff7ed", 
+        dark: "#431407",
+        gradient: "linear-gradient(to bottom right, #0f172a, #431407, #c2410c)" 
+    },
+    graphite: { 
+        label: "Karanlık Madde", 
+        primary: "#64748b", // Çelik Gri
+        light: "#f8fafc", 
+        dark: "#020617",
+        gradient: "linear-gradient(to bottom right, #000000, #1e293b, #475569)" 
+    },
+    coffee: {
+        label: "Türk Kahvesi",
+        primary: "#d97706", // Kehribar/Kahve
+        light: "#fffbeb",
+        dark: "#451a03",
+        gradient: "linear-gradient(to bottom right, #1a1003, #451a03, #92400e)"
+    },
+        hacker: {
+        label: "Matrix",
+        primary: "#22c55e", // Terminal Yeşili
+        light: "#f0fdf4",
+        dark: "#000000",
+        gradient: "linear-gradient(to bottom right, #000000, #022c22, #15803d)"
+    }
 };
