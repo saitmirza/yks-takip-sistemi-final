@@ -1,19 +1,29 @@
-import React, { useState } from 'react';
-import { Lock, AlertCircle, Key, UserCog, Palette, Check, Plus, Trash2, Paintbrush } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Lock, AlertCircle, Key, UserCog, Palette, Check, Plus, Trash2, Bell } from 'lucide-react';
 import { doc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
 import { db } from '../firebase';
 import { APP_ID, COLOR_THEMES } from '../utils/constants';
-import { Bell } from 'lucide-react';
 
 export default function AccountSettings({ currentUser, setCurrentUser }) {
   const [isLoading, setIsLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState('catalog'); // 'catalog' | 'custom'
+  const [activeTab, setActiveTab] = useState('catalog'); 
   
-  // Custom Theme State
   const [customName, setCustomName] = useState("");
   const [customPrimary, setCustomPrimary] = useState("#6366f1");
   const [customStart, setCustomStart] = useState("#0f172a");
   const [customEnd, setCustomEnd] = useState("#312e81");
+  
+  // Güvenli Bildirim Durumu Kontrolü
+  const [notifPermission, setNotifPermission] = useState('default');
+
+  useEffect(() => {
+    // iOS Hatasını Önleyen Kontrol
+    if ('Notification' in window) {
+        setNotifPermission(Notification.permission);
+    } else {
+        setNotifPermission('unsupported');
+    }
+  }, []);
 
   const [formData, setFormData] = useState({
       username: currentUser.username,
@@ -52,7 +62,6 @@ export default function AccountSettings({ currentUser, setCurrentUser }) {
       setIsLoading(false);
   };
 
-  // ÖZEL TEMA KAYDETME
   const handleSaveCustomTheme = async () => {
       if (!customName.trim()) return alert("Tema adı giriniz.");
       
@@ -60,7 +69,7 @@ export default function AccountSettings({ currentUser, setCurrentUser }) {
           id: `custom_${Date.now()}`,
           label: customName,
           primary: customPrimary,
-          light: customPrimary + '20', // %20 opacity
+          light: customPrimary + '20', 
           dark: customPrimary,
           gradient: `linear-gradient(to bottom right, ${customStart}, ${customEnd})`
       };
@@ -69,10 +78,9 @@ export default function AccountSettings({ currentUser, setCurrentUser }) {
           const userRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'user_accounts', currentUser.email);
           await updateDoc(userRef, {
               customThemes: arrayUnion(newTheme),
-              themeColor: newTheme.id // Oluşturunca direkt seç
+              themeColor: newTheme.id 
           });
 
-          // Local state güncelle
           const updatedUser = { 
               ...currentUser, 
               customThemes: [...(currentUser.customThemes || []), newTheme],
@@ -86,15 +94,11 @@ export default function AccountSettings({ currentUser, setCurrentUser }) {
       } catch (e) { console.error(e); }
   };
 
-  // ÖZEL TEMA SİLME
   const handleDeleteTheme = async (theme) => {
       if(!confirm("Bu temayı silmek istiyor musun?")) return;
       try {
           const userRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'user_accounts', currentUser.email);
-          await updateDoc(userRef, {
-              customThemes: arrayRemove(theme)
-          });
-           // Eğer silinen tema seçiliyse varsayılana dön
+          await updateDoc(userRef, { customThemes: arrayRemove(theme) });
            if (currentUser.themeColor === theme.id) {
                await updateDoc(userRef, { themeColor: 'indigo' });
                setCurrentUser(p => ({ ...p, themeColor: 'indigo', customThemes: p.customThemes.filter(t => t.id !== theme.id) }));
@@ -103,6 +107,18 @@ export default function AccountSettings({ currentUser, setCurrentUser }) {
                setCurrentUser(p => ({ ...p, customThemes: p.customThemes.filter(t => t.id !== theme.id) }));
            }
       } catch (e) { console.error(e); }
+  };
+
+  // Bildirim İzni İsteme Fonksiyonu
+  const requestNotify = () => {
+    if (!('Notification' in window)) {
+        alert("Cihazınız bildirimleri desteklemiyor.");
+        return;
+    }
+    Notification.requestPermission().then(p => {
+        setNotifPermission(p);
+        alert(p === 'granted' ? "Bildirimler açıldı! 🎉" : "Bildirim izni reddedildi.");
+    });
   };
 
   return (
@@ -117,7 +133,6 @@ export default function AccountSettings({ currentUser, setCurrentUser }) {
         <form onSubmit={handleSave} className="bg-slate-800/50 backdrop-blur-md rounded-3xl shadow-lg border border-slate-700 p-8 space-y-8">
             <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2"><UserCog className="text-slate-300"/> Hesap Ayarları</h2>
             
-            {/* TEMA SEÇİCİ */}
             <div>
                 <div className="flex justify-between items-center mb-4">
                     <label className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2"><Palette size={14}/> Tema Seçimi</label>
@@ -129,7 +144,6 @@ export default function AccountSettings({ currentUser, setCurrentUser }) {
 
                 {activeTab === 'catalog' ? (
                     <div className="space-y-4">
-                        {/* HAZIR TEMALAR */}
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                             {Object.entries(COLOR_THEMES).map(([key, theme]) => (
                                 <button
@@ -145,8 +159,6 @@ export default function AccountSettings({ currentUser, setCurrentUser }) {
                                 </button>
                             ))}
                         </div>
-
-                        {/* KULLANICININ ÖZEL TEMALARI */}
                         {currentUser.customThemes?.length > 0 && (
                             <>
                                 <div className="text-xs font-bold text-slate-500 mt-4 mb-2">SENİN TASARIMLARIN</div>
@@ -170,18 +182,15 @@ export default function AccountSettings({ currentUser, setCurrentUser }) {
                         )}
                     </div>
                 ) : (
-                    /* ÖZEL TEMA OLUŞTURUCU */
                     <div className="bg-slate-900/50 p-4 rounded-2xl border border-slate-600 space-y-4">
                         <div className="h-24 rounded-xl flex items-center justify-center shadow-lg transition-all" style={{ background: `linear-gradient(to bottom right, ${customStart}, ${customEnd})` }}>
                             <button type="button" className="px-4 py-2 rounded-lg font-bold text-white shadow-lg" style={{ backgroundColor: customPrimary }}>Önizleme Butonu</button>
                         </div>
-                        
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                             <div><label className="text-[10px] uppercase font-bold text-slate-400 mb-1 block">Buton Rengi</label><div className="flex gap-2"><input type="color" value={customPrimary} onChange={e => setCustomPrimary(e.target.value)} className="w-8 h-8 rounded cursor-pointer bg-transparent border-0 p-0"/><input type="text" value={customPrimary} onChange={e => setCustomPrimary(e.target.value)} className="w-full bg-slate-800 border border-slate-600 rounded text-xs px-2 text-white"/></div></div>
                             <div><label className="text-[10px] uppercase font-bold text-slate-400 mb-1 block">Gradyan Başlangıç</label><div className="flex gap-2"><input type="color" value={customStart} onChange={e => setCustomStart(e.target.value)} className="w-8 h-8 rounded cursor-pointer bg-transparent border-0 p-0"/><input type="text" value={customStart} onChange={e => setCustomStart(e.target.value)} className="w-full bg-slate-800 border border-slate-600 rounded text-xs px-2 text-white"/></div></div>
                             <div><label className="text-[10px] uppercase font-bold text-slate-400 mb-1 block">Gradyan Bitiş</label><div className="flex gap-2"><input type="color" value={customEnd} onChange={e => setCustomEnd(e.target.value)} className="w-8 h-8 rounded cursor-pointer bg-transparent border-0 p-0"/><input type="text" value={customEnd} onChange={e => setCustomEnd(e.target.value)} className="w-full bg-slate-800 border border-slate-600 rounded text-xs px-2 text-white"/></div></div>
                         </div>
-
                         <div className="flex gap-2 pt-2">
                             <input type="text" placeholder="Tema Adı (Örn: Uzay Macerası)" value={customName} onChange={e => setCustomName(e.target.value)} className="flex-1 bg-slate-800 border border-slate-600 rounded-xl px-3 py-2 text-sm text-white outline-none focus:border-indigo-500"/>
                             <button type="button" onClick={handleSaveCustomTheme} className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2"><Plus size={16}/> Oluştur</button>
@@ -190,7 +199,6 @@ export default function AccountSettings({ currentUser, setCurrentUser }) {
                 )}
             </div>
 
-            {/* KİŞİSEL BİLGİLER (Aynı) */}
             <div className="space-y-4 pt-4 border-t border-slate-700">
                 <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider pb-2">Kişisel Bilgiler</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -204,10 +212,12 @@ export default function AccountSettings({ currentUser, setCurrentUser }) {
             <button disabled={isLoading || currentUser.isDemo} className="w-full bg-slate-100 hover:bg-white text-slate-900 font-bold py-4 rounded-xl shadow-lg transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed border-none">{isLoading ? 'Kaydediliyor...' : 'Tüm Ayarları Kaydet'}</button>
         </form>
 
-        {/* Bildirim İzni */}
-        <div className="flex items-center justify-between bg-slate-800/50 backdrop-blur-md p-4 rounded-xl border border-slate-700 cursor-pointer" onClick={() => Notification.requestPermission().then(p => alert(p === 'granted' ? "Bildirimler açıldı! 🎉" : "Bildirim izni reddedildi."))}>
+        {/* Güvenli Bildirim İzni Alanı */}
+        <div className="flex items-center justify-between bg-slate-800/50 backdrop-blur-md p-4 rounded-xl border border-slate-700 cursor-pointer" onClick={requestNotify}>
             <div className="flex items-center gap-3"><div className="p-2 rounded-full bg-blue-900 text-blue-300"><Bell size={20}/></div><div><div className="text-sm font-bold text-white">Bildirim İzni</div><div className="text-xs text-slate-400">Sınav ve sohbet bildirimlerini al</div></div></div>
-            <div className="text-xs font-bold text-indigo-400">{Notification.permission === 'granted' ? 'Açık' : 'Kapalı'}</div>
+            <div className="text-xs font-bold text-indigo-400">
+                {notifPermission === 'granted' ? 'Açık' : notifPermission === 'denied' ? 'Reddedildi' : notifPermission === 'unsupported' ? 'Desteklenmiyor' : 'Kapalı'}
+            </div>
         </div>
     </div>
   );
