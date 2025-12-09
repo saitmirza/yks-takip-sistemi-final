@@ -52,10 +52,11 @@ export default function ExamTrackerApp() {
   const [authInput, setAuthInput] = useState({});
   const [authError, setAuthError] = useState("");
 
-  // Ref'ler ve Yardımcılar
   const userEmailRef = useRef(null);
   const addToast = (message, type = 'success') => { setToast({ message, type }); };
+
   const saveSession = (user) => { try { localStorage.setItem('examApp_session', JSON.stringify(user)); } catch (err) {} };
+  const getSession = () => { try { const saved = localStorage.getItem('examApp_session'); if (saved) return JSON.parse(saved); } catch (err) {} return null; };
 
   // --- TEMA MOTORU ---
   const getActiveTheme = () => {
@@ -95,8 +96,15 @@ export default function ExamTrackerApp() {
     `}</style>
   );
 
-  // --- AUTH VE OTURUM YÖNETİMİ (iOS FIX) ---
+  // --- AUTH VE OTURUM YÖNETİMİ (iOS & YÜKLEME FIX) ---
   useEffect(() => {
+    // 1. ZAMAN AŞIMI GÜVENLİĞİ (Safety Valve)
+    // Eğer Firebase 4 saniye içinde cevap vermezse, yükleme ekranını zorla kapat.
+    // Bu, iOS'ta beyaz ekranda kalmayı engeller.
+    const safetyTimer = setTimeout(() => {
+        setLoading(false);
+    }, 4000);
+
     const initAuth = async () => {
       try {
         await setPersistence(auth, browserLocalPersistence);
@@ -105,8 +113,11 @@ export default function ExamTrackerApp() {
     initAuth();
 
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      clearTimeout(safetyTimer); // Firebase cevap verdi, zamanlayıcıyı iptal et.
+
       if (user) {
         setFirebaseUser(user);
+        // Eğer kullanıcı varsa ama veritabanı okuması yavaşsa, en azından oturumu açık tut
         if (!user.isAnonymous && user.email) {
             try {
                 const userRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'user_accounts', user.email);
@@ -119,18 +130,22 @@ export default function ExamTrackerApp() {
                     const adminUser = { username: "Yönetici", email: ADMIN_USERNAME, internalId: "ADMIN_ID", isAdmin: true, avatar: "🛡️", realName: "Admin", classSection: "Yönetim" };
                     setCurrentUser(adminUser);
                 }
-            } catch (err) { console.error(err); }
+            } catch (err) { console.error("User fetch err:", err); }
         }
       } else {
         setFirebaseUser(null);
         setCurrentUser(null);
       }
-      setLoading(false);
+      setLoading(false); // Yüklemeyi kapat
     });
-    return () => unsubscribe();
+    
+    return () => {
+        unsubscribe();
+        clearTimeout(safetyTimer);
+    };
   }, []);
 
-  // --- GİRİŞ YAPMA ---
+  // --- GİRİŞ / ÇIKIŞ / KAYIT ---
   const handleLogin = async (e) => {
     e.preventDefault(); setAuthError("");
     const inputVal = authInput.email?.trim(); 
@@ -145,8 +160,6 @@ export default function ExamTrackerApp() {
     }
     
     try {
-      await setPersistence(auth, browserLocalPersistence);
-      
       let userData = null;
       if (inputVal.includes('@')) {
           const emailKey = inputVal.toLowerCase(); const userRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'user_accounts', emailKey);
@@ -165,7 +178,6 @@ export default function ExamTrackerApp() {
     } catch (e) { console.error(e); setAuthError("Giriş hatası."); }
   };
 
-  // --- KAYIT OLMA ---
   const handleRegister = async (e) => {
     e.preventDefault(); setAuthError("");
     if (!authInput.email || !authInput.password || !authInput.username || !authInput.realName) { setAuthError("Lütfen tüm zorunlu alanları doldurun."); return; }
@@ -199,9 +211,9 @@ export default function ExamTrackerApp() {
 
   const handleLogout = () => { setCurrentUser(null); localStorage.removeItem('examApp_session'); setActiveTab("calendar"); setAuthInput({}); addToast("Çıkış yapıldı.", "info"); };
 
-  // --- CANLI VERİ DİNLEYİCİLERİ ---
+  // --- EFFECTLER ---
+  useEffect(() => { const initAuth = async () => { try { await signInAnonymously(auth); } catch (err) {} }; initAuth(); }, []); // onAuthStateChanged'i buradan kaldırdık, yukarıda tek bir yerde yönetiyoruz.
   
-  // 1. Kullanıcı Verisi (Loop Fix ile)
   useEffect(() => {
     if (!currentUser?.email || currentUser.isDemo || currentUser.isAdmin) return;
     if (userEmailRef.current === currentUser.email) return;
@@ -224,7 +236,6 @@ export default function ExamTrackerApp() {
     return () => { unsubscribe(); userEmailRef.current = null; };
   }, [currentUser?.email]);
 
-  // 2. Last Seen
   useEffect(() => { 
       if (!currentUser || currentUser.isDemo || currentUser.isAdmin) return; 
       const updateSeen = () => updateDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'user_accounts', currentUser.email), { lastSeen: serverTimestamp() }).catch(e => console.log(e));
@@ -233,7 +244,6 @@ export default function ExamTrackerApp() {
       return () => clearInterval(interval); 
   }, [currentUser?.email]);
 
-  // 3. Genel Veriler (Skor, Kullanıcı, Soru)
   useEffect(() => { 
       if (!firebaseUser) return; 
       const unsubScores = onSnapshot(collection(db, 'artifacts', APP_ID, 'public', 'data', 'exam_scores_v3'), (snap) => { let data = snap.docs.map(d => ({ id: d.id, ...d.data() })); data = data.filter(s => s.internalUserId !== DEMO_INTERNAL_ID); data.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0)); setAllScores(data); }); 
@@ -242,7 +252,6 @@ export default function ExamTrackerApp() {
       return () => { unsubScores(); unsubUsers(); unsubQuestions(); }; 
   }, [firebaseUser]);
   
-  // 4. Sıralama
   useEffect(() => { 
       if (!currentUser || allScores.length === 0) return; 
       let mine = allScores.filter(s => s.internalUserId === currentUser.internalId); 
@@ -259,7 +268,7 @@ export default function ExamTrackerApp() {
   const getUserScores = (uid) => allScores.filter(s => s.internalUserId === uid);
   const handleUserClick = (uid) => { const user = usersList.find(u => u.internalId === uid); if (user) setViewingUser(user); };
 
-  if (loading) return <div className="flex h-screen items-center justify-center bg-slate-900 text-white font-sans"><div className="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div></div>;
+  if (loading) return <div className="fixed inset-0 flex items-center justify-center bg-slate-900 text-white font-sans z-[9999]"><div className="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div></div>;
 
   if (!currentUser) return (
       <div className="fixed inset-0 w-full h-full flex items-center justify-center p-4 bg-slate-900 overflow-y-auto" style={{ background: theme.gradient }}>
@@ -270,7 +279,8 @@ export default function ExamTrackerApp() {
   );
 
   return (
-    <div className="fixed inset-0 w-full h-[100dvh] bg-slate-900 text-slate-100 font-sans overflow-hidden flex flex-col md:flex-row" style={{ background: theme.gradient }}>
+    // IOS FIX: fixed inset-0 ile tam ekran garanti
+    <div className="fixed inset-0 w-full h-full bg-slate-900 text-slate-100 font-sans overflow-hidden flex flex-col md:flex-row" style={{ background: theme.gradient }}>
       <DynamicStyles />
       <NotificationManager currentUser={currentUser} />
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
@@ -279,7 +289,9 @@ export default function ExamTrackerApp() {
       
       <Sidebar currentUser={currentUser} activeTab={activeTab} setActiveTab={setActiveTab} handleLogout={handleLogout} />
 
-      <main className="flex-1 h-full w-full relative overflow-y-auto overflow-x-hidden scroll-smooth custom-scrollbar">
+      {/* IOS FIX: İçerik alanı absolute inset-0 değil, flex-1 olarak ayarlandı ve paddingler düzenlendi */}
+      {/* iOS Safari'de sayfanın aşağıya taşmasını engellemek için -webkit-overflow-scrolling eklendi */}
+      <main className="flex-1 h-full w-full relative overflow-y-auto overflow-x-hidden scroll-smooth custom-scrollbar" style={{ WebkitOverflowScrolling: 'touch' }}>
           <div className="pt-20 pb-24 px-4 md:py-8 md:px-8 md:ml-64 min-h-full">
             <div className="max-w-7xl mx-auto page-enter pb-10">
                 {activeTab === 'dashboard' && currentUser.isAdmin && <AdminDashboard usersList={usersList} allScores={allScores} appId={APP_ID} currentUser={currentUser} />}
