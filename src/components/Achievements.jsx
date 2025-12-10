@@ -6,7 +6,6 @@ import { getUserContributions } from '../utils/resourceLibraryService';
 export default function Achievements({ myScores, currentUser, questions, appId }) {
   const [userContributions, setUserContributions] = useState(null);
 
-  // Kaynak kütüphanesi verilerini çek
   useEffect(() => {
     if (appId && currentUser?.internalId) {
       getUserContributions(appId, currentUser.internalId).then(data => {
@@ -15,7 +14,6 @@ export default function Achievements({ myScores, currentUser, questions, appId }
     }
   }, [appId, currentUser]);
 
-  // Kullanıcı verilerini rozetler için birleştir
   const userDataForBadges = {
     ...currentUser,
     resourceUploads: userContributions?.uploads || 0,
@@ -23,14 +21,14 @@ export default function Achievements({ myScores, currentUser, questions, appId }
     maxResourceLikes: userContributions?.maxLikes || 0
   };
 
-  // DÜZELTME: Tüm parametreleri gönderiyoruz
   const earnedBadges = calculateUserBadges(myScores, questions, userDataForBadges);
-  
   const earnedIds = earnedBadges.map(b => b.id);
   const progress = Math.round((earnedBadges.length / BADGE_DEFINITIONS.length) * 100);
 
   return (
     <div className="max-w-6xl mx-auto space-y-8 mb-20">
+        
+        {/* ÜST BİLGİ KARTI (Gradyan korundu) */}
         <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-3xl p-8 text-white shadow-2xl relative overflow-hidden border border-indigo-400/30">
             <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-10 rounded-full -mr-16 -mt-16 pointer-events-none"></div>
             <div className="relative z-10">
@@ -43,7 +41,7 @@ export default function Achievements({ myScores, currentUser, questions, appId }
                             Denemelere gir, soru sor, disiplinli çalış ve rozetleri topla!
                         </p>
                     </div>
-                    <div className="bg-white/10 p-4 rounded-2xl backdrop-blur-sm text-center min-w-[120px]">
+                    <div className="bg-white/10 p-4 rounded-2xl backdrop-blur-sm text-center min-w-[120px] border border-white/10">
                         <div className="text-3xl font-bold text-yellow-300">{earnedBadges.length}</div>
                         <div className="text-xs font-bold uppercase tracking-wider opacity-80">Kazanılan</div>
                     </div>
@@ -64,33 +62,34 @@ export default function Achievements({ myScores, currentUser, questions, appId }
             </div>
         </div>
 
-        {/* KAYNAK KÜTÜPHANESİ KATKISI STATS */}
+        {/* KAYNAK KÜTÜPHANESİ KATKISI (GLASS FIX) */}
         {userContributions && (
-            <div className="bg-gradient-to-br from-cyan-50 to-teal-50 dark:from-cyan-900/20 dark:to-teal-900/20 rounded-3xl p-6 border border-cyan-200 dark:border-cyan-700/30">
-                <h3 className="text-lg font-bold text-cyan-900 dark:text-cyan-300 flex items-center gap-2 mb-4">
-                    <BookOpen size={24}/> Kaynak Kütüphanesi Katkılarım
+            <div className="glass-box rounded-3xl p-6">
+                <h3 className="text-lg font-bold text-white flex items-center gap-2 mb-4">
+                    <BookOpen size={24} className="text-cyan-400"/> Kaynak Kütüphanesi Katkılarım
                 </h3>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-cyan-100 dark:border-cyan-700/50 text-center">
-                        <div className="text-2xl font-bold text-cyan-600 dark:text-cyan-400">{userContributions.uploads || 0}</div>
-                        <div className="text-xs font-bold text-gray-600 dark:text-gray-400 uppercase mt-1">Yüklenen Kaynak</div>
+                    <div className="bg-white/5 p-4 rounded-xl border border-white/10 text-center hover:bg-white/10 transition-colors">
+                        <div className="text-2xl font-bold text-cyan-400">{userContributions.uploads || 0}</div>
+                        <div className="text-xs font-bold text-slate-400 uppercase mt-1">Yüklenen</div>
                     </div>
-                    <div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-cyan-100 dark:border-cyan-700/50 text-center">
-                        <div className="text-2xl font-bold text-teal-600 dark:text-teal-400">{userContributions.totalDownloads || 0}</div>
-                        <div className="text-xs font-bold text-gray-600 dark:text-gray-400 uppercase mt-1">Toplam İndirme</div>
+                    <div className="bg-white/5 p-4 rounded-xl border border-white/10 text-center hover:bg-white/10 transition-colors">
+                        <div className="text-2xl font-bold text-teal-400">{userContributions.totalDownloads || 0}</div>
+                        <div className="text-xs font-bold text-slate-400 uppercase mt-1">İndirilme</div>
                     </div>
-                    <div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-cyan-100 dark:border-cyan-700/50 text-center">
-                        <div className="text-2xl font-bold text-amber-600 dark:text-amber-400">{userContributions.totalLikes || 0}</div>
-                        <div className="text-xs font-bold text-gray-600 dark:text-gray-400 uppercase mt-1">Toplam Beğeni</div>
+                    <div className="bg-white/5 p-4 rounded-xl border border-white/10 text-center hover:bg-white/10 transition-colors">
+                        <div className="text-2xl font-bold text-amber-400">{userContributions.totalLikes || 0}</div>
+                        <div className="text-xs font-bold text-slate-400 uppercase mt-1">Beğeni</div>
                     </div>
-                    <div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-cyan-100 dark:border-cyan-700/50 text-center">
-                        <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{userContributions.approvedCount || 0}</div>
-                        <div className="text-xs font-bold text-gray-600 dark:text-gray-400 uppercase mt-1">Onaylanan</div>
+                    <div className="bg-white/5 p-4 rounded-xl border border-white/10 text-center hover:bg-white/10 transition-colors">
+                        <div className="text-2xl font-bold text-emerald-400">{userContributions.approvedCount || 0}</div>
+                        <div className="text-xs font-bold text-slate-400 uppercase mt-1">Onaylanan</div>
                     </div>
                 </div>
             </div>
         )}
 
+        {/* ROZETLER GRİDİ (GLASS FIX) */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {BADGE_DEFINITIONS.map((badge) => {
                 const isUnlocked = earnedIds.includes(badge.id);
@@ -100,39 +99,40 @@ export default function Achievements({ myScores, currentUser, questions, appId }
                         key={badge.id} 
                         className={`relative p-5 rounded-2xl border transition-all duration-300 group overflow-hidden flex flex-col gap-3
                             ${isUnlocked 
-                                ? 'bg-white dark:bg-gray-800 border-slate-200 dark:border-gray-700 shadow-sm hover:shadow-md hover:-translate-y-1' 
-                                : 'bg-slate-50 dark:bg-gray-800/40 border-slate-100 dark:border-gray-800 opacity-60 grayscale hover:opacity-80'
+                                ? 'glass-box hover:-translate-y-1 hover:shadow-lg hover:border-indigo-500/50' 
+                                : 'bg-black/20 border-white/5 opacity-60 grayscale hover:opacity-80'
                             }`}
                     >
                         {!isUnlocked && (
-                            <div className="absolute top-3 right-3 text-slate-300 dark:text-gray-600">
+                            <div className="absolute top-3 right-3 text-slate-500">
                                 <Lock size={16}/>
                             </div>
                         )}
 
-                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-white shadow-sm text-xl ${isUnlocked ? badge.color : 'bg-slate-300 dark:bg-gray-700'}`}>
+                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-white shadow-sm text-xl ${isUnlocked ? badge.color : 'bg-slate-700'}`}>
                             {badge.icon}
                         </div>
 
                         <div>
-                            <h3 className={`font-bold text-sm truncate ${isUnlocked ? 'text-slate-800 dark:text-white' : 'text-slate-500 dark:text-gray-500'}`}>
+                            <h3 className={`font-bold text-sm truncate ${isUnlocked ? 'text-white' : 'text-slate-500'}`}>
                                 {badge.title}
                             </h3>
-                            <p className="text-xs text-slate-500 dark:text-gray-400 mt-1 leading-snug line-clamp-2">
+                            <p className="text-xs text-slate-400 mt-1 leading-snug line-clamp-2">
                                 {badge.desc}
                             </p>
                         </div>
                         
                         {isUnlocked && (
-                            <div className="absolute -bottom-4 -right-4 w-16 h-16 bg-gradient-to-br from-white/0 to-indigo-500/10 dark:to-indigo-400/10 rounded-full blur-xl group-hover:scale-150 transition-transform"></div>
+                            <div className="absolute -bottom-4 -right-4 w-16 h-16 bg-gradient-to-br from-white/0 to-indigo-500/20 rounded-full blur-xl group-hover:scale-150 transition-transform"></div>
                         )}
                     </div>
                 );
             })}
         </div>
         
+        {/* BOŞ DURUM */}
         {earnedBadges.length === 0 && (
-            <div className="text-center p-10 text-slate-400 dark:text-gray-500 bg-slate-50 dark:bg-gray-800/50 rounded-3xl border border-dashed border-slate-200 dark:border-gray-700">
+            <div className="text-center p-10 text-slate-500 glass-box rounded-3xl">
                 <Trophy size={48} className="mx-auto mb-3 opacity-20"/>
                 <p>Henüz hiç rozet kazanmadın. İlk denemeni girerek maceraya başla!</p>
             </div>

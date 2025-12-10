@@ -71,7 +71,7 @@ export default function ExamTrackerApp() {
 
   const theme = getActiveTheme();
 
-// --- DYNAMIC STYLES (AKILLI GLASS EFFECT FIX) ---
+// --- DYNAMIC STYLES (V14 - INPUT RESET & GLASS FIX) ---
   const DynamicStyles = () => (
     <style>{`
         :root { 
@@ -80,81 +80,61 @@ export default function ExamTrackerApp() {
             --primary-dark: ${theme.dark || theme.primary}; 
         }
 
-        /* Temel Renk Atamaları */
+        /* ... (Temel Renkler aynı kalsın) ... */
         .bg-indigo-600, .hover\\:bg-indigo-700:hover { background-color: var(--primary) !important; }
-        .text-indigo-600 { color: var(--primary) !important; }
-        .text-indigo-700 { color: var(--primary-dark) !important; }
-        .bg-indigo-50 { background-color: var(--primary-light) !important; }
-        .border-indigo-600 { border-color: var(--primary) !important; }
-        .ring-indigo-500 { --tw-ring-color: var(--primary) !important; }
-        
-        /* Arka Plan Gradyanı */
+        /* ... */
+
         body { 
             background: ${theme.gradient} !important; 
             background-attachment: fixed; 
             color: #e2e8f0 !important; 
         }
 
-        /* ================================================================= */
-        /* === 1. FALLBACK KATMANI (ESKİ CİHAZLAR VE SAFARI İÇİN) === */
-        /* Blur desteklemeyen cihazlarda arka planı KOYU ve OPAK yapıyoruz. */
-        /* Böylece arkadaki desenler yazıların altına girip okumayı zorlaştırmaz. */
-        
-        .dark .bg-gray-800, 
-        .dark .bg-slate-900, 
-        .bg-white.dark\\:bg-gray-800 {
-            background-color: #0f172a !important; /* Tamamen koyu renk (Slate 900) */
-            background-color: rgba(15, 23, 42, 0.95) !important; /* Çok hafif şeffaflık */
+        /* --- 1. GLASS BOX (KARTLAR İÇİN) --- */
+        .glass-box {
+            background-color: rgba(15, 23, 42, 0.70) !important; /* Slate 900 %70 */
+            backdrop-filter: blur(20px) !important;
+            -webkit-backdrop-filter: blur(20px) !important;
             border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+            color: #ffffff !important;
         }
 
-        /* İç kartlar (Liste elemanları vb.) */
-        .dark .bg-gray-700, 
-        .dark .bg-slate-800,
-        .bg-slate-50.dark\\:bg-gray-900 {
-            background-color: rgba(30, 41, 59, 0.95) !important; /* Slate 800 */
-            border: 1px solid rgba(255, 255, 255, 0.05) !important;
+        /* --- 2. GLASS INPUT (GİRİŞ KUTULARI İÇİN - KESİN ÇÖZÜM) --- */
+        .glass-input {
+            background-color: #0f172a !important; /* Slate 900 (Opak) */
+            border: 1px solid #334155 !important; /* Slate 700 */
+            color: #ffffff !important;
+            border-radius: 0.75rem !important; /* rounded-xl */
+            padding: 0.75rem 1rem !important; /* p-3 */
+            outline: none !important;
+            width: 100% !important;
+            -webkit-appearance: none !important; /* Safari varsayılanını kaldır */
         }
-
-        /* ================================================================= */
-        /* === 2. MODERN CİHAZ KATMANI (GLASSMORPHISM) === */
-        /* Eğer tarayıcı backdrop-filter destekliyorsa, şeffaflığı artırıp blur ekle */
         
-        @supports ((-webkit-backdrop-filter: blur(10px)) or (backdrop-filter: blur(10px))) {
-            
-            /* Ana Kartlar */
-            .dark .bg-gray-800, 
-            .dark .bg-slate-900, 
-            .bg-white.dark\\:bg-gray-800 {
-                background-color: rgba(15, 23, 42, 0.65) !important; /* Şeffaflığı artır (0.95 -> 0.65) */
-                backdrop-filter: blur(16px) !important;
-                -webkit-backdrop-filter: blur(16px) !important;
-                box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37) !important;
-                border: 1px solid rgba(255, 255, 255, 0.08) !important;
-            }
+        /* Dropdown okunu düzelt (Safari için) */
+        select.glass-input {
+             background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e") !important;
+             background-position: right 0.5rem center !important;
+             background-repeat: no-repeat !important;
+             background-size: 1.5em 1.5em !important;
+             padding-right: 2.5rem !important;
+        }
 
-            /* İç Kartlar */
-            .dark .bg-gray-700, 
-            .dark .bg-slate-800,
-            .bg-slate-50.dark\\:bg-gray-900 {
-                background-color: rgba(255, 255, 255, 0.05) !important; /* Çok şeffaf */
-                backdrop-filter: blur(8px) !important; /* Hafif blur */
-                -webkit-backdrop-filter: blur(8px) !important;
-            }
+        /* Dropdown seçenekleri (Option) her zaman koyu olsun */
+        .glass-input option {
+            background-color: #0f172a !important;
+            color: #ffffff !important;
+        }
 
-            /* Modallar (Daha koyu cam) */
-            .fixed.inset-0.z-50 .bg-white.dark\\:bg-gray-900,
-            .fixed.inset-0.z-\\[60\\] .bg-white.dark\\:bg-gray-900 {
-                 background-color: rgba(15, 23, 42, 0.85) !important;
-                 backdrop-filter: blur(20px) !important;
-                 -webkit-backdrop-filter: blur(20px) !important;
-            }
+        /* Placeholder Rengi */
+        .glass-input::placeholder {
+            color: #94a3b8 !important; /* Slate 400 */
         }
 
         .text-indigo-600 { color: #818cf8 !important; } 
     `}</style>
   );
-
   // --- AUTH VE OTURUM YÖNETİMİ (iOS & YÜKLEME FIX) ---
   useEffect(() => {
     // 1. ZAMAN AŞIMI GÜVENLİĞİ (Safety Valve)

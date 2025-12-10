@@ -1,12 +1,16 @@
-// Not: Google kütüphanesi import edilmez, çünkü backend hallediyor.
-
 // YARDIMCI: Backend'e istek atan fonksiyon
 const callBackendAI = async (prompt) => {
     try {
         console.log("📡 Frontend: Sunucuya istek gönderiliyor...");
         
-        // '/api/generate' Vercel veya Localhost sunucusuna gider
-        const response = await fetch('/api/generate', {
+        // Dinamik URL Belirleme
+        // Eğer localhosttaysak yerel sunucuya, canlıdaysak site adresine istek at
+        const baseUrl = window.location.origin; 
+        const endpoint = `${baseUrl}/api/generate`;
+
+        console.log("Hedef Adres:", endpoint);
+
+        const response = await fetch(endpoint, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -14,9 +18,22 @@ const callBackendAI = async (prompt) => {
             body: JSON.stringify({ prompt }),
         });
 
+        // Hata durumunu detaylı yakala
         if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.error || 'Sunucu hatası');
+            const errorText = await response.text();
+            console.error("Backend Hatası:", response.status, errorText);
+            
+            // Eğer 404 ise backend dosyası bulunamadı demektir (Klasör yeri yanlış)
+            if (response.status === 404) {
+                throw new Error("Backend servisi bulunamadı. (api/generate.js dosyasının yerini kontrol et)");
+            }
+            
+            // Eğer 500 ise sunucu içi hata (API Key eksik olabilir)
+            if (response.status === 500) {
+                throw new Error("Sunucu hatası. (Vercel Environment Variables kontrol et)");
+            }
+
+            throw new Error(`Hata: ${response.status}`);
         }
 
         const data = await response.json();
@@ -24,11 +41,12 @@ const callBackendAI = async (prompt) => {
 
     } catch (error) {
         console.error("❌ AI Servis Hatası:", error);
+        alert(`Bağlantı Hatası: ${error.message}`); // Kullanıcıya hatayı göster
         return null;
     }
 };
 
-// 1. ANALİZ FONKSİYONU (Prompt Hazırlayıcı)
+// 1. ANALİZ FONKSİYONU
 export const getAIAnalysis = async (studentData) => {
     const prompt = `
         Sen "YKS Komutanı" adında, veri odaklı ve taktiksel bir eğitim koçusun.
@@ -64,7 +82,7 @@ export const getAIAnalysis = async (studentData) => {
     return await callBackendAI(prompt);
 };
 
-// 2. HAFTALIK PROGRAM OLUŞTURMA FONKSİYONU (Prompt Hazırlayıcı)
+// 2. HAFTALIK PROGRAM OLUŞTURMA FONKSİYONU
 export const generateWeeklySchedule = async (profile, userRequest, recentAnalysis) => {
     
     // Alanına göre ders kısıtlaması (Strict Mode)
