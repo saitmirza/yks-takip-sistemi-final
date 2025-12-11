@@ -31,6 +31,44 @@ window.addEventListener('unhandledrejection', (event) => {
   console.error('Unhandled promise rejection:', event.reason);
   event.preventDefault();
 });
+// --- VERSİYON KONTROLÜ VE TEMİZLİK ---
+const APP_VERSION = '1.0.3'; // Her güncellemede bunu değiştir!
+
+const clearCacheAndReload = () => {
+  console.log("🧹 Yeni sürüm tespit edildi. Temizlik yapılıyor...");
+  
+  // 1. LocalStorage Temizle (Kritik olmayanlar)
+  localStorage.clear();
+  sessionStorage.clear();
+
+  // 2. Service Worker'ları Öldür (PWA Cache Sorunu İçin)
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.getRegistrations().then(function(registrations) {
+      for(let registration of registrations) {
+        registration.unregister();
+      }
+    });
+  }
+
+  // 3. Versiyonu Kaydet
+  localStorage.setItem('app_version', APP_VERSION);
+  
+  // 4. Sayfayı Zorla Yenile
+  window.location.reload();
+};
+
+// Başlangıçta Kontrol Et
+const currentVersion = localStorage.getItem('app_version');
+if (currentVersion !== APP_VERSION) {
+  // Eğer versiyon farklıysa temizlik yap (Bu sadece 1 kere çalışır)
+  clearCacheAndReload();
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>,
+)
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
